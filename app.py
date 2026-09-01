@@ -1886,26 +1886,31 @@ def user_view(email):
 @app.route("/api/user-trust", methods=["GET"])
 def user_trust():
 
-    if "email" not in session or session.get("usertype") != "user":
-        return jsonify({
-            "success": False,
-            "message": "Unauthorized"
-        }), 403
-
     try:
 
-        user_email = session.get("email", "").strip().lower()
+        if "email" not in session:
+            return jsonify({
+                "success": False,
+                "message": "Please login again."
+            }), 401
 
-        # ==========================================
-        # GET SCAM CHECK HISTORY
-        # ==========================================
+        user_email = str(
+            session.get("email", "")
+        ).strip().lower()
 
+        print("TRUST USER EMAIL:", repr(user_email))
+        print("TRUST USER TYPE:", repr(session.get("usertype")))
+
+        # IMPORTANT:
+        # Don't reject here based on exact "user" string
+        # until we confirm your actual session value.
+
+        # Scam checks
         scam_result = (
             supabase
             .table("scam_checks")
             .select(
-                "id,user_email,final_score,verdict,"
-                "message_score,link_score,screenshot_score,created_at"
+                "id,user_email,final_score,verdict,created_at"
             )
             .eq("user_email", user_email)
             .order("created_at", desc=False)
@@ -1914,11 +1919,7 @@ def user_trust():
 
         scam_checks = scam_result.data or []
 
-
-        # ==========================================
-        # GET REPORT HISTORY
-        # ==========================================
-
+        # Reports
         report_result = (
             supabase
             .table("scam_reports")
@@ -1932,203 +1933,141 @@ def user_trust():
 
         reports = report_result.data or []
 
+        print("SCAM CHECKS:", len(scam_checks))
+        print("REPORTS:", len(reports))
 
-        # ==========================================
+        # -----------------------------
         # TRUST SCORE
-        # ==========================================
+        # -----------------------------
 
         if scam_checks:
 
-            scores = []
+            trust_values = []
 
-            for check in scam_checks:
+            for row in scam_checks:
 
                 try:
-                    score = float(
-                        check.get("final_score", 0) or 0
+                    risk = float(
+                        row.get("final_score") or 0
                     )
                 except:
-                    score = 0
+                    risk = 0
 
-                score = max(0, min(100, score))
+                risk = max(0, min(100, risk))
 
-                # Scam score -> trust score
-                trust = 100 - score
+                trust_values.append(
+                    100 - risk
+                )
 
-                scores.append(trust)
-
-            # Average trust of all checks
             trust_score = round(
-                sum(scores) / len(scores)
+                sum(trust_values) /
+                len(trust_values)
             )
 
         else:
-
-            # No checks yet
             trust_score = 100
 
-
-        # ==========================================
-        # TRUST LABEL
-        # ==========================================
+        # -----------------------------
+        # LABEL
+        # -----------------------------
 
         if trust_score >= 80:
-
-            trust_label = "TRUSTED"
-            trust_level = "good"
-
+            label = "TRUSTED"
         elif trust_score >= 50:
-
-            trust_label = "CAUTION"
-            trust_level = "warning"
-
+            label = "CAUTION"
         else:
+            label = "HIGH RISK"
 
-            trust_label = "HIGH RISK"
-            trust_level = "danger"
-
-
-        # ==========================================
-        # COMBINED ACTIVITY
-        # ==========================================
+        # -----------------------------
+        # ACTIVITIES
+        # -----------------------------
 
         activities = []
 
-
-        # Scam Checks
-        for check in scam_checks:
+        for row in scam_checks:
 
             try:
-                final_score = float(
-                    check.get("final_score", 0) or 0
+                risk = float(
+                    row.get("final_score") or 0
                 )
             except:
-                final_score = 0
-
-            final_score = max(
-                0,
-                min(100, final_score)
-            )
-
-            trust_value = round(
-                100 - final_score
-            )
+                risk = 0
 
             activities.append({
-
-                "date": check.get("created_at"),
-
+                "date": row.get("created_at"),
                 "type": "Scam Check",
-
                 "verdict": str(
-                    check.get("verdict", "UNKNOWN")
+                    row.get("verdict") or "UNKNOWN"
                 ).upper(),
-
-                "risk_score": round(final_score),
-
-                "trust_score": trust_value
-
+                "risk_score": round(risk),
+                "trust_score": round(100 - risk)
             })
 
-
-        # Reports
-        for report in reports:
+        for row in reports:
 
             activities.append({
-
-                "date": report.get("created_at"),
-
+                "date": row.get("created_at"),
                 "type": "Spam Report",
-
                 "verdict": "REPORTED",
-
                 "risk_score": None,
-
                 "trust_score": None
-
             })
 
-
-        # Sort newest/oldest
         activities.sort(
             key=lambda x: x.get("date") or ""
         )
 
-
-        # ==========================================
-        # GRAPH TREND
-        # ==========================================
+        # -----------------------------
+        # TREND
+        # -----------------------------
 
         trend = []
-
-        current_trust = 100
 
         for activity in activities:
 
             if activity["type"] == "Scam Check":
 
-                current_trust = activity["trust_score"]
-
-            else:
-
-                # Reporting is positive activity.
-                # It does NOT decrease trust.
-                current_trust = current_trust
-
-
-            trend.append({
-
-                "date": activity["date"],
-
-                "score": current_trust
-
-            })
-
-
-        # ==========================================
-        # RESPONSE
-        # ==========================================
+                trend.append({
+                    "date": activity["date"],
+                    "score": activity["trust_score"]
+                })
 
         return jsonify({
-
             "success": True,
-
             "trust_score": trust_score,
-
-            "trust_label": trust_label,
-
-            "trust_level": trust_level,
-
-            "scam_checks_count": len(
-                scam_checks
-            ),
-
-            "reports_count": len(
-                reports
-            ),
-
+            "trust_label": label,
+            "scam_checks_count": len(scam_checks),
+            "reports_count": len(reports),
             "activities": activities,
-
             "trend": trend
-
         })
-
 
     except Exception as e:
 
-        print(
-            "USER TRUST ERROR:",
-            repr(e)
-        )
+        print("TRUST API ERROR:", repr(e))
 
         return jsonify({
-
             "success": False,
-
             "message": str(e)
-
         }), 500
         
+
+    print("========== TRUST API ==========")
+    print("SESSION:", dict(session))
+    print("EMAIL:", session.get("email"))
+    print("USERTYPE:", session.get("usertype"))
+
+    if "email" not in session or session.get("usertype") != "user":
+        print("TRUST API UNAUTHORIZED")
+
+        return jsonify({
+            "success": False,
+            "message": "Unauthorized",
+            "session_email": session.get("email"),
+            "session_usertype": session.get("usertype")
+        }), 403
+
+    # baaki tumhara existing code...
 @app.route("/user-delete/<path:email>", methods=["POST"])
 def user_delete(email):
     email = unquote(email).strip().lower()
