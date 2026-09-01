@@ -1809,7 +1809,7 @@ def report_userhistory_edit(id):
         }), 500
 
 
-@app.route("/report-userhistory/<email>", methods=["GET"])
+@app.route("/report-userhistory/<path:email>", methods=["GET"])
 def report_userhistory(email):
 
     if "email" not in session or session.get("usertype") != "admin":
@@ -1819,6 +1819,10 @@ def report_userhistory(email):
         }), 403
 
     try:
+        # Decode URL-encoded email
+        email = unquote(email).strip().lower()
+
+        print("REPORT HISTORY EMAIL:", repr(email))
 
         result = (
             supabase
@@ -1829,7 +1833,9 @@ def report_userhistory(email):
             .execute()
         )
 
-        reports = result.data
+        reports = result.data or []
+
+        print("REPORT HISTORY COUNT:", len(reports))
 
         return render_template(
             "report-userhistory",
@@ -1838,14 +1844,12 @@ def report_userhistory(email):
         )
 
     except Exception as e:
-
-        print("Report History Error:", e)
+        print("Report History Error:", repr(e))
 
         return jsonify({
             "success": False,
             "message": str(e)
         }), 500
-
 
 @app.route("/user-view/<email>")
 def user_view(email):
