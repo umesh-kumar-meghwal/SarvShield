@@ -1,0 +1,41 @@
+<h3 class="mb-4 text-base font-semibold">Scam Check History</h3>
+
+{% if history %}
+
+
+
+
+
+</table>
+
+<div class="overflow-x-auto">
+    <table class="w-full text-left text-sm">
+        <thead class="bg-white/5 text-mute">
+            <tr>
+                <th class="px-3 py-2 font-semibold">Message</th>
+                <th class="px-3 py-2 font-semibold">Phone</th>
+                <th class="px-3 py-2 font-semibold">Score</th>
+                <th class="px-3 py-2 font-semibold">Verdict</th>
+                <th class="px-3 py-2 font-semibold">Date</th>
+                <th class="px-3 py-2 font-semibold">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in history %}
+            <tr class="border-t border-line">
+                <td class="max-w-[220px] truncate px-3 py-2">{{ item.message or "-" }}</td>
+                <td class="px-3 py-2">{{ item.phone or "-" }}</td>
+                <td class="px-3 py-2">{{ item.final_score if item.final_score is not none else (item.score or 0) }}/100</td>
+                <td class="px-3 py-2">{{ item.verdict or "UNKNOWN" }}</td>
+                <td class="px-3 py-2">{{ item.created_at[:16] if item.created_at else "-" }}</td>
+                <td class="px-3 py-2">
+                    <a class="text-mint hover:underline" href="/scamcheck-userhistory-view/{{ item.id }}">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-mute">No scam check history found.</p>
+{% endif %}

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Login</title>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+</head>
+
+<body>
+
+    <h2>Login</h2>
+
+    <form id="loginForm">
+
+        <label>Email</label>
+
+        <br>
+
+        <input
+            type="email"
+            name="email"
+            placeholder="Enter email"
+            required
+        >
+
+        <br><br>
+
+
+        <label>Password</label>
+
+        <br>
+
+        <input
+            type="password"
+            name="password"
+            placeholder="Enter password"
+            required
+        >
+
+        <br><br>
+
+
+        <button
+            type="submit"
+            id="loginBtn"
+        >
+            Login
+        </button>
+
+    </form>
+    <h3><a href="/user-register">Register</a></h3>
+
+
+    <!-- Response -->
+    <div id="loginResponse"></div>
+
+
+    <script>
+
+        $("#loginForm").on("submit", function(e) {
+
+            e.preventDefault();
+
+
+            $("#loginBtn")
+                .prop("disabled", true)
+                .text("Logging in...");
+
+
+            $.ajax({
+
+                url: "/login",
+
+                type: "POST",
+
+                data: $(this).serialize(),
+
+
+                success: function(response) {
+
+                    // Flask route redirect decide karega
+                    window.location.href = response.redirect;
+
+                },
+
+
+                error: function(xhr) {
+
+                    let message = "Something went wrong";
+
+                    if (xhr.responseJSON) {
+
+                        message =
+                            xhr.responseJSON.message ||
+                            message;
+
+                    }
+
+                    $("#loginResponse").html(
+                        "<p style='color:red;'>" +
+                        message +
+                        "</p>"
+                    );
+
+                },
+
+
+                complete: function() {
+
+                    $("#loginBtn")
+                        .prop("disabled", false)
+                        .text("Login");
+
+                }
+
+            });
+
+        });
+
+    </script>
+
+</body>
+
+</html>

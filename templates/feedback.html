@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Feedback</title>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+</head>
+
+<body>
+
+    <h2>Give Your Feedback</h2>
+
+    <h4><a href="/my-feedback">My FeedBack</a></h4>
+
+    {% if can_feedback %}
+
+        <p>
+            Your feedback helps us improve ScamShield.
+        </p>
+
+
+        <form id="feedbackForm">
+
+
+            <!-- RATING -->
+
+            <label>
+                Rating
+            </label>
+
+            <br>
+
+            <select name="rating" required>
+
+                <option value="">
+                    Select Rating
+                </option>
+
+                <option value="5">
+                    5 - Excellent
+                </option>
+
+                <option value="4">
+                    4 - Very Good
+                </option>
+
+                <option value="3">
+                    3 - Good
+                </option>
+
+                <option value="2">
+                    2 - Average
+                </option>
+
+                <option value="1">
+                    1 - Poor
+                </option>
+
+            </select>
+
+
+            <br>
+            <br>
+
+
+            <!-- MESSAGE -->
+
+            <label>
+                Your Feedback
+            </label>
+
+            <br>
+
+            <textarea
+                name="message"
+                rows="5"
+                cols="40"
+                placeholder="Write your feedback..."
+                required
+            ></textarea>
+
+
+            <br>
+            <br>
+
+
+            <button
+                type="submit"
+                id="submitFeedback"
+            >
+                Submit Feedback
+            </button>
+
+
+        </form>
+
+
+        <div id="feedbackResponse"></div>
+
+
+    {% else %}
+
+
+        <h3>
+            ScamCheck Required
+        </h3>
+
+        <p>
+            You must use ScamCheck at least once
+            before submitting feedback.
+        </p>
+
+
+        <a href="/scamcheck">
+            <button type="button">
+                Use ScamCheck
+            </button>
+        </a>
+
+
+    {% endif %}
+
+
+    <br>
+    <br>
+
+
+    <a href="/user-dashboard">
+        <button type="button">
+            Back to Dashboard
+        </button>
+    </a>
+
+
+    <script>
+
+        $("#feedbackForm").on("submit", function(e) {
+
+            e.preventDefault();
+
+
+            $("#submitFeedback")
+                .prop("disabled", true)
+                .text("Submitting...");
+
+
+            $.ajax({
+
+                url: "/feedback",
+
+                type: "POST",
+
+                data: $(this).serialize(),
+
+
+                success: function(response) {
+
+                    $("#feedbackResponse").html(
+                        "<p>" +
+                        response.message +
+                        "</p>"
+                    );
+
+
+                    if (response.success) {
+
+                        $("#feedbackForm")[0].reset();
+
+                    }
+
+                },
+
+
+                error: function(xhr) {
+
+                    let message =
+                        "Something went wrong.";
+
+                    if (xhr.responseJSON) {
+
+                        message =
+                            xhr.responseJSON.message ||
+                            message;
+
+                    }
+
+
+                    $("#feedbackResponse").html(
+                        "<p>" +
+                        message +
+                        "</p>"
+                    );
+
+                },
+
+
+                complete: function() {
+
+                    $("#submitFeedback")
+                        .prop("disabled", false)
+                        .text("Submit Feedback");
+
+                }
+
+            });
+
+        });
+
+    </script>
+
+</body>
+
+</html>

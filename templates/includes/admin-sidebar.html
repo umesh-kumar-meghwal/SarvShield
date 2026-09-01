@@ -1,0 +1,17 @@
+<aside class="bg-black/40 border-b lg:border-b-0 lg:border-r border-line p-6 lg:sticky lg:top-0 lg:h-screen">
+    <div class="text-xl font-bold tracking-wide">
+        Scam<span class="text-mint">Shield</span>
+    </div>
+    <p class="text-mute text-xs mt-1 mb-7">Admin control panel</p>
+
+    <nav class="space-y-1">
+        <a class="block rounded-xl px-3 py-2.5 {% if nav_active == 'dashboard' %}bg-slate-800/70 text-white{% else %}text-mute hover:bg-slate-800/70 hover:text-white{% endif %}" href="/admin-dashboard">Dashboard</a>
+        <a class="block rounded-xl px-3 py-2.5 {% if nav_active == 'users' %}bg-slate-800/70 text-white{% else %}text-mute hover:bg-slate-800/70 hover:text-white{% endif %}" href="/user-show">Manage Users</a>
+        <a class="block rounded-xl px-3 py-2.5 {% if nav_active == 'admins' %}bg-slate-800/70 text-white{% else %}text-mute hover:bg-slate-800/70 hover:text-white{% endif %}" href="/admin-show">Show Admins</a>
+        <a class="block rounded-xl px-3 py-2.5 {% if nav_active == 'register' %}bg-slate-800/70 text-white{% else %}text-mute hover:bg-slate-800/70 hover:text-white{% endif %}" href="/admin-register">Add Admin</a>
+    </nav>
+
+    <a class="mt-6 block rounded-xl border border-line px-3 py-2.5 text-center text-rose-400 hover:bg-rose-500/10" href="/logout">
+        Logout
+    </a>
+</aside>

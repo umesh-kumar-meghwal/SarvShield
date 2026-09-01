@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>My Feedback</title>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+</head>
+
+<body>
+
+    <h2>My Feedback</h2>
+
+
+    <!-- ================================= -->
+    <!-- GIVE NEW FEEDBACK -->
+    <!-- ================================= -->
+
+    <h3>Give Feedback</h3>
+
+    <form id="feedbackForm">
+
+        <label>
+            Rating
+        </label>
+
+        <br>
+
+        <select name="rating" required>
+
+            <option value="">
+                Select Rating
+            </option>
+
+            <option value="5">
+                5 - Excellent
+            </option>
+
+            <option value="4">
+                4 - Very Good
+            </option>
+
+            <option value="3">
+                3 - Good
+            </option>
+
+            <option value="2">
+                2 - Average
+            </option>
+
+            <option value="1">
+                1 - Poor
+            </option>
+
+        </select>
+
+        <br>
+        <br>
+
+
+        <label>
+            Feedback
+        </label>
+
+        <br>
+
+        <textarea
+            name="message"
+            rows="5"
+            cols="50"
+            placeholder="Write your feedback..."
+            required
+        ></textarea>
+
+        <br>
+        <br>
+
+
+        <button
+            type="submit"
+            id="submitBtn"
+        >
+            Submit Feedback
+        </button>
+
+    </form>
+
+
+    <div id="feedbackResponse"></div>
+
+
+    <hr>
+
+
+    <!-- ================================= -->
+    <!-- MY FEEDBACK LIST -->
+    <!-- ================================= -->
+
+    <h3>My Feedback History</h3>
+
+
+    {% if feedbacks %}
+
+        <table
+            border="1"
+            cellpadding="8"
+            cellspacing="0"
+        >
+
+            <thead>
+
+                <tr>
+
+                    <th>Rating</th>
+
+                    <th>Feedback</th>
+
+                    <th>Date</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for feedback in feedbacks %}
+
+                <tr>
+
+                    <td>
+                        {{ feedback.rating }}/5
+                    </td>
+
+                    <td>
+                        {{ feedback.message }}
+                    </td>
+
+                    <td>
+                        {{ feedback.created_at }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+
+    {% else %}
+
+        <p>
+            You have not submitted any feedback yet.
+        </p>
+
+    {% endif %}
+
+
+    <br>
+
+
+    <a href="/user-dashboard">
+
+        <button type="button">
+            Back to Dashboard
+        </button>
+
+    </a>
+
+
+    <script>
+
+        $("#feedbackForm").on("submit", function(e) {
+
+            e.preventDefault();
+
+
+            $("#submitBtn")
+                .prop("disabled", true)
+                .text("Submitting...");
+
+
+            $.ajax({
+
+                url: "/my-feedback",
+
+                type: "POST",
+
+                data: $(this).serialize(),
+
+                success: function(response) {
+
+                    $("#feedbackResponse").html(
+                        "<p>" +
+                        response.message +
+                        "</p>"
+                    );
+
+
+                    if (response.success) {
+
+                        $("#feedbackForm")[0].reset();
+
+                        setTimeout(function() {
+
+                            location.reload();
+
+                        }, 800);
+
+                    }
+
+                },
+
+                error: function(xhr) {
+
+                    let message =
+                        "Something went wrong.";
+
+                    if (xhr.responseJSON) {
+
+                        message =
+                            xhr.responseJSON.message ||
+                            message;
+
+                    }
+
+                    $("#feedbackResponse").html(
+                        "<p>" +
+                        message +
+                        "</p>"
+                    );
+
+                },
+
+                complete: function() {
+
+                    $("#submitBtn")
+                        .prop("disabled", false)
+                        .text("Submit Feedback");
+
+                }
+
+            });
+
+        });
+
+    </script>
+
+</body>
+
+</html>

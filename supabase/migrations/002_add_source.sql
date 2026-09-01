@@ -1,0 +1,2 @@
+ALTER TABLE messages_log
+ADD COLUMN source VARCHAR(50);

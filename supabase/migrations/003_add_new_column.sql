@@ -1,0 +1,2 @@
+ALTER TABLE spam_numbers
+ADD COLUMN source VARCHAR(100);

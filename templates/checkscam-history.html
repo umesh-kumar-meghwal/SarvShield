@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Check Scam History</title>
+</head>
+<body>
+
+    <!-- TOP NAVIGATION -->
+    <p>
+        <a href="/scam-report">Report Scam</a> |
+        <a href="/report-history">Report History</a>
+    </p>
+
+    <hr>
+
+    <h1>📊 ScamCheck Scan History</h1>
+
+    <!-- SINGLE CLEAN TABLE -->
+    <table border="1" cellpadding="8" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Message</th>
+                <th>Phone</th>
+                <th>Link</th>
+                <th>Screenshot</th>
+                <th>Score</th>
+                <th>Verdict</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in scans %}
+            <tr>
+                <td>{{ row.message or '-' }}</td>
+                <td>{{ row.phone or '-' }}</td>
+                <td>
+                    {% if row.link %}
+                        <a href="{{ row.link }}" target="_blank">{{ row.link }}</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if row.screenshot_url %}
+                        <a href="{{ row.screenshot_url }}" target="_blank">
+                            <img src="{{ row.screenshot_url }}" alt="Screenshot" width="100">
+                        </a>
+                    {% else %}
+                        No Screenshot
+                    {% endif %}
+                </td>
+                <td>{{ row.final_score if row.final_score is not none else 0 }}/100</td>
+                <td>{{ row.verdict or 'UNKNOWN' }}</td>
+                <td>{{ row.created_at[:16] if row.created_at else '-' }}</td>
+                <td>
+                    <!-- RESULT BUTTON -->
+                    <a href="/scam-result/{{ row.id }}">
+                        <button type="button">Result</button>
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" align="center">No scan history records found in database.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>

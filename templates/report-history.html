@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reported Scams History</title>
+</head>
+<body>
+
+    <!-- NAVIGATION -->.
+    <p>
+        <a href="/scam-report">🚨 Report New Scam</a> |
+        <a href="/checkscam-history">Scan History</a>
+    </p>
+
+    <hr>
+
+    <h1>📋 Reported Scams History</h1>
+    <p>
+        List of all community-reported fraudulent phone numbers and malicious links.
+    </p>
+
+    <!-- REPORT HISTORY TABLE -->
+    <table border="1" cellpadding="8" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Phone </th>
+                <th>Link</th>
+                <th>Reason / Fraud Details</th>
+                <th>Reported Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in reports %}
+            <tr>
+                <td>
+                    {{row.phone or '-'}}
+                </td>
+                <td>
+                    {{row.link or '-'}}
+                </td>
+                <td>{{ row.reason or '-' }}</td>
+                <td>{{ row.created_at or '-' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" align="center">No reported scams found in database.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+
+    <p>
+        <a href="/scam-report">← Submit a New Scam Report</a>
+    </p>
+
+</body>
+</html>

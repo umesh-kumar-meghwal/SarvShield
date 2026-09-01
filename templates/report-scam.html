@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report Scam - Phone or Link</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+
+    <!-- NAVIGATION -->
+    <p>
+        <a href="/checkscam-history">Scan History</a>
+    </p>
+
+    <hr>
+
+    <h2>🚨 Report Scam (Phone / Link)</h2>
+    <p>
+        Report a suspicious phone number, fraudulent link/website, or both.
+        <br>
+        <em>(Note: Enter at least a Phone Number OR a Link).</em>
+    </p>
+
+    <!-- FORM -->
+    <form id="scamReportForm">
+
+        <!-- PHONE NUMBER (OPTIONAL) -->
+        <label for="phone"><strong>📞 Phone Number:</strong></label>
+        <br>
+        <input
+            type="text"
+            name="phone_number"
+            id="phone"
+            placeholder="Enter suspicious phone number (optional)"
+        >
+
+        <br><br>
+
+        <!-- LINK / URL (OPTIONAL) -->
+        <label for="link"><strong>🔗 Scam Link / URL:</strong></label>
+        <br>
+        <input
+            type="url"
+            name="link"
+            id="link"
+            placeholder="https://suspicious-website.com (optional)"
+        >
+
+        <br><br>
+
+        <!-- REASON (REQUIRED) -->
+        <label for="reason"><strong>📝 Reason / Fraud Details (Required):</strong></label>
+        <br>
+        <textarea
+            name="reason"
+            id="reason"
+            rows="5"
+            cols="50"
+            placeholder="Why are you reporting this? Describe the scam activity..."
+            required
+        ></textarea>
+
+        <br><br>
+
+        <button type="submit" id="reportBtn">Submit Scam Report</button>
+
+    </form>
+
+    <br>
+
+    <!-- RESPONSE MESSAGE -->
+    <div id="reportResponse"></div>
+
+    <script>
+    $("#scamReportForm").on("submit", function(e) {
+        e.preventDefault();
+
+        const phone = $("#phone").val().trim();
+        const link = $("#link").val().trim();
+        const reason = $("#reason").val().trim();
+
+        // Frontend Check: Dono me se kam se kam ek hona chahiye
+        if (!phone && !link) {
+            alert("Please enter at least a Phone Number OR a Link to report.");
+            return;
+        }
+
+        if (!reason) {
+            alert("Please enter a reason for reporting.");
+            return;
+        }
+
+        $("#reportBtn").prop("disabled", true).text("Submitting Report...");
+        $("#reportResponse").html("<p>Submitting report to database...</p>");
+
+        $.ajax({
+            url: "/scam-report",
+            type: "POST",
+            data: {
+                phone_number: phone,
+                link: link,
+                reason: reason
+            },
+            success: function(response) {
+                $("#reportResponse").html("<p><strong>✓ " + (response.message || "Scam reported successfully!") + "</strong></p>");
+                alert(response.message || "Scam reported successfully!");
+                $("#scamReportForm")[0].reset();
+            },
+            error: function(xhr) {
+                let msg = "Failed to report scam.";
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = xhr.responseJSON.message;
+                }
+                $("#reportResponse").html("<p><strong>❌ Error: " + msg + "</strong></p>");
+                alert("Error: " + msg);
+            },
+            complete: function() {
+                $("#reportBtn").prop("disabled", false).text("Submit Scam Report");
+            }
+        });
+    });
+    </script>
+
+</body>
+</html>

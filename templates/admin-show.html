@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admins - ScamShield</title>
+    {% include "includes/admin-head.html" %}
+</head>
+
+<body class="min-h-screen bg-night text-slate-100">
+    <div class="lg:grid lg:grid-cols-[260px_1fr] min-h-screen">
+        {% set nav_active = "admins" %}
+        {% include "includes/admin-sidebar.html" %}
+
+        <main class="p-6 lg:p-8">
+            <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <h1 class="text-3xl font-semibold">Admin List</h1>
+                    <p class="text-mute mt-1">All administrator accounts.</p>
+                </div>
+                <a class="inline-flex rounded-xl bg-mint px-4 py-2 text-sm font-semibold text-night hover:bg-teal-300" href="/admin-register">
+                    Add Admin
+                </a>
+            </div>
+
+            <div class="overflow-hidden rounded-2xl border border-line bg-panel">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-white/5 text-mute">
+                            <tr>
+                                <th class="px-4 py-3 font-semibold">Name</th>
+                                <th class="px-4 py-3 font-semibold">Email</th>
+                                <th class="px-4 py-3 font-semibold">Phone</th>
+                                <th class="px-4 py-3 font-semibold">Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if admins %}
+                                {% for admin in admins %}
+                                <tr class="border-t border-line">
+                                    <td class="px-4 py-3 font-medium">{{ admin.name }}</td>
+                                    <td class="px-4 py-3">{{ admin.email }}</td>
+                                    <td class="px-4 py-3">{{ admin.phone }}</td>
+                                    <td class="px-4 py-3">{{ admin.address }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td class="px-4 py-6 text-mute" colspan="4">No admin found</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

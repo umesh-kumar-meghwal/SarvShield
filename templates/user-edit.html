@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User - ScamShield</title>
+    {% include "includes/admin-head.html" %}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body class="min-h-screen bg-night text-slate-100">
+    <div class="lg:grid lg:grid-cols-[260px_1fr] min-h-screen">
+        {% set nav_active = "users" %}
+        {% include "includes/admin-sidebar.html" %}
+
+        <main class="p-6 lg:p-8">
+            <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <h1 class="text-3xl font-semibold">Edit User</h1>
+                    <p class="text-mute mt-1">{{ user.email }}</p>
+                </div>
+                <a class="rounded-xl border border-line px-4 py-2 text-sm text-mute hover:text-white" href="/user-show">
+                    ← Back to users
+                </a>
+            </div>
+
+            <form id="editUserForm" class="max-w-xl space-y-4 rounded-2xl border border-line bg-panel p-6">
+                <div>
+                    <label class="mb-2 block text-sm text-mute">Profile Picture</label>
+                    <img
+                        id="profilePreview"
+                        src="{{ user.profile_picture or '' }}"
+                        alt="Profile Picture"
+                        class="mb-3 h-28 w-28 rounded-2xl object-cover border border-line {% if not user.profile_picture %}hidden{% endif %}"
+                    >
+                    <input
+                        class="block w-full text-sm text-mute file:mr-3 file:rounded-lg file:border-0 file:bg-slate-800 file:px-3 file:py-2 file:text-slate-100"
+                        type="file"
+                        name="profile_picture"
+                        id="profilePicture"
+                        accept="image/png,image/jpeg,image/webp"
+                    >
+                </div>
+
+                <div>
+                    <label class="mb-1.5 block text-sm text-mute">Name</label>
+                    <input
+                        class="w-full rounded-xl border border-line bg-night px-3 py-2.5 outline-none focus:border-mint"
+                        type="text"
+                        name="name"
+                        value="{{ user.name }}"
+                        required
+                    >
+                </div>
+
+                <div>
+                    <label class="mb-1.5 block text-sm text-mute">Email</label>
+                    <input
+                        class="w-full rounded-xl border border-line bg-night px-3 py-2.5 text-mute"
+                        type="email"
+                        value="{{ user.email }}"
+                        readonly
+                    >
+                </div>
+
+                <div>
+                    <label class="mb-1.5 block text-sm text-mute">Phone</label>
+                    <input
+                        class="w-full rounded-xl border border-line bg-night px-3 py-2.5 outline-none focus:border-mint"
+                        type="text"
+                        name="phone"
+                        value="{{ user.phone }}"
+                        required
+                    >
+                </div>
+
+                <div>
+                    <label class="mb-1.5 block text-sm text-mute">Address</label>
+                    <textarea
+                        class="w-full rounded-xl border border-line bg-night px-3 py-2.5 outline-none focus:border-mint"
+                        name="address"
+                        rows="4"
+                        required
+                    >{{ user.address }}</textarea>
+                </div>
+
+                <button
+                    type="submit"
+                    id="updateBtn"
+                    class="rounded-xl bg-mint px-4 py-2.5 text-sm font-semibold text-night hover:bg-teal-300 disabled:opacity-60"
+                >
+                    Update User
+                </button>
+
+                <div id="updateResponse" class="text-sm"></div>
+            </form>
+        </main>
+    </div>
+
+    <script>
+        $("#profilePicture").on("change", function () {
+            const file = this.files[0];
+            if (!file) {
+                return;
+            }
+            const imageURL = URL.createObjectURL(file);
+            $("#profilePreview")
+                .attr("src", imageURL)
+                .removeClass("hidden");
+        });
+
+        $("#editUserForm").on("submit", function(e) {
+            e.preventDefault();
+
+            $("#updateBtn")
+                .prop("disabled", true)
+                .text("Updating...");
+
+            const formData = new FormData(this);
+
+            $.ajax({
+                url: window.location.pathname,
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $("#updateResponse").html(
+                        "<p class='text-emerald-400'>" + response.message + "</p>"
+                    );
+                },
+                error: function(xhr) {
+                    let message = "Something went wrong";
+                    if (xhr.responseJSON) {
+                        message = xhr.responseJSON.message || message;
+                    }
+                    $("#updateResponse").html(
+                        "<p class='text-rose-400'>" + message + "</p>"
+                    );
+                },
+                complete: function() {
+                    $("#updateBtn")
+                        .prop("disabled", false)
+                        .text("Update User");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

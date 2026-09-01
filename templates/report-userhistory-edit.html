@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Edit Report</title>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+</head>
+
+<body>
+
+    <h2>Edit Report</h2>
+
+
+    <form id="editReportForm">
+
+        <!-- PHONE -->
+
+        <label>
+            Phone
+        </label>
+
+        <br>
+
+        <input
+            type="text"
+            name="phone"
+            value="{{ report.phone }}"
+            required
+        >
+
+        <br>
+        <br>
+
+
+        <!-- Link -->
+
+        <label>
+            Link
+        </label>
+
+        <br>
+
+        <input type="text"
+            name="link"
+               value="{{ report.link }}"
+            required
+        >
+
+        <br>
+        <br>
+
+
+        <!-- REASON -->
+
+        <label>
+            Reason
+        </label>
+
+        <br>
+
+        <textarea
+            name="reason"
+            required
+        >{{ report.reason }}</textarea>
+
+        <br>
+        <br>
+
+
+        <button
+            type="submit"
+            id="updateBtn"
+        >
+            Update Report
+        </button>
+
+
+        <a href="javascript:history.back()">
+            <button
+                type="button"
+            >
+                Back
+            </button>
+        </a>
+
+    </form>
+
+
+    <div id="updateResponse"></div>
+
+
+    <script>
+
+        $("#editReportForm").on("submit", function(e) {
+
+            e.preventDefault();
+
+
+            $("#updateBtn")
+                .prop("disabled", true)
+                .text("Updating...");
+
+
+            $.ajax({
+
+                url: window.location.pathname,
+
+                type: "POST",
+
+                data: $(this).serialize(),
+
+
+                success: function(response) {
+
+                    $("#updateResponse").html(
+                        "<p>" +
+                        response.message +
+                        "</p>"
+                    );
+
+
+                    if (response.success) {
+
+                        setTimeout(function() {
+
+                            history.back();
+
+                        }, 1000);
+
+                    }
+
+                },
+
+
+                error: function(xhr) {
+
+                    let message =
+                        "Something went wrong.";
+
+                    if (xhr.responseJSON) {
+
+                        message =
+                            xhr.responseJSON.message ||
+                            message;
+
+                    }
+
+
+                    $("#updateResponse").html(
+                        "<p>" +
+                        message +
+                        "</p>"
+                    );
+
+                },
+
+
+                complete: function() {
+
+                    $("#updateBtn")
+                        .prop("disabled", false)
+                        .text("Update Report");
+
+                }
+
+            });
+
+        });
+
+    </script>
+
+</body>
+
+</html>

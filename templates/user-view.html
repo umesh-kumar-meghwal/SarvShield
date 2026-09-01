@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - ScamShield</title>
+    {% include "includes/admin-head.html" %}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body class="min-h-screen bg-night text-slate-100">
+    <div class="lg:grid lg:grid-cols-[260px_1fr] min-h-screen">
+        {% set nav_active = "users" %}
+        {% include "includes/admin-sidebar.html" %}
+
+        <main class="p-6 lg:p-8 space-y-6">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <h1 class="text-3xl font-semibold">User Profile</h1>
+                    <p class="text-mute mt-1">{{ user.email }}</p>
+                </div>
+                <a class="rounded-xl border border-line px-4 py-2 text-sm text-mute hover:text-white" href="/user-show">
+                    ← Back to users
+                </a>
+            </div>
+
+            <section class="rounded-2xl border border-line bg-panel p-6 flex flex-col gap-6 sm:flex-row">
+                {% if user.profile_picture %}
+                    <img
+                        src="{{ user.profile_picture }}"
+                        alt="Profile Picture"
+                        class="h-32 w-32 rounded-2xl object-cover border border-line"
+                    >
+                {% else %}
+                    <div class="flex h-32 w-32 items-center justify-center rounded-2xl border border-line bg-night text-mute">
+                        No photo
+                    </div>
+                {% endif %}
+
+                <div class="space-y-2 text-sm">
+                    <p><span class="text-mute">Name:</span> {{ user.name }}</p>
+                    <p><span class="text-mute">Email:</span> {{ user.email }}</p>
+                    <p><span class="text-mute">Phone:</span> {{ user.phone }}</p>
+                    <p><span class="text-mute">Address:</span> {{ user.address }}</p>
+                </div>
+            </section>
+
+            <div class="flex flex-wrap gap-2">
+                <button type="button" id="scamHistoryBtn" class="rounded-xl bg-slate-800 px-4 py-2 text-sm font-semibold hover:bg-slate-700">
+                    Check Scam History
+                </button>
+                <button type="button" id="reportHistoryBtn" class="rounded-xl bg-slate-800 px-4 py-2 text-sm font-semibold hover:bg-slate-700">
+                    Report History
+                </button>
+                <a class="rounded-xl bg-mint px-4 py-2 text-sm font-semibold text-night hover:bg-teal-300" href="/user-edit/{{ user.email }}">
+                    Edit User
+                </a>
+            </div>
+
+            <div id="historyResult" class="rounded-2xl border border-line bg-panel p-5 min-h-[80px] text-sm"></div>
+        </main>
+    </div>
+
+    <script>
+        const userEmail = "{{ user.email }}";
+
+        $("#scamHistoryBtn").on("click", function () {
+            $("#historyResult").html("<p class='text-mute'>Loading scam history...</p>");
+            $.ajax({
+                url: "/scamcheck-userhistory/" + encodeURIComponent(userEmail),
+                type: "GET",
+                success: function (response) {
+                    $("#historyResult").html(response);
+                },
+                error: function (xhr) {
+                    let message = "Unable to load scam history.";
+                    if (xhr.responseJSON) {
+                        message = xhr.responseJSON.message || message;
+                    }
+                    $("#historyResult").html("<p class='text-rose-400'>" + message + "</p>");
+                }
+            });
+        });
+
+        $("#reportHistoryBtn").on("click", function () {
+            $("#historyResult").html("<p class='text-mute'>Loading report history...</p>");
+            $.ajax({
+                url: "/report-userhistory/" + encodeURIComponent(userEmail),
+                type: "GET",
+                success: function (response) {
+                    $("#historyResult").html(response);
+                },
+                error: function (xhr) {
+                    let message = "Unable to load report history.";
+                    if (xhr.responseJSON) {
+                        message = xhr.responseJSON.message || message;
+                    }
+                    $("#historyResult").html("<p class='text-rose-400'>" + message + "</p>");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

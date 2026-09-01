@@ -1,0 +1,9 @@
+Flask
+Flask-CORS
+supabase
+python-dotenv
+requests
+gunicorn
+google-genai
+Pillow
+beautifulsoup4

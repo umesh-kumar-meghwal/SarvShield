@@ -1,0 +1,187 @@
+<h2>My Profile</h2>
+
+<!-- ========================= -->
+<!-- VIEW MODE -->
+<!-- ========================= -->
+
+<div id="viewMode">
+
+    {% if data.profile_picture %}
+        <img
+            src="{{ data.profile_picture }}"
+            alt="Profile Picture"
+            width="120"
+            height="120"
+        >
+        <br><br>
+    {% endif %}
+
+    <p>
+        <strong>Name:</strong>
+        <span>{{ data.name }}</span>
+    </p>
+
+    <p>
+        <strong>Email:</strong>
+        <span>{{ data.email }}</span>
+    </p>
+
+    <p>
+        <strong>Phone:</strong>
+        <span>{{ data.phone }}</span>
+    </p>
+
+    <p>
+        <strong>Address:</strong>
+        <span>{{ data.address }}</span>
+    </p>
+
+    <button type="button" id="editBtn">
+        Edit
+    </button>
+
+</div>
+
+<br>
+<br>
+
+<a href="/change-password">
+    <button type="button">
+        Change Password
+    </button>
+</a>
+
+<a href="/logout">
+    <button type="button">
+        Logout
+    </button>
+</a>
+
+
+<!-- ========================= -->
+<!-- EDIT MODE -->
+<!-- ========================= -->
+
+<div id="editMode" style="display: none;">
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+        <p>
+            <strong>Profile Picture:</strong><br>
+
+            <input
+                type="file"
+                name="profile_picture"
+                accept="image/png,image/jpeg,image/webp"
+            >
+        </p>
+
+
+        {% if data.profile_picture %}
+
+            <p>
+                Current Picture:
+            </p>
+
+            <img
+                src="{{ data.profile_picture }}"
+                alt="Current Profile Picture"
+                width="120"
+                height="120"
+            >
+
+        {% endif %}
+
+
+        <p>
+            <strong>Name:</strong><br>
+
+            <input
+                type="text"
+                name="name"
+                value="{{ data.name }}"
+                required
+            >
+        </p>
+
+
+        <p>
+            <strong>Email:</strong><br>
+
+            <input
+                type="email"
+                value="{{ data.email }}"
+                readonly
+            >
+        </p>
+
+
+        <p>
+            <strong>Phone:</strong><br>
+
+            <input
+                type="text"
+                name="phone"
+                value="{{ data.phone }}"
+                required
+            >
+        </p>
+
+
+        <p>
+            <strong>Address:</strong><br>
+
+            <textarea
+                name="address"
+                required
+            >{{ data.address }}</textarea>
+        </p>
+
+
+        <button type="submit">
+            Save
+        </button>
+
+        <button type="button" id="cancelBtn">
+            Cancel
+        </button>
+
+    </form>
+
+</div>
+
+
+<script>
+
+const editBtn = document.getElementById("editBtn");
+const cancelBtn = document.getElementById("cancelBtn");
+
+const viewMode = document.getElementById("viewMode");
+const editMode = document.getElementById("editMode");
+
+
+/* EDIT */
+
+editBtn.addEventListener("click", function () {
+
+    viewMode.style.display = "none";
+
+    editMode.style.display = "block";
+
+});
+
+
+/* CANCEL */
+
+cancelBtn.addEventListener("click", function () {
+
+    editMode.style.display = "none";
+
+    viewMode.style.display = "block";
+
+});
+
+</script>

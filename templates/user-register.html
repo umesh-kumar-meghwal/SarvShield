@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>User Registration</title>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+</head>
+
+<body>
+
+    <h2>User Registration</h2>
+
+
+    <!-- =========================
+         USER REGISTRATION FORM
+    ========================== -->
+
+    <form id="userRegisterForm">
+
+
+        <!-- =========================
+             EMAIL
+        ========================== -->
+
+        <label>Email</label>
+
+        <input
+            type="email"
+            name="email"
+            id="email"
+            placeholder="Enter email"
+            required
+        >
+
+        <button
+            type="button"
+            id="sendOtpBtn"
+        >
+            Send OTP
+        </button>
+
+        <br>
+
+        <small id="otpTimer"></small>
+
+        <br><br>
+
+
+        <!-- =========================
+             OTP
+        ========================== -->
+
+        <div id="otpSection" style="display:none;">
+
+            <label>Enter OTP</label>
+
+            <input
+                type="text"
+                id="otp"
+                placeholder="Enter 6-digit OTP"
+                maxlength="6"
+                inputmode="numeric"
+            >
+
+            <button
+                type="button"
+                id="verifyOtpBtn"
+            >
+                Verify OTP
+            </button>
+
+            <br><br>
+
+            <div id="otpResponse"></div>
+
+        </div>
+
+
+        <!-- =========================
+             NAME
+        ========================== -->
+
+        <label>Name</label>
+
+        <input
+            type="text"
+            name="name"
+            id="name"
+            placeholder="Enter name"
+            required
+        >
+
+        <br><br>
+
+
+        <!-- =========================
+             PASSWORD
+        ========================== -->
+
+        <label>Password</label>
+
+        <input
+            type="password"
+            name="password"
+            id="password"
+            placeholder="Enter Password"
+            required
+        >
+
+        <br><br>
+
+
+        <!-- =========================
+             PHONE
+        ========================== -->
+
+        <label>Phone</label>
+
+        <input
+            type="text"
+            name="phone"
+            id="phone"
+            placeholder="Enter Phone"
+            required
+        >
+
+        <br><br>
+
+
+        <!-- =========================
+             ADDRESS
+        ========================== -->
+
+        <label>Address</label>
+
+        <textarea
+            name="address"
+            id="address"
+            placeholder="Enter address"
+            required
+        ></textarea>
+
+        <br><br>
+
+
+        <!-- =========================
+             REGISTER
+        ========================== -->
+
+        <button
+            type="submit"
+            id="registerBtn"
+            disabled
+        >
+            Verify Email First
+        </button>
+
+    </form>
+
+
+    <br>
+
+    <h3>
+        <a href="/login">Login</a>
+    </h3>
+
+
+    <!-- =========================
+         REGISTER RESPONSE
+    ========================== -->
+
+    <div id="registerResponse"></div>
+
+
+<script>
+
+let otpVerified = false;
+
+let resendSeconds = 60;
+
+let resendInterval = null;
+
+
+/* =====================================================
+   SEND OTP
+===================================================== */
+
+$("#sendOtpBtn").on("click", function() {
+
+    let email = $("#email").val().trim();
+
+    if (!email) {
+
+        $("#otpResponse").html(
+            "<p style='color:red;'>Please enter your email.</p>"
+        );
+
+        return;
+    }
+
+
+    // Basic email validation
+
+    let emailPattern =
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailPattern.test(email)) {
+
+        $("#otpResponse").html(
+            "<p style='color:red;'>Please enter a valid email.</p>"
+        );
+
+        return;
+    }
+
+
+    $("#sendOtpBtn")
+        .prop("disabled", true)
+        .text("Sending...");
+
+
+    $.ajax({
+
+        url: "/send-otp",
+
+        type: "POST",
+
+        data: {
+            email: email
+        },
+
+
+        success: function(response) {
+
+            console.log("SEND OTP:", response);
+
+
+            $("#otpSection").show();
+
+
+            $("#otpResponse").html(
+                "<p style='color:green;'>" +
+                response.message +
+                "</p>"
+            );
+
+
+            // Start 60 second timer
+
+            startResendTimer();
+
+        },
+
+
+        error: function(xhr) {
+
+            console.log(
+                "SEND OTP ERROR:",
+                xhr.responseText
+            );
+
+
+            let message =
+                "Unable to send OTP.";
+
+
+            if (xhr.responseJSON) {
+
+                message =
+                    xhr.responseJSON.message ||
+                    message;
+
+            }
+
+
+            $("#otpResponse").html(
+                "<p style='color:red;'>" +
+                message +
+                "</p>"
+            );
+
+
+            $("#sendOtpBtn")
+                .prop("disabled", false)
+                .text("Send OTP");
+
+        }
+
+    });
+
+});
+
+
+/* =====================================================
+   60 SECOND RESEND TIMER
+===================================================== */
+
+function startResendTimer() {
+
+    resendSeconds = 60;
+
+
+    $("#sendOtpBtn")
+        .prop("disabled", true);
+
+
+    clearInterval(resendInterval);
+
+
+    $("#otpTimer").text(
+        "Resend OTP in " +
+        resendSeconds +
+        " seconds"
+    );
+
+
+    resendInterval = setInterval(function() {
+
+        resendSeconds--;
+
+
+        if (resendSeconds <= 0) {
+
+            clearInterval(resendInterval);
+
+
+            $("#sendOtpBtn")
+                .prop("disabled", false)
+                .text("Resend OTP");
+
+
+            $("#otpTimer").text(
+                "You can request a new OTP now."
+            );
+
+            return;
+        }
+
+
+        $("#otpTimer").text(
+            "Resend OTP in " +
+            resendSeconds +
+            " seconds"
+        );
+
+    }, 1000);
+
+}
+
+
+/* =====================================================
+   VERIFY OTP
+===================================================== */
+
+$("#verifyOtpBtn").on("click", function() {
+
+    let otp = $("#otp").val().trim();
+
+
+    if (!otp) {
+
+        $("#otpResponse").html(
+            "<p style='color:red;'>Please enter OTP.</p>"
+        );
+
+        return;
+    }
+
+
+    if (!/^\d{6}$/.test(otp)) {
+
+        $("#otpResponse").html(
+            "<p style='color:red;'>OTP must be 6 digits.</p>"
+        );
+
+        return;
+    }
+
+
+    $("#verifyOtpBtn")
+        .prop("disabled", true)
+        .text("Verifying...");
+
+
+    $.ajax({
+
+        url: "/verify-otp",
+
+        type: "POST",
+
+        data: {
+            otp: otp
+        },
+
+
+        success: function(response) {
+
+            console.log(
+                "VERIFY OTP:",
+                response
+            );
+
+
+            otpVerified = true;
+
+
+            $("#otpResponse").html(
+                "<p style='color:green;'>" +
+                response.message +
+                "</p>"
+            );
+
+
+            $("#verifyOtpBtn")
+                .prop("disabled", true)
+                .text("Email Verified ✓");
+
+
+            $("#email")
+                .prop("readonly", true);
+
+
+            $("#registerBtn")
+                .prop("disabled", false)
+                .text("Register");
+
+        },
+
+
+        error: function(xhr) {
+
+            console.log(
+                "VERIFY OTP ERROR:",
+                xhr.responseText
+            );
+
+
+            let message =
+                "Invalid OTP";
+
+
+            if (xhr.responseJSON) {
+
+                message =
+                    xhr.responseJSON.message ||
+                    message;
+
+            }
+
+
+            $("#otpResponse").html(
+                "<p style='color:red;'>" +
+                message +
+                "</p>"
+            );
+
+
+            $("#verifyOtpBtn")
+                .prop("disabled", false)
+                .text("Verify OTP");
+
+        }
+
+    });
+
+});
+
+
+/* =====================================================
+   FINAL REGISTRATION
+===================================================== */
+
+$("#userRegisterForm").on("submit", function(e) {
+
+    e.preventDefault();
+
+
+    // -------------------------
+    // CHECK OTP
+    // -------------------------
+
+    if (!otpVerified) {
+
+        $("#registerResponse").html(
+            "<p style='color:red;'>" +
+            "Please verify your email first." +
+            "</p>"
+        );
+
+        return;
+    }
+
+
+    // -------------------------
+    // DISABLE BUTTON
+    // -------------------------
+
+    $("#registerBtn")
+        .prop("disabled", true)
+        .text("Registering...");
+
+
+    // -------------------------
+    // SEND REGISTRATION
+    // -------------------------
+
+    $.ajax({
+
+        url: "/user-register",
+
+        type: "POST",
+
+        data: $(this).serialize(),
+
+
+        success: function(response) {
+
+            console.log(
+                "REGISTER SUCCESS:",
+                response
+            );
+
+
+            $("#registerResponse").html(
+                "<p style='color:green;'>" +
+                response.message +
+                "</p>"
+            );
+
+
+            if (response.redirect) {
+
+                window.location.href =
+                    response.redirect;
+
+            }
+
+        },
+
+
+        error: function(xhr) {
+
+            console.log(
+                "REGISTER ERROR:",
+                xhr.responseText
+            );
+
+
+            let message =
+                "Something went wrong";
+
+
+            if (xhr.responseJSON) {
+
+                message =
+                    xhr.responseJSON.message ||
+                    message;
+
+            }
+
+
+            $("#registerResponse").html(
+                "<p style='color:red;'>" +
+                message +
+                "</p>"
+            );
+
+
+            $("#registerBtn")
+                .prop("disabled", false)
+                .text("Register");
+
+        }
+
+    });
+
+});
+
+</script>
+
+</body>
+
+</html>
+
+
+
+

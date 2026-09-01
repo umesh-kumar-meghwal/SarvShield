@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ScamCheck</title>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+</head>
+
+<body>
+
+<center>
+
+<h1>Dashboard</h1>
+
+<p><a href="/checkscam-history">Check Scam History</a></p>
+<p><a href="/scam-report">Report Scam</a></p>
+<p><a href="/report-history">Report History</a></p>
+<p><a href="/feedback">Feedback</a></p>
+
+<p>
+    <a href="/my-profile">
+
+        {% if data and data.profile_picture %}
+            <img
+                src="{{ data.profile_picture }}"
+                alt="Profile Picture"
+                width="100"
+                height="100"
+            >
+            <br>
+        {% endif %}
+
+        My Profile
+    </a>
+</p>
+
+<p><a href="/logout">Log Out</a></p>
+
+</center>
+
+<hr>
+
+<h1>🎯 ScamCheck</h1>
+
+<p>
+    Check whether a message, phone number, link or screenshot
+    may be suspicious.
+</p>
+
+<!-- =====================================================
+     SCAM CHECK FORM
+===================================================== -->
+
+<form id="scamCheckForm" enctype="multipart/form-data">
+
+<label for="message">
+    📨 <b>Message</b>
+</label>
+
+<br>
+
+<textarea
+    id="message"
+    name="message"
+    rows="6"
+    cols="60"
+    placeholder="Enter suspicious message..."
+></textarea>
+
+<br><br>
+
+
+<label for="phone">
+    📞 <b>Phone Number</b>
+</label>
+
+<br>
+
+<input
+    type="text"
+    id="phone"
+    name="phone"
+    placeholder="9876543210"
+>
+
+<br><br>
+
+
+<label for="link">
+    🔗 <b>Link / URL</b>
+</label>
+
+<br>
+
+<input
+    type="url"
+    id="link"
+    name="link"
+    placeholder="https://example.com"
+>
+
+<br><br>
+
+
+<label for="screenshot">
+    🖼️ <b>Screenshot</b>
+</label>
+
+<br>
+
+<input
+    type="file"
+    id="screenshot"
+    name="screenshot"
+    accept="image/*"
+>
+
+<br><br>
+
+
+<button type="submit" id="checkBtn">
+    🔍 Check Scam
+</button>
+
+
+</form>
+
+<hr>
+
+<!-- =====================================================
+     RESULT
+===================================================== -->
+
+<div id="result"></div>
+
+<script>
+
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
+
+function escapeHtml(value) {
+
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+/* =====================================================
+   NORMAL LIST
+===================================================== */
+
+function makeList(items, emptyText = "No indicators detected.") {
+
+    if (!Array.isArray(items) || items.length === 0) {
+        return "<p>" + escapeHtml(emptyText) + "</p>";
+    }
+
+    let html = "<ul>";
+
+    items.forEach(function(item) {
+
+        html += `
+            <li>${escapeHtml(item)}</li>
+        `;
+
+    });
+
+    html += "</ul>";
+
+    return html;
+}
+
+
+/* =====================================================
+   NUMBERED LIST
+===================================================== */
+
+function makeNumberedList(items, emptyText = "No information available.") {
+
+    if (!Array.isArray(items) || items.length === 0) {
+        return "<p>" + escapeHtml(emptyText) + "</p>";
+    }
+
+    let html = "<ol>";
+
+    items.forEach(function(item) {
+
+        html += `
+            <li>${escapeHtml(item)}</li>
+        `;
+
+    });
+
+    html += "</ol>";
+
+    return html;
+}
+
+
+/* =====================================================
+   FORM SUBMIT
+===================================================== */
+
+$("#scamCheckForm").on("submit", function(e) {
+
+    e.preventDefault();
+
+
+    /* =================================================
+       GET INPUTS
+    ================================================= */
+
+    const message = $("#message").val().trim();
+
+    const phone = $("#phone").val().trim();
+
+    const link = $("#link").val().trim();
+
+    const screenshotInput = $("#screenshot")[0];
+
+    const hasScreenshot =
+        screenshotInput &&
+        screenshotInput.files &&
+        screenshotInput.files.length > 0;
+
+
+    /* =================================================
+       CHECK AT LEAST ONE INPUT
+    ================================================= */
+
+    if (
+        !message &&
+        !phone &&
+        !link &&
+        !hasScreenshot
+    ) {
+
+        $("#result").html(`
+
+            <h3>❌ Please enter at least one input.</h3>
+
+            <p>
+                Enter a message, phone number,
+                link or screenshot.
+            </p>
+
+        `);
+
+        return;
+    }
+
+
+    /* =================================================
+       FORM DATA
+    ================================================= */
+
+    const formData = new FormData(this);
+
+
+    /* =================================================
+       BUTTON LOADING
+    ================================================= */
+
+    $("#checkBtn")
+        .prop("disabled", true)
+        .text("⏳ Checking Scam...");
+
+
+    $("#result").html(`
+
+        <h3>🔍 ScamCheck is analyzing...</h3>
+
+        <p>
+            Please wait while we analyze your input.
+        </p>
+
+    `);
+
+
+    /* =================================================
+       AJAX
+    ================================================= */
+
+    $.ajax({
+
+        url: "/scamcheck",
+
+        type: "POST",
+
+        data: formData,
+
+        processData: false,
+
+        contentType: false,
+
+        timeout: 120000,
+
+
+        /* =================================================
+           SUCCESS
+        ================================================= */
+
+        success: function(res) {
+
+            console.log("SCAMCHECK RESPONSE:", res);
+
+
+            if (!res || !res.success) {
+
+                $("#result").html(`
+
+                    <h2>❌ Analysis Failed</h2>
+
+                    <p>
+                        ${escapeHtml(
+                            res?.message ||
+                            "Unable to analyze the input."
+                        )}
+                    </p>
+
+                `);
+
+                return;
+            }
+
+
+            /* =================================================
+               RESPONSE DATA
+            ================================================= */
+
+            const inputs = res.inputs || {};
+
+            const finalScore =
+                Number(res.final_score || 0);
+
+            const verdict =
+                res.verdict || "UNKNOWN";
+
+
+            let html = "";
+
+
+            /* =================================================
+               FINAL RESULT
+            ================================================= */
+
+            html += `
+
+                <hr>
+
+                <h2>🎯 Scam Analysis Result</h2>
+
+                <h1>
+                    ${finalScore}/100
+                </h1>
+
+                <h3>
+                    Verdict:
+                    ${escapeHtml(verdict)}
+                </h3>
+
+            `;
+
+
+            /* =================================================
+               SUBMITTED INPUTS
+            ================================================= */
+
+            html += `
+
+                <h3>📥 Submitted Inputs</h3>
+
+                <ul>
+
+                    ${
+                        inputs.message
+                        ? "<li>📨 Message: Yes</li>"
+                        : ""
+                    }
+
+                    ${
+                        inputs.phone
+                        ? "<li>📞 Phone: Yes</li>"
+                        : ""
+                    }
+
+                    ${
+                        inputs.link
+                        ? "<li>🔗 Link: Yes</li>"
+                        : ""
+                    }
+
+                    ${
+                        inputs.screenshot
+                        ? "<li>🖼️ Screenshot: Yes</li>"
+                        : ""
+                    }
+
+                </ul>
+
+            `;
+
+
+            /* =================================================
+               MESSAGE ANALYSIS
+               ONLY WHEN MESSAGE EXISTS
+            ================================================= */
+
+            if (inputs.message) {
+
+                html += `
+
+                    <hr>
+
+                    <h2>📨 Message Analysis</h2>
+
+                    <p>
+                        <b>Score:</b>
+                        ${Number(res.message_score || 0)}/100
+                    </p>
+
+                    <p>
+                        <b>Verdict:</b>
+                        ${escapeHtml(
+                            res.message_verdict || "UNKNOWN"
+                        )}
+                    </p>
+
+                    <p>
+                        <b>Language:</b>
+                        ${escapeHtml(
+                            res.message_language || "unknown"
+                        )}
+                    </p>
+
+                    <h4>Reasons</h4>
+
+                    ${
+                        makeList(
+                            res.message_reasons
+                        )
+                    }
+
+                `;
+
+            }
+
+
+            /* =================================================
+               PHONE ANALYSIS
+               ONLY WHEN PHONE EXISTS
+            ================================================= */
+
+            if (inputs.phone) {
+
+                const phoneScore =
+                    res.phone_score !== null &&
+                    res.phone_score !== undefined
+                    ? Number(res.phone_score) + "/100"
+                    : "N/A";
+
+
+                html += `
+
+                    <hr>
+
+                    <h2>📞 Phone Analysis</h2>
+
+                    <p>
+                        <b>Score:</b>
+                        ${phoneScore}
+                    </p>
+
+                    <p>
+                        <b>Reputation:</b>
+                        ${escapeHtml(
+                            res.phone_reputation || "UNKNOWN"
+                        )}
+                    </p>
+
+                    <p>
+                        <b>Report Count:</b>
+                        ${Number(
+                            res.phone_report_count || 0
+                        )}
+                    </p>
+
+                    <h4>Reasons</h4>
+
+                    ${
+                        makeList(
+                            res.phone_reasons
+                        )
+                    }
+
+                `;
+
+            }
+
+
+            /* =================================================
+               LINK ANALYSIS
+               ONLY WHEN LINK EXISTS
+            ================================================= */
+
+            if (inputs.link) {
+
+                html += `
+
+                    <hr>
+
+                    <h2>🔗 Link Analysis</h2>
+
+                    <p>
+                        <b>Score:</b>
+                        ${Number(
+                            res.link_score || 0
+                        )}/100
+                    </p>
+
+                    <p>
+                        <b>Verdict:</b>
+                        ${escapeHtml(
+                            res.link_verdict || "UNKNOWN"
+                        )}
+                    </p>
+
+                    <p>
+                        <b>Domain:</b>
+                        ${escapeHtml(
+                            res.link_domain || "Unknown"
+                        )}
+                    </p>
+
+                    <h4>Reasons</h4>
+
+                    ${
+                        makeList(
+                            res.link_reasons
+                        )
+                    }
+
+                `;
+
+            }
+
+
+            /* =================================================
+               SCREENSHOT ANALYSIS
+               ONLY WHEN SCREENSHOT EXISTS
+            ================================================= */
+
+            if (inputs.screenshot) {
+
+                html += `
+
+                    <hr>
+
+                    <h2>🖼️ Screenshot Analysis</h2>
+
+                    <p>
+                        <b>Score:</b>
+                        ${Number(
+                            res.screenshot_score || 0
+                        )}/100
+                    </p>
+
+                    <p>
+                        <b>Verdict:</b>
+                        ${escapeHtml(
+                            res.screenshot_verdict || "UNKNOWN"
+                        )}
+                    </p>
+
+                    <p>
+                        <b>Category:</b>
+                        ${escapeHtml(
+                            res.screenshot_category || "Unknown"
+                        )}
+                    </p>
+
+
+                    ${
+                        res.detected_text
+                        ?
+
+                        `
+
+                            <h4>📝 Detected Text</h4>
+
+                            <blockquote>
+                                ${escapeHtml(
+                                    res.detected_text
+                                )}
+                            </blockquote>
+
+                        `
+
+                        :
+
+                        `<p>No text detected.</p>`
+                    }
+
+
+                    <h4>Reasons</h4>
+
+                    ${
+                        makeList(
+                            res.screenshot_reasons
+                        )
+                    }
+
+                `;
+
+            }
+
+
+            /* =================================================
+               SCAM FINGERPRINT
+               ONLY IF DATA EXISTS
+            ================================================= */
+
+            if (
+                Array.isArray(res.scam_fingerprint) &&
+                res.scam_fingerprint.length > 0
+            ) {
+
+                html += `
+
+                    <hr>
+
+                    <h2>🧬 Scam Fingerprint</h2>
+
+                    ${
+                        makeList(
+                            res.scam_fingerprint
+                        )
+                    }
+
+                `;
+
+            }
+
+
+            /* =================================================
+               ATTACK CHAIN
+               ONLY IF DATA EXISTS
+            ================================================= */
+
+            if (
+                Array.isArray(res.attack_chain) &&
+                res.attack_chain.length > 0
+            ) {
+
+                html += `
+
+                    <hr>
+
+                    <h2>⚠️ Possible Attack Chain</h2>
+
+                    ${
+                        makeNumberedList(
+                            res.attack_chain
+                        )
+                    }
+
+                `;
+
+            }
+
+
+            /* =================================================
+               EVIDENCE
+               ONLY IF DATA EXISTS
+            ================================================= */
+
+            if (
+                Array.isArray(res.evidence) &&
+                res.evidence.length > 0
+            ) {
+
+                html += `
+
+                    <hr>
+
+                    <h2>🔎 Evidence</h2>
+
+                    ${
+                        makeList(
+                            res.evidence
+                        )
+                    }
+
+                `;
+
+            }
+
+
+            /* =================================================
+               WHY
+            ================================================= */
+
+            if (res.why) {
+
+                html += `
+
+                    <hr>
+
+                    <h2>💡 Why?</h2>
+
+                    <p>
+                        ${escapeHtml(res.why)}
+                    </p>
+
+                `;
+
+            }
+
+
+            /* =================================================
+               URGENCY
+               ONLY MESSAGE / LINK
+            ================================================= */
+
+            if (
+                inputs.message ||
+                inputs.link
+            ) {
+
+                html += `
+
+                    <hr>
+
+                    <h2>🚨 Urgency</h2>
+
+                    <p>
+                        <b>Level:</b>
+                        ${escapeHtml(
+                            res.urgency_level || "LOW"
+                        )}
+                    </p>
+
+                    <p>
+                        <b>Detected:</b>
+                        ${escapeHtml(
+                            res.urgency_detected ||
+                            "none detected"
+                        )}
+                    </p>
+
+                `;
+
+            }
+
+
+            /* =================================================
+               RECOMMENDED ACTION
+            ================================================= */
+
+            html += `
+
+                <hr>
+
+                <h2>🛡️ Recommended Action</h2>
+
+                <h3>
+                    ${escapeHtml(
+                        res.recommended_action ||
+                        "DO NOT INTERACT"
+                    )}
+                </h3>
+
+            `;
+
+
+            /* =================================================
+               WHY DANGEROUS
+            ================================================= */
+
+            if (res.why_dangerous) {
+
+                html += `
+
+                    <p>
+                        <b>Why dangerous:</b>
+                        ${escapeHtml(
+                            res.why_dangerous
+                        )}
+                    </p>
+
+                `;
+
+            }
+
+
+            /* =================================================
+               IMMEDIATE STEPS
+            ================================================= */
+
+            if (
+                Array.isArray(res.immediate_steps) &&
+                res.immediate_steps.length > 0
+            ) {
+
+                html += `
+
+                    <h3>Immediate Steps</h3>
+
+                    ${
+                        makeNumberedList(
+                            res.immediate_steps
+                        )
+                    }
+
+                `;
+
+            }
+
+
+            /* =================================================
+               RECOVERY STEPS
+            ================================================= */
+
+            if (
+                Array.isArray(res.recovery_steps) &&
+                res.recovery_steps.length > 0
+            ) {
+
+                html += `
+
+                    <h3>Recovery Steps</h3>
+
+                    ${
+                        makeNumberedList(
+                            res.recovery_steps
+                        )
+                    }
+
+                `;
+
+            }
+
+
+            /* =================================================
+               SAFE NEXT
+            ================================================= */
+
+            if (
+                Array.isArray(res.safe_next) &&
+                res.safe_next.length > 0
+            ) {
+
+                html += `
+
+                    <h3>Safe Next</h3>
+
+                    ${
+                        makeList(
+                            res.safe_next
+                        )
+                    }
+
+                `;
+
+            }
+
+
+            /* =================================================
+               SIGNAL SCORES
+               ONLY SHOW SUBMITTED SIGNALS
+            ================================================= */
+
+            html += `
+
+                <hr>
+
+                <h2>📊 Signal Scores</h2>
+
+                <table border="1" cellpadding="8">
+
+                    <thead>
+
+                        <tr>
+                            <th>Signal</th>
+                            <th>Score</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        ${
+                            inputs.message
+                            ?
+
+                            `
+                                <tr>
+                                    <td>📨 Message</td>
+                                    <td>
+                                        ${Number(
+                                            res.message_score || 0
+                                        )}/100
+                                    </td>
+                                </tr>
+                            `
+
+                            :
+
+                            ""
+                        }
+
+
+                        ${
+                            inputs.phone
+                            ?
+
+                            `
+                                <tr>
+                                    <td>📞 Phone</td>
+                                    <td>
+                                        ${
+                                            res.phone_score !== null &&
+                                            res.phone_score !== undefined
+                                            ?
+                                            Number(
+                                                res.phone_score
+                                            ) + "/100"
+                                            :
+                                            "N/A"
+                                        }
+                                    </td>
+                                </tr>
+                            `
+
+                            :
+
+                            ""
+                        }
+
+
+                        ${
+                            inputs.link
+                            ?
+
+                            `
+                                <tr>
+                                    <td>🔗 Link</td>
+                                    <td>
+                                        ${Number(
+                                            res.link_score || 0
+                                        )}/100
+                                    </td>
+                                </tr>
+                            `
+
+                            :
+
+                            ""
+                        }
+
+
+                        ${
+                            inputs.screenshot
+                            ?
+
+                            `
+                                <tr>
+                                    <td>🖼️ Screenshot</td>
+                                    <td>
+                                        ${Number(
+                                            res.screenshot_score || 0
+                                        )}/100
+                                    </td>
+                                </tr>
+                            `
+
+                            :
+
+                            ""
+                        }
+
+
+                        <tr>
+
+                            <th>🎯 Final Score</th>
+
+                            <th>
+                                ${finalScore}/100
+                            </th>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            `;
+
+
+            /* =================================================
+               COMPLETED
+            ================================================= */
+
+            html += `
+
+                <hr>
+
+                <h3>
+                    ✅ Analysis Completed
+                </h3>
+
+            `;
+
+
+            /* =================================================
+               DISPLAY
+            ================================================= */
+
+            $("#result").html(html);
+
+        },
+
+
+        /* =================================================
+           AJAX ERROR
+        ================================================= */
+
+        error: function(xhr, status, error) {
+
+            console.error(
+                "SCAMCHECK ERROR:",
+                xhr,
+                status,
+                error
+            );
+
+
+            let message =
+                "Something went wrong.";
+
+
+            if (status === "timeout") {
+
+                message =
+                    "Server took more than 120 seconds to respond.";
+
+            }
+
+            else if (xhr.responseJSON) {
+
+                message =
+                    xhr.responseJSON.message ||
+                    xhr.responseJSON.error ||
+                    message;
+
+            }
+
+            else if (xhr.responseText) {
+
+                message =
+                    xhr.responseText.substring(
+                        0,
+                        500
+                    );
+
+            }
+
+
+            $("#result").html(`
+
+                <hr>
+
+                <h2>❌ ScamCheck Error</h2>
+
+                <p>
+                    ${escapeHtml(message)}
+                </p>
+
+                <p>
+                    <b>HTTP Status:</b>
+                    ${escapeHtml(xhr.status)}
+                </p>
+
+                <p>
+                    <b>Status:</b>
+                    ${escapeHtml(status)}
+                </p>
+
+            `);
+
+        },
+
+
+        /* =================================================
+           COMPLETE
+        ================================================= */
+
+        complete: function() {
+
+            $("#checkBtn")
+                .prop("disabled", false)
+                .text("🔍 Check Scam");
+
+        }
+
+    });
+
+});
+
+</script>
+
+</body>
+
+</html>

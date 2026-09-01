@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scam Analysis Result - #{{ scan.id }}</title>
+</head>
+<body>
+
+    <!-- NAVIGATION -->
+    <p>
+        <a href="/checkscam-history">← Back to History</a> |
+    </p>
+
+    <hr>
+
+    <!-- HEADER -->
+    <h1>🎯 ScamCheck Analysis Report - #{{ scan.id }}</h1>
+    <p><strong>Scan Date:</strong> {{ scan.created_at or '-' }}</p>
+
+    <hr>
+
+    <!-- SECTION 1: OVERALL SCORE & VERDICT -->
+    <section>
+        <h2>📊 Overall Risk Assessment</h2>
+        <p><strong>Final Risk Score:</strong> {{ scan.final_score if scan.final_score is not none else 0 }}/100</p>
+        <p><strong>Threat Verdict:</strong> {{ scan.verdict or 'UNKNOWN' }}</p>
+    </section>
+
+    <hr>
+
+    <!-- SECTION 2: SUBMITTED INPUTS -->
+    <section>
+        <h2>📨 Submitted Inputs</h2>
+        <p><strong>Message:</strong></p>
+        <blockquote>{{ scan.message or 'No message text provided.' }}</blockquote>
+
+        <p><strong>Phone Number:</strong> {{ scan.phone or 'None' }}</p>
+
+        <p><strong>Link / URL:</strong>
+            {% if scan.link %}
+                <a href="{{ scan.link }}" target="_blank">{{ scan.link }}</a>
+            {% else %}
+                None
+            {% endif %}
+        </p>
+
+       <p><strong>Screenshot:</strong></p>
+{% if scan.screenshot_url %}
+    <p>
+        <a href="{{ scan.screenshot_url }}" target="_blank">
+            <img src="{{ scan.screenshot_url }}" alt="Uploaded Scam Screenshot" width="300" border="1">
+        </a>
+    </p>
+{% else %}
+    <p>None</p>
+{% endif %}
+    </section>
+
+    <hr>
+
+    <!-- SECTION 3: INDIVIDUAL DETECTOR SCORES -->
+    <section>
+        <h2>📈 Individual Component Scores</h2>
+        <table border="1" cellpadding="6" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Component</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Message Score</td>
+                    <td>{{ scan.message_score if scan.message_score is not none else 0 }}/100</td>
+                </tr>
+                <tr>
+                    <td>Link Score</td>
+                    <td>{{ scan.link_score if scan.link_score is not none else 0 }}/100</td>
+                </tr>
+                <tr>
+                    <td>Screenshot Score</td>
+                    <td>{{ scan.screenshot_score if scan.screenshot_score is not none else 0 }}/100</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <hr>
+
+    <!-- SECTION 4: SCAM FINGERPRINT -->
+    <section>
+        <h2>🧬 Scam Fingerprint Badges</h2>
+        {% if scan.scam_fingerprint and scan.scam_fingerprint|length > 0 %}
+            <ul>
+                {% for tag in scan.scam_fingerprint %}
+                    <li><strong>[{{ tag }}]</strong></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No specific scam fingerprint identified.</p>
+        {% endif %}
+    </section>
+
+    <hr>
+
+    <!-- SECTION 5: ATTACK CHAIN -->
+    <section>
+        <h2>⛓️ Attack Vector Sequence (Kill-Chain)</h2>
+        {% if scan.attack_chain and scan.attack_chain|length > 0 %}
+            <ol>
+                {% for step in scan.attack_chain %}
+                    <li>{{ step }}</li>
+                {% endfor %}
+            </ol>
+        {% else %}
+            <p>No clear attack sequence identified.</p>
+        {% endif %}
+    </section>
+
+    <hr>
+
+    <!-- SECTION 6: EVIDENCE & WHY -->
+    <section>
+        <h2>🔎 Forensic Evidence</h2>
+        {% if scan.evidence and scan.evidence|length > 0 %}
+            <ul>
+                {% for item in scan.evidence %}
+                    <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No specific evidence items recorded.</p>
+        {% endif %}
+
+        <h3>❓ Why Flagged</h3>
+        <p>{{ scan.why_summary or 'Analysis completed based on submitted threat attributes.' }}</p>
+    </section>
+
+    <hr>
+
+    <!-- SECTION 7: SAFENEXT COACH -->
+    <section>
+        <h2>🛡️ SafeNext AI Incident Recovery Coach</h2>
+        <p><strong>Recommended Action:</strong> {{ scan.recommended_action or 'DO NOT INTERACT' }}</p>
+
+        <h3>🛡️ Action Plan Steps:</h3>
+        {% if scan.safe_next and scan.safe_next|length > 0 %}
+            <ul>
+                {% for step in scan.safe_next %}
+                    <li>{{ step }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Do not open suspicious links or share sensitive information.</p>
+        {% endif %}
+    </section>
+
+    <hr>
+
+    <p>
+        <a href="/checkscam-history">← Back to Scan History</a>
+    </p>
+
+</body>
+</html>

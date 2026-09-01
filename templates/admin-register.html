@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Admin - ScamShield</title>
+    {% include "includes/admin-head.html" %}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body class="min-h-screen bg-night text-slate-100">
+    <div class="lg:grid lg:grid-cols-[260px_1fr] min-h-screen">
+        {% set nav_active = "register" %}
+        {% include "includes/admin-sidebar.html" %}
+
+        <main class="min-h-screen p-6 lg:p-8 flex flex-col items-center text-center">
+            <div class="mb-6">
+                <h1 class="text-3xl font-semibold">Add Admin</h1>
+                <p class="text-mute mt-1">Create a new administrator login.</p>
+            </div>
+
+            <form id="adminRegisterForm" class="w-full max-w-xl space-y-4 rounded-2xl border border-line bg-panel p-6 text-start">
+                <div>
+                    <label class="mb-1.5 block text-sm text-mute" for="name">Name</label>
+                    <input
+                        class="w-full rounded-xl border border-line bg-night px-3 py-2.5 outline-none focus:border-mint"
+                        type="text"
+                        name="name"
+                        id="name"
+                        placeholder="Enter name"
+                        required
+                    >
+                </div>
+
+                <div>
+                    <label class="mb-1.5 block text-sm text-mute" for="email">Email</label>
+                    <input
+                        class="w-full rounded-xl border border-line bg-night px-3 py-2.5 outline-none focus:border-mint"
+                        type="email"
+                        name="email"
+                        id="email"
+                        placeholder="Enter email"
+                        required
+                    >
+                </div>
+
+                <div>
+                    <label class="mb-1.5 block text-sm text-mute" for="phone">Phone</label>
+                    <input
+                        class="w-full rounded-xl border border-line bg-night px-3 py-2.5 outline-none focus:border-mint"
+                        type="text"
+                        name="phone"
+                        id="phone"
+                        placeholder="Enter phone"
+                        required
+                    >
+                </div>
+
+                <div>
+                    <label class="mb-1.5 block text-sm text-mute" for="password">Password</label>
+                    <input
+                        class="w-full rounded-xl border border-line bg-night px-3 py-2.5 outline-none focus:border-mint"
+                        type="password"
+                        name="password"
+                        id="password"
+                        placeholder="Enter password"
+                        required
+                    >
+                </div>
+
+                <div>
+                    <label class="mb-1.5 block text-sm text-mute" for="address">Address</label>
+                    <textarea
+                        class="w-full rounded-xl border border-line bg-night px-3 py-2.5 outline-none focus:border-mint"
+                        name="address"
+                        id="address"
+                        rows="4"
+                        placeholder="Enter address"
+                        required
+                    ></textarea>
+                </div>
+
+                <button
+                    type="submit"
+                    id="registerBtn"
+                    class="rounded-xl bg-mint px-4 py-2.5 text-sm font-semibold text-night hover:bg-teal-300 disabled:opacity-60"
+                >
+                    Register Admin
+                </button>
+
+                <div id="registerResponse" class="text-sm"></div>
+            </form>
+        </main>
+    </div>
+
+    <script>
+        $("#adminRegisterForm").on("submit", function(e) {
+            e.preventDefault();
+
+            $("#registerBtn")
+                .prop("disabled", true)
+                .text("Registering...");
+
+            $.ajax({
+                url: "/admin-register",
+                type: "POST",
+                data: $(this).serialize(),
+                success: function(response) {
+                    $("#registerResponse").html(
+                        "<p class='text-emerald-400'>" + response.message + "</p>"
+                    );
+                    $("#adminRegisterForm")[0].reset();
+                },
+                error: function(xhr) {
+                    let message = "Something went wrong";
+                    if (xhr.responseJSON) {
+                        message = xhr.responseJSON.message || message;
+                    }
+                    $("#registerResponse").html(
+                        "<p class='text-rose-400'>" + message + "</p>"
+                    );
+                },
+                complete: function() {
+                    $("#registerBtn")
+                        .prop("disabled", false)
+                        .text("Register Admin");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

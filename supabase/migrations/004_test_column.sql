@@ -1,0 +1,2 @@
+ALTER TABLE messages_log
+ADD COLUMN IF NOT EXISTS source VARCHAR(50);
