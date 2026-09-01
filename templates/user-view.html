@@ -62,45 +62,64 @@
         </main>
     </div>
 
-    <script>
-        const userEmail = "{{ user.email }}";
+   <script>
+    const userEmail = "{{ user.email }}";
 
-        $("#scamHistoryBtn").on("click", function () {
-            $("#historyResult").html("<p class='text-mute'>Loading scam history...</p>");
-            $.ajax({
-                url: "/scamcheck-userhistory/" + encodeURIComponent(userEmail),
-                type: "GET",
-                success: function (response) {
-                    $("#historyResult").html(response);
-                },
-                error: function (xhr) {
-                    let message = "Unable to load scam history.";
-                    if (xhr.responseJSON) {
-                        message = xhr.responseJSON.message || message;
-                    }
-                    $("#historyResult").html("<p class='text-rose-400'>" + message + "</p>");
-                }
-            });
-        });
+    $("#scamHistoryBtn").on("click", function () {
+        $("#historyResult").html(
+            "<p class='text-mute'>Loading scam history...</p>"
+        );
 
-        $("#reportHistoryBtn").on("click", function () {
-            $("#historyResult").html("<p class='text-mute'>Loading report history...</p>");
-            $.ajax({
-                url: "/report-userhistory/" + encodeURIComponent(userEmail),
-                type: "GET",
-                success: function (response) {
-                    $("#historyResult").html(response);
-                },
-                error: function (xhr) {
-                    let message = "Unable to load report history.";
-                    if (xhr.responseJSON) {
-                        message = xhr.responseJSON.message || message;
-                    }
-                    $("#historyResult").html("<p class='text-rose-400'>" + message + "</p>");
+        $.ajax({
+            url: "/scamcheck-userhistory/" + encodeURIComponent(userEmail),
+            type: "GET",
+
+            success: function (response) {
+                $("#historyResult").html(response);
+            },
+
+            error: function (xhr) {
+                let message = "Unable to load scam history.";
+
+                if (xhr.responseJSON) {
+                    message = xhr.responseJSON.message || message;
                 }
-            });
+
+                $("#historyResult").html(
+                    "<p class='text-rose-400'>" + message + "</p>"
+                );
+            }
         });
-    </script>
+    });
+
+
+    $("#reportHistoryBtn").on("click", function () {
+        $("#historyResult").html(
+            "<p class='text-mute'>Loading report history...</p>"
+        );
+
+        $.ajax({
+            url: "/report-userhistory/" + encodeURIComponent(userEmail),
+            type: "GET",
+
+            success: function (response) {
+                $("#historyResult").html(response);
+            },
+
+            error: function (xhr) {
+                let message = "Unable to load report history.";
+
+                if (xhr.responseJSON) {
+                    message = xhr.responseJSON.message || message;
+                }
+
+                $("#historyResult").html(
+                    "<p class='text-rose-400'>" + message + "</p>"
+                );
+            }
+        });
+    });
+</script>
 </body>
 
 </html>
