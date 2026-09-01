@@ -1423,7 +1423,9 @@ def user_edit(email):
             "message": str(e)
         }), 500
 
-@app.route("/scamcheck-userhistory/<email>", methods=["GET"])
+from urllib.parse import unquote
+
+@app.route("/scamcheck-userhistory/<path:email>", methods=["GET"])
 def scamcheck_userhistory(email):
 
     if "email" not in session or session.get("usertype") != "admin":
@@ -1433,6 +1435,10 @@ def scamcheck_userhistory(email):
         }), 403
 
     try:
+        # Decode email if it is URL encoded
+        email = unquote(email).strip().lower()
+
+        print("HISTORY EMAIL:", repr(email))
 
         result = (
             supabase
@@ -1443,23 +1449,23 @@ def scamcheck_userhistory(email):
             .execute()
         )
 
-        history = result.data
+        history = result.data or []
+
+        print("HISTORY COUNT:", len(history))
 
         return render_template(
-            "scamcheck-userhistory",
+            "scamcheck-userhistory.html",
             history=history,
             email=email
         )
 
     except Exception as e:
-
-        print("Scam Check History Error:", e)
+        print("Scam Check History Error:", repr(e))
 
         return jsonify({
             "success": False,
             "message": str(e)
         }), 500
-
 
 @app.route("/report-userhistory-delete/<id>", methods=["POST"])
 def report_userhistory_delete(id):
