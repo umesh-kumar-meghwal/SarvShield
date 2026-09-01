@@ -1883,7 +1883,179 @@ def user_view(email):
 
         return "Something went wrong", 500
 
+@app.route("/api/user-trust", methods=["GET"])
+def user_trust():
+    if "email" not in session or session.get("usertype") != "user":
+        return jsonify({
+            "success": False,
+            "message": "Unauthorized"
+        }), 403
 
+    try:
+        user_email = session.get("email", "").strip().lower()
+
+        # Scam Check History
+        scam_result = (
+            supabase
+            .table("scam_checks")
+            .select("*")
+            .eq("user_email", user_email)
+            .order("created_at", desc=False)
+            .execute()
+        )
+
+        # Spam/Scam Reports
+        report_result = (
+            supabase
+            .table("scam_reports")
+            .select("*")
+            .eq("user_email", user_email)
+            .order("created_at", desc=False)
+            .execute()
+        )
+
+        scam_checks = scam_result.data or []
+        reports = report_result.data or []
+
+        # --------------------------------
+        # TRUST SCORE
+        # --------------------------------
+        score = 100
+
+        # Scam-check based adjustment
+        for check in scam_checks:
+            verdict = str(check.get("verdict", "")).upper()
+
+            try:
+                final_score = float(check.get("final_score", 0) or 0)
+            except:
+                final_score = 0
+
+            if verdict == "SCAM":
+                score -= 15
+            elif verdict in ["SUSPICIOUS", "SPAM"]:
+                score -= 7
+            elif verdict == "SAFE":
+                score += 1
+            elif final_score >= 80:
+                score -= 12
+            elif final_score >= 50:
+                score -= 5
+
+        # Report based adjustment
+        for report in reports:
+            report_type = str(
+                report.get("report_type")
+                or report.get("verdict")
+                or report.get("status")
+                or ""
+            ).upper()
+
+            if "SCAM" in report_type or "FRAUD" in report_type:
+                score -= 12
+            elif "SPAM" in report_type:
+                score -= 6
+            else:
+                score -= 3
+
+        score = max(0, min(100, int(score)))
+
+        if score >= 80:
+            trust_label = "TRUSTED"
+            trust_level = "good"
+        elif score >= 50:
+            trust_label = "CAUTION"
+            trust_level = "warning"
+        else:
+            trust_label = "RISKY"
+            trust_level = "danger"
+
+        # --------------------------------
+        # GRAPH DATA
+        # --------------------------------
+        activities = []
+
+        for check in scam_checks:
+            try:
+                check_score = float(check.get("final_score", 0) or 0)
+            except:
+                check_score = 0
+
+            verdict = str(check.get("verdict", "UNKNOWN")).upper()
+
+            # Convert scam score into trust score
+            trust_value = max(0, min(100, int(100 - check_score)))
+
+            activities.append({
+                "date": check.get("created_at"),
+                "type": "Scam Check",
+                "verdict": verdict,
+                "score": trust_value
+            })
+
+        for report in reports:
+            report_type = str(
+                report.get("report_type")
+                or report.get("verdict")
+                or report.get("status")
+                or "REPORT"
+            ).upper()
+
+            activities.append({
+                "date": report.get("created_at"),
+                "type": "Report",
+                "verdict": report_type,
+                "score": None
+            })
+
+        activities.sort(
+            key=lambda x: x.get("date") or ""
+        )
+
+        # Create trend
+        trend = []
+        running_score = 100
+
+        for activity in activities:
+            if activity["type"] == "Scam Check":
+                running_score = activity["score"]
+            else:
+                verdict = activity["verdict"]
+
+                if "SCAM" in verdict or "FRAUD" in verdict:
+                    running_score -= 12
+                elif "SPAM" in verdict:
+                    running_score -= 6
+                else:
+                    running_score -= 3
+
+                running_score = max(0, min(100, running_score))
+
+            trend.append({
+                "date": activity["date"],
+                "score": running_score
+            })
+
+        return jsonify({
+            "success": True,
+            "trust_score": score,
+            "trust_label": trust_label,
+            "trust_level": trust_level,
+            "scam_checks_count": len(scam_checks),
+            "reports_count": len(reports),
+            "scam_checks": scam_checks,
+            "reports": reports,
+            "activities": activities,
+            "trend": trend
+        })
+
+    except Exception as e:
+        print("USER TRUST ERROR:", repr(e))
+
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
 
 @app.route("/user-delete/<path:email>", methods=["POST"])
 def user_delete(email):
