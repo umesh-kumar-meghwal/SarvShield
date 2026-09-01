@@ -1885,8 +1885,9 @@ def user_view(email):
 
 
 
-@app.route("/user-delete/<email>", methods=["POST"])
+@app.route("/user-delete/<path:email>", methods=["POST"])
 def user_delete(email):
+    email = unquote(email).strip().lower()
     if "email" not in session or session.get("usertype") != "admin":
         return jsonify({"success": False, "message": "Unauthorized"}), 403
     try:
