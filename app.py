@@ -1454,7 +1454,7 @@ def scamcheck_userhistory(email):
         print("HISTORY COUNT:", len(history))
 
         return render_template(
-            "scamcheck-userhistory.html",
+            "scamcheck-userhistory",
             history=history,
             email=email
         )
