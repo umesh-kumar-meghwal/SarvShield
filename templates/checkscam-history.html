@@ -2,72 +2,462 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Check Scam History</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Scan History | ScamShield</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='checkscam-history.css') }}">
 </head>
+
 <body>
 
-    <!-- TOP NAVIGATION -->
-    <p>
-        <a href="/scam-report">Report Scam</a> |
-        <a href="/report-history">Report History</a>
-    </p>
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
 
-    <hr>
+        <div class="sidebar-brand">
 
-    <h1>📊 ScamCheck Scan History</h1>
+            <button
+                type="button"
+                class="brand-menu-btn"
+                id="menuBtn"
+                aria-label="Toggle navigation"
+            >
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
 
-    <!-- SINGLE CLEAN TABLE -->
-    <table border="1" cellpadding="8" cellspacing="0">
-        <thead>
-            <tr>
-                <th>Message</th>
-                <th>Phone</th>
-                <th>Link</th>
-                <th>Screenshot</th>
-                <th>Score</th>
-                <th>Verdict</th>
-                <th>Date</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in scans %}
-            <tr>
-                <td>{{ row.message or '-' }}</td>
-                <td>{{ row.phone or '-' }}</td>
-                <td>
-                    {% if row.link %}
-                        <a href="{{ row.link }}" target="_blank">{{ row.link }}</a>
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-                <td>
-                    {% if row.screenshot_url %}
-                        <a href="{{ row.screenshot_url }}" target="_blank">
-                            <img src="{{ row.screenshot_url }}" alt="Screenshot" width="100">
+            <div class="sidebar-brand-text">
+                <h2>ScamShield</h2>
+                <span>Digital Safety</span>
+            </div>
+
+        </div>
+
+        <!-- NAVIGATION -->
+        <nav class="sidebar-nav">
+
+            <!-- HOME -->
+            <a href="/home" class="nav-item">
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 10.5L12 3l9 7.5"></path>
+                        <path d="M5 9.5V21h14V9.5"></path>
+                        <path d="M9 21v-6h6v6"></path>
+                    </svg>
+                </span>
+
+                <span class="nav-text">Home</span>
+            </a>
+
+            <!-- SCAM CHECK -->
+            <a href="/scamcheck" class="nav-item">
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="6.5"></circle>
+                        <path d="M16 16l5 5"></path>
+                    </svg>
+                </span>
+
+                <span class="nav-text">Scam Check</span>
+            </a>
+
+            <!-- REPORT SCAM -->
+            <a href="/report_scam" class="nav-item">
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"></path>
+                        <path d="M12 8v5"></path>
+                        <path d="M12 16h.01"></path>
+                    </svg>
+                </span>
+
+                <span class="nav-text">Report Scam</span>
+            </a>
+
+            <!-- HISTORY -->
+            <a href="{{ url_for('history') }}" class="nav-item active">
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 12a9 9 0 1 0 3-6.7"></path>
+                        <path d="M3 4v5h5"></path>
+                        <path d="M12 7v5l3 2"></path>
+                    </svg>
+                </span>
+
+                <span class="nav-text">History</span>
+            </a>
+
+        </nav>
+
+        <!-- SIDEBAR BOTTOM -->
+        <div class="sidebar-bottom">
+
+            <a href="{{ url_for('login') }}" class="logout-link">
+
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <path d="M16 17l5-5-5-5"></path>
+                        <path d="M21 12H9"></path>
+                    </svg>
+                </span>
+
+                <span class="nav-text">Logout</span>
+
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- PAGE -->
+    <div class="page-wrapper">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+
+            <div class="topbar-title">
+                <span>SCAMSHIELD</span>
+                <strong>Scan History</strong>
+            </div>
+
+            <div class="topbar-actions">
+
+                <a href="{{ url_for('feedback') }}"
+                   class="top-link">
+                    Feedback
+                </a>
+
+                <a href=""
+                   class="top-link">
+                    Alerts
+                </a>
+
+                <a href="{{ url_for('learn_more') }}"
+                   class="top-link">
+                    Learn More
+                </a>
+
+                <!-- PROFILE -->
+                <a href="{{ url_for('my_profile') }}"
+                   class="profile-button"
+                   aria-label="Open profile">
+
+                    <svg
+                        width="19"
+                        height="19"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+
+                        <circle
+                            cx="12"
+                            cy="8"
+                            r="3.5"
+                            stroke="white"
+                            stroke-width="1.8"
+                        />
+
+                        <path
+                            d="M5 20C5.8 16.7 8.3 14.8 12 14.8C15.7 14.8 18.2 16.7 19 20"
+                            stroke="white"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+
+                    </svg>
+
+                </a>
+
+            </div>
+
+        </header>
+
+
+        <!-- MAIN -->
+        <main class="main-content">
+
+            <!-- HERO -->
+            <section class="history-hero">
+
+                <div class="history-hero-content">
+
+                    <span class="section-label">
+                        SCAM CHECK ACTIVITY
+                    </span>
+
+                    <h1>Scan History</h1>
+
+                    <p>
+                        Review the messages, phone numbers, links and
+                        screenshots you have previously checked with
+                        ScamShield.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- SCAN SECTION -->
+            <section class="scan-section">
+
+                <div class="section-heading">
+
+                    <span class="section-label">
+                        YOUR SCANS
+                    </span>
+
+                    <h2>
+                        Previously checked activity
+                    </h2>
+
+                    <p>
+                        Open any scan to view its complete ScamShield result.
+                    </p>
+
+                </div>
+
+
+                {% if scans %}
+
+                <div class="scan-table-card">
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    <th>Message</th>
+                                    <th>Phone</th>
+                                    <th>Link</th>
+                                    <th>Screenshot</th>
+                                    <th>Score</th>
+                                    <th>Verdict</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                {% for row in scans %}
+
+                                {% set verdict = row.verdict or 'UNKNOWN' %}
+
+                                <tr id="scan-{{ row.id }}">
+
+                                    <!-- MESSAGE -->
+                                    <td data-label="Message">
+
+                                        <span class="message-text">
+                                            {{ row.message or '-' }}
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- PHONE -->
+                                    <td data-label="Phone">
+
+                                        <span class="table-value">
+                                            {{ row.phone or '-' }}
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- LINK -->
+                                    <td data-label="Link">
+
+                                        {% if row.link %}
+
+                                        <a
+                                            class="table-link"
+                                            href="{{ row.link }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {{ row.link }}
+                                        </a>
+
+                                        {% else %}
+
+                                        <span class="muted-value">
+                                            -
+                                        </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- SCREENSHOT -->
+                                    <td data-label="Screenshot">
+
+                                        {% if row.screenshot_url %}
+
+                                        <a
+                                            class="screenshot-link"
+                                            href="{{ row.screenshot_url }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+
+                                            <img
+                                                class="scan-screenshot"
+                                                src="{{ row.screenshot_url }}"
+                                                alt="Scan screenshot"
+                                                loading="lazy"
+                                            >
+
+                                        </a>
+
+                                        {% else %}
+
+                                        <span class="muted-value">
+                                            No screenshot
+                                        </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- SCORE -->
+                                    <td data-label="Score">
+
+                                        <span class="score-badge">
+                                            {{ row.final_score
+                                               if row.final_score is not none
+                                               else 0 }}/100
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- VERDICT -->
+                                    <td data-label="Verdict">
+
+                                        <span class="verdict-badge
+                                            {% if verdict|lower == 'safe' %}
+                                                verdict-safe
+                                            {% elif verdict|lower in ['scam', 'dangerous', 'malicious'] %}
+                                                verdict-danger
+                                            {% else %}
+                                                verdict-warning
+                                            {% endif %}
+                                        ">
+                                            {{ verdict }}
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- DATE -->
+                                    <td data-label="Date">
+
+                                        <span class="date-text">
+
+                                            {% if row.created_at %}
+                                                {{ row.created_at[:16] }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- ACTION -->
+                                    <td data-label="Action">
+
+                                        <a
+                                            href="{{ url_for('scam_result', id=row.id) }}"
+                                            class="result-btn"
+                                        >
+                                            View Result
+                                        </a>
+
+                                    </td>
+
+                                </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+
+                {% else %}
+
+                <!-- EMPTY STATE -->
+
+                <div class="empty-state">
+
+                    <div class="empty-state-content">
+
+                        <span class="section-label">
+                            NO ACTIVITY
+                        </span>
+
+                        <h3>
+                            No scan history found
+                        </h3>
+
+                        <p>
+                            You have not checked any messages, phone numbers,
+                            links or screenshots yet.
+                        </p>
+
+                        <a
+                            href="{{ url_for('scamcheck_check') }}"
+                            class="scan-new-btn"
+                        >
+                            Check a Scam
                         </a>
-                    {% else %}
-                        No Screenshot
-                    {% endif %}
-                </td>
-                <td>{{ row.final_score if row.final_score is not none else 0 }}/100</td>
-                <td>{{ row.verdict or 'UNKNOWN' }}</td>
-                <td>{{ row.created_at[:16] if row.created_at else '-' }}</td>
-                <td>
-                    <!-- RESULT BUTTON -->
-                    <a href="/scam-result/{{ row.id }}">
-                        <button type="button">Result</button>
-                    </a>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="9" align="center">No scan history records found in database.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+                    </div>
+
+                </div>
+
+                {% endif %}
+
+            </section>
+
+        </main>
+
+
+        <!-- FOOTER -->
+        <footer class="footer">
+
+            <span>ScamShield</span>
+
+            <span>
+                Digital Safety Platform
+            </span>
+
+        </footer>
+
+    </div>
+
+
+    <!-- JAVASCRIPT -->
+    <script src="{{ url_for('static', filename='checkscam-history.js') }}"></script>
 
 </body>
 </html>

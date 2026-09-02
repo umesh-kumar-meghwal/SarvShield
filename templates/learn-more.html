@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Learn More | ScamShield</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='learn-more.css') }}">
+</head>
+
+<body>
+
+    <main class="learn-page">
+
+        <!-- Top -->
+        <div class="top-row">
+
+            <a href="{{ url_for('home_page') }}" class="back-link">
+                Back to Home
+            </a>
+
+            <div class="brand">
+                <div class="brand-name">ScamShield</div>
+                <div class="brand-subtitle">Digital Safety</div>
+            </div>
+
+        </div>
+
+
+        <!-- Hero -->
+        <section class="hero">
+
+            <p class="eyebrow">DIGITAL SAFETY GUIDE</p>
+
+            <h1>
+                Learn how to
+                <span>spot deception.</span>
+            </h1>
+
+            <p class="hero-text">
+                Scams are designed to make you react before you think.
+                Learn the warning signs, understand common scam techniques,
+                and protect yourself from digital fraud.
+            </p>
+
+        </section>
+
+
+        <!-- Learning Cards -->
+        <section class="topics">
+
+            <article class="topic-card">
+
+                <div class="topic-number">01</div>
+
+                <div class="topic-content">
+
+                    <h2>Phishing</h2>
+
+                    <p>
+                        Phishing messages pretend to come from banks,
+                        companies or trusted people. They often contain
+                        suspicious links designed to steal your information.
+                    </p>
+
+                    <div class="signs">
+                        <span>Urgent requests</span>
+                        <span>Fake links</span>
+                        <span>Credential theft</span>
+                    </div>
+
+                </div>
+
+            </article>
+
+
+            <article class="topic-card">
+
+                <div class="topic-number">02</div>
+
+                <div class="topic-content">
+
+                    <h2>Fake Authority</h2>
+
+                    <p>
+                        Scammers may pretend to be police officers, bank
+                        employees, government officials or customer support
+                        agents to create fear and pressure.
+                    </p>
+
+                    <div class="signs">
+                        <span>Impersonation</span>
+                        <span>Threats</span>
+                        <span>Pressure</span>
+                    </div>
+
+                </div>
+
+            </article>
+
+
+            <article class="topic-card">
+
+                <div class="topic-number">03</div>
+
+                <div class="topic-content">
+
+                    <h2>Too Good To Be True</h2>
+
+                    <p>
+                        Fake rewards, lottery wins, investment opportunities
+                        and unbelievable discounts are common ways scammers
+                        attract victims.
+                    </p>
+
+                    <div class="signs">
+                        <span>Unexpected rewards</span>
+                        <span>Money requests</span>
+                        <span>Fake offers</span>
+                    </div>
+
+                </div>
+
+            </article>
+
+
+            <article class="topic-card">
+
+                <div class="topic-number">04</div>
+
+                <div class="topic-content">
+
+                    <h2>Social Engineering</h2>
+
+                    <p>
+                        Instead of attacking a device, scammers often attack
+                        human emotions. Fear, urgency, curiosity and trust
+                        can be used to manipulate decisions.
+                    </p>
+
+                    <div class="signs">
+                        <span>Fear</span>
+                        <span>Urgency</span>
+                        <span>Manipulation</span>
+                    </div>
+
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <!-- Safety Rules -->
+        <section class="golden-rules">
+
+            <p class="section-label">REMEMBER</p>
+
+            <h2>The four rules of digital safety.</h2>
+
+            <div class="rules">
+
+                <div class="rule">
+                    <strong>Pause.</strong>
+                    <p>
+                        Don't react immediately to urgent messages.
+                    </p>
+                </div>
+
+                <div class="rule">
+                    <strong>Verify.</strong>
+                    <p>
+                        Check who is actually contacting you.
+                    </p>
+                </div>
+
+                <div class="rule">
+                    <strong>Protect.</strong>
+                    <p>
+                        Never share OTPs, passwords or PINs.
+                    </p>
+                </div>
+
+                <div class="rule">
+                    <strong>Report.</strong>
+                    <p>
+                        Report suspicious activity instead of ignoring it.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- CTA -->
+        <section class="cta">
+
+            <p>Not sure about a message, number or link?</p>
+
+            <h2>
+                Let ScamShield check it before you act.
+            </h2>
+
+            <a href="{{ url_for('scamcheck_api') }}" class="cta-button">
+                Check for Scam
+            </a>
+
+        </section>
+
+
+        <!-- Footer -->
+        <footer>
+            <p>ScamShield — Decode deception. Stay protected.</p>
+        </footer>
+
+    </main>
+
+</body>
+</html>

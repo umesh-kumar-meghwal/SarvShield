@@ -2248,7 +2248,23 @@ def user_delete(email):
 
         return jsonify({"success": False, "message": str(e)}), 500
 
+@app.route('/history')
+def history():
+    return render_template('history.html')
 
+@app.route('/alerts')
+def alerts():
+    return render_template('alerts.html')
+
+@app.route('/learn-more')
+def learn_more():
+    return render_template('learn-more.html')
+
+
+# 2. MAIN HOME / DASHBOARD PAGE 
+@app.route('/home')
+def home_page():
+    return render_template('home.html')
 
 # =========================================================
 # SINGLE SCAM RESULT DETAIL ROUTE (BY ID)

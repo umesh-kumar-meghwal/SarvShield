@@ -1,16 +1,12 @@
-/* =========================================================
-   SCAMSHIELD — SCAN HISTORY JAVASCRIPT
-   ========================================================= */
+document.addEventListener("DOMContentLoaded", function () {
 
+    const menuBtn = document.getElementById("menuBtn");
+    const sidebar = document.getElementById("sidebar");
 
-/* =========================================================
-   SIDEBAR TOGGLE
-   ========================================================= */
+    if (!menuBtn || !sidebar) {
+        return;
+    }
 
-const menuBtn = document.getElementById("menuBtn");
-const sidebar = document.getElementById("sidebar");
-
-if (menuBtn && sidebar) {
 
     menuBtn.addEventListener("click", function () {
 
@@ -26,4 +22,43 @@ if (menuBtn && sidebar) {
 
     });
 
-}
+
+    /*
+     * Mobile par sidebar ke bahar click karne par
+     * sidebar close ho jayega.
+     */
+
+    document.addEventListener("click", function (event) {
+
+        if (window.innerWidth > 800) {
+            return;
+        }
+
+        if (
+            sidebar.classList.contains("open") &&
+            !sidebar.contains(event.target) &&
+            !menuBtn.contains(event.target)
+        ) {
+
+            sidebar.classList.remove("open");
+
+        }
+
+    });
+
+
+    /*
+     * Screen resize hone par classes reset
+     */
+
+    window.addEventListener("resize", function () {
+
+        if (window.innerWidth > 800) {
+
+            sidebar.classList.remove("open");
+
+        }
+
+    });
+
+});

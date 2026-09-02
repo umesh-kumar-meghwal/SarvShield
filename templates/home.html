@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Home | ScamShield</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='home.css') }}">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body>
+
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+<!-- =========================
+     SIDEBAR / NAVIGATION
+========================== -->
+
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Sidebar Header -->
+   <div class="sidebar-brand">
+
+    <button
+        type="button"
+        class="brand-symbol"
+        id="menuBtn"
+        aria-label="Toggle navigation">
+
+        <span></span>
+        <span></span>
+        <span></span>
+
+    </button>
+
+    <div>
+        <h2>ScamShield</h2>
+        <span>Digital Safety</span>
+    </div>
+
+</div>
+
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+
+        <a href="{{ url_for('home_page') }}"
+           class="nav-item active"
+           title="Home">
+
+            <span class="nav-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 10.5L12 3l9 7.5"></path>
+                    <path d="M5 9.5V21h14V9.5"></path>
+                    <path d="M9 21v-6h6v6"></path>
+                </svg>
+            </span>
+
+            <span class="nav-text">Home</span>
+
+        </a>
+
+
+        <a href="/scamcheck"
+           class="nav-item"
+           title="Scam Check">
+
+            <span class="nav-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 3l8 3v5c0 5.2-3.4 8.8-8 10-4.6-1.2-8-4.8-8-10V6l8-3z"></path>
+                    <path d="M9 12l2 2 4-4"></path>
+                </svg>
+            </span>
+
+            <span class="nav-text">Scam Check</span>
+
+        </a>
+
+
+        <a href="/scam-report"
+           class="nav-item"
+           title="Report Scam">
+
+            <span class="nav-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 3L3 7v5c0 4.8 3.8 8.4 9 9 5.2-.6 9-4.2 9-9V7l-9-4z"></path>
+                    <path d="M12 8v5"></path>
+                    <path d="M12 16h.01"></path>
+                </svg>
+            </span>
+
+            <span class="nav-text">Report Scam</span>
+
+        </a>
+
+
+        <a href="{{ url_for('history') }}"
+           class="nav-item"
+           title="History">
+
+            <span class="nav-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 12a9 9 0 1 0 3-6.7"></path>
+                    <path d="M3 4v5h5"></path>
+                    <path d="M12 7v5l3 2"></path>
+                </svg>
+            </span>
+
+            <span class="nav-text">History</span>
+
+        </a>
+
+    </nav>
+
+
+    <!-- Bottom / Logout -->
+    <div class="sidebar-bottom">
+
+        <a href="{{ url_for('login') }}"
+           class="logout-link"
+           title="Logout">
+
+            <span class="nav-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M10 17l5-5-5-5"></path>
+                    <path d="M15 12H3"></path>
+                    <path d="M21 19V5a2 2 0 0 0-2-2h-7"></path>
+                </svg>
+            </span>
+
+            <span class="nav-text">Logout</span>
+
+        </a>
+
+    </div>
+
+</aside>
+
+
+    <!-- =========================
+         MAIN AREA
+    ========================== -->
+
+    <div class="page-wrapper" id="pageWrapper">
+
+        <!-- =========================
+             TOP BAR
+        ========================== -->
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+               
+                <div class="topbar-title">
+                    <span>SCAMSHIELD</span>
+                    <strong>Security Dashboard</strong>
+                </div>
+
+            </div>
+
+            <div class="topbar-actions">
+
+                <a href="{{ url_for('feedback') }}"
+                   class="top-link">
+                    Feedback
+                </a>
+
+                <a href="{{ url_for('alerts') }}"
+                   class="top-link">
+                    Alerts
+                    <span class="alert-dot"></span>
+                </a>
+
+                <a href="{{ url_for('learn_more') }}"
+                   class="top-link">
+                    Learn More
+                </a>
+
+               
+<a href="{{ url_for('my_profile') }}"
+   class="profile-button"
+   aria-label="Open profile">
+
+    <svg
+        width="19"
+        height="19"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true">
+
+        <circle
+            cx="12"
+            cy="8"
+            r="3.5"
+            stroke="white"
+            stroke-width="1.8"/>
+
+        <path
+            d="M5 20C5.8 16.7 8.3 14.8 12 14.8C15.7 14.8 18.2 16.7 19 20"
+            stroke="white"
+            stroke-width="1.8"
+            stroke-linecap="round"/>
+
+    </svg>
+
+</a>
+            </div>
+
+        </header>
+
+
+        <!-- =========================
+             MAIN CONTENT
+        ========================== -->
+
+        <main class="main-content">
+
+            <!-- =========================
+                 HERO
+            ========================== -->
+
+            <section class="hero-section">
+
+                <div class="hero-content">
+
+                    <div class="status-badge">
+                        <span class="status-pulse"></span>
+                        YOUR DIGITAL SAFETY CENTER
+                    </div>
+
+                    <h1>
+                        Stay one step ahead
+                        <span>of digital scams.</span>
+                    </h1>
+
+                    <p class="hero-description">
+                        ScamShield helps you understand suspicious
+                        messages, phone numbers, links and screenshots
+                        before they become a threat.
+                    </p>
+
+                    <div class="hero-actions">
+
+                        <a href="/scamcheck"
+                           class="primary-btn">
+                            <span>Check a Scam</span>
+                            <span class="btn-arrow">→</span>
+                        </a>
+
+                        <a href="{{ url_for('learn_more') }}"
+                           class="secondary-btn">
+                            Learn how ScamShield works
+                        </a>
+
+                    </div>
+
+                    <div class="hero-trust">
+
+                        <div class="trust-item">
+                            <strong>4</strong>
+                            <span>Threat Signals</span>
+                        </div>
+
+                        <div class="trust-divider"></div>
+
+                        <div class="trust-item">
+                            <strong>100</strong>
+                            <span>Risk Scale</span>
+                        </div>
+
+                        <div class="trust-divider"></div>
+
+                        <div class="trust-item">
+                            <strong>24/7</strong>
+                            <span>Protection</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- HERO VISUAL -->
+
+                <div class="hero-visual">
+
+                    <div class="security-orbit orbit-one"></div>
+                    <div class="security-orbit orbit-two"></div>
+
+                    <div class="security-card">
+
+                        <div class="security-card-header">
+                            <span>LIVE RISK ANALYSIS</span>
+
+                            <span class="live-indicator">
+                                ACTIVE
+                            </span>
+                        </div>
+
+                        <div class="risk-circle">
+
+                            <div class="risk-circle-inner">
+                                <strong>87</strong>
+                                <span>/ 100</span>
+                            </div>
+
+                        </div>
+
+                        <div class="risk-status">
+                            HIGH RISK DETECTED
+                        </div>
+
+                        <div class="signal-list">
+
+                            <div class="signal">
+                                <span>Message signal</span>
+
+                                <div class="signal-bar">
+                                    <span style="width: 82%;"></span>
+                                </div>
+                            </div>
+
+                            <div class="signal">
+                                <span>Link signal</span>
+
+                                <div class="signal-bar">
+                                    <span style="width: 94%;"></span>
+                                </div>
+                            </div>
+
+                            <div class="signal">
+                                <span>Phone signal</span>
+
+                                <div class="signal-bar">
+                                    <span style="width: 61%;"></span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="analysis-footer">
+                            Multiple suspicious indicators detected
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 QUICK ACTIONS
+            ========================== -->
+
+            <section class="quick-section">
+
+                <div class="section-heading">
+
+                    <span class="section-label">
+                        QUICK ACTIONS
+                    </span>
+
+                    <h2>
+                        What would you like to do?
+                    </h2>
+
+                </div>
+
+                <div class="quick-grid">
+
+                    <a href="/scamcheck"
+                       class="quick-card featured">
+
+                        <div class="quick-number">01</div>
+
+                        <h3>Check a suspicious item</h3>
+
+                        <p>
+                            Analyze a message, phone number,
+                            link or screenshot.
+                        </p>
+
+                        <span class="card-link">
+                            Start analysis →
+                        </span>
+
+                    </a>
+
+                    <a href="/scam-report"
+                       class="quick-card">
+
+                        <div class="quick-number">02</div>
+
+                        <h3>Report a scam</h3>
+
+                        <p>
+                            Help protect others by reporting
+                            suspicious activity.
+                        </p>
+
+                        <span class="card-link">
+                            Submit report →
+                        </span>
+
+                    </a>
+
+                    <a href="{{ url_for('history') }}"
+                       class="quick-card">
+
+                        <div class="quick-number">03</div>
+
+                        <h3>View your history</h3>
+
+                        <p>
+                            Review your previous checks,
+                            reports and risk results.
+                        </p>
+
+                        <span class="card-link">
+                            View history →
+                        </span>
+
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 HOW IT WORKS
+            ========================== -->
+
+            <section class="process-section">
+
+                <div class="section-heading centered">
+
+                    <span class="section-label">
+                        HOW IT WORKS
+                    </span>
+
+                    <h2>
+                        From detection to understanding.
+                    </h2>
+
+                    <p>
+                        ScamShield turns suspicious digital activity
+                        into information you can actually understand.
+                    </p>
+
+                </div>
+
+                <div class="process-grid">
+
+                    <div class="process-card">
+
+                        <div class="process-number">01</div>
+                        <div class="process-line"></div>
+
+                        <h3>Submit</h3>
+
+                        <p>
+                            Provide the suspicious message,
+                            number, link or screenshot.
+                        </p>
+
+                    </div>
+
+                    <div class="process-card">
+
+                        <div class="process-number">02</div>
+                        <div class="process-line"></div>
+
+                        <h3>Analyze</h3>
+
+                        <p>
+                            ScamShield examines multiple
+                            signals and suspicious patterns.
+                        </p>
+
+                    </div>
+
+                    <div class="process-card">
+
+                        <div class="process-number">03</div>
+                        <div class="process-line"></div>
+
+                        <h3>Understand</h3>
+
+                        <p>
+                            See the risk score, evidence,
+                            attack chain and scam fingerprint.
+                        </p>
+
+                    </div>
+
+                    <div class="process-card">
+
+                        <div class="process-number">04</div>
+
+                        <h3>Act Safely</h3>
+
+                        <p>
+                            Follow clear recommendations
+                            to protect yourself.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 COMMUNITY
+            ========================== -->
+
+            <section class="community-section">
+
+                <div class="community-content">
+
+                    <span class="section-label">
+                        COMMUNITY PROTECTION
+                    </span>
+
+                    <h2>
+                        Your report can protect
+                        someone else.
+                    </h2>
+
+                    <p>
+                        ScamShield connects community reports
+                        to help identify patterns and protect
+                        people from repeated scam attempts.
+                    </p>
+
+                    <a href="/scam-report"
+                       class="outline-btn">
+                        Report a Scam →
+                    </a>
+
+                </div>
+
+                <div class="community-stat">
+
+                    <span class="stat-label">
+                        COMMUNITY SIGNAL
+                    </span>
+
+                    <strong>72%</strong>
+
+                    <span>
+                        of suspicious activity
+                        carries multiple signals
+                    </span>
+
+                    <div class="stat-line">
+                        <span></span>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 LEARN
+            ========================== -->
+
+            <section class="learn-section">
+
+                <div>
+
+                    <span class="section-label">
+                        LEARN & PROTECT
+                    </span>
+
+                    <h2>
+                        Know the signs before
+                        you click.
+                    </h2>
+
+                    <p>
+                        Learn how common scams work, what warning
+                        signs to look for, and how to respond safely.
+                    </p>
+
+                </div>
+
+                <a href="{{ url_for('learn_more') }}"
+                   class="primary-btn small-btn">
+                    Learn More
+                    <span class="btn-arrow">→</span>
+                </a>
+
+            </section>
+
+
+            <!-- =========================
+                 FINAL CTA
+            ========================== -->
+
+            <section class="final-cta">
+
+                <div class="cta-glow"></div>
+
+                <span class="section-label">
+                    STAY PROTECTED
+                </span>
+
+                <h2>
+                    Suspicious? Check it first.
+                </h2>
+
+                <p>
+                    Don't let urgency make the decision for you.
+                    Let ScamShield help you understand the risk.
+                </p>
+
+                <a href="/scamcheck"
+                   class="primary-btn">
+                    Check a Scam
+                    <span class="btn-arrow">→</span>
+                </a>
+
+            </section>
+
+        </main>
+
+
+        <!-- =========================
+             FOOTER
+        ========================== -->
+
+        <footer class="footer">
+
+            <span>
+                © 2026 ScamShield. Digital Safety Platform.
+            </span>
+
+            <span>
+                Stay aware. Stay protected.
+            </span>
+
+        </footer>
+
+    </div>
+
+
+    <!-- =========================
+         WELCOME MODAL
+    ========================== -->
+
+    <div class="welcome-overlay"
+         id="welcomeOverlay">
+
+        <div class="welcome-modal">
+
+            <button
+                type="button"
+                class="modal-close"
+                id="closeWelcome"
+                aria-label="Close welcome message">
+                ×
+            </button>
+
+            <div class="modal-mark">
+                SS
+            </div>
+
+            <span class="modal-label">
+                WELCOME TO SCAMSHIELD
+            </span>
+
+            <h2>
+                Your digital safety
+                starts here.
+            </h2>
+
+            <p>
+                Check suspicious messages, links, phone numbers
+                and screenshots before taking action.
+            </p>
+
+            <button
+                type="button"
+                class="modal-btn"
+                id="startExploring">
+                Start Exploring
+            </button>
+
+            <span class="modal-note">
+                Stay aware. Stay protected.
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         JAVASCRIPT
+    ========================== -->
+
+    <script src="{{ url_for('static', filename='home.js') }}"></script>
+
+</body>
+
+</html>
