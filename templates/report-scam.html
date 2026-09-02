@@ -49,26 +49,38 @@
     </style>
 </head>
 
-<body class="bg-dark-base text-slate-100 flex min-h-screen overflow-x-hidden antialiased">
+<body class="bg-dark-base text-slate-100 flex min-h-screen overflow-x-hidden antialiased relative">
 
     <!-- =====================================================
-         SIDEBAR NAVIGATION
+         MOBILE BACKDROP OVERLAY
     ===================================================== -->
-    <aside class="w-64 bg-dark-sidebar border-r border-dark-border flex flex-col justify-between shrink-0 hidden md:flex min-h-screen sticky top-0 z-40">
+    <div id="sidebarBackdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
+
+    <!-- =====================================================
+         SIDEBAR NAVIGATION (DESKTOP & MOBILE DRAWER)
+    ===================================================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 md:w-64 bg-dark-sidebar border-r border-dark-border flex flex-col justify-between shrink-0 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300 ease-in-out">
         <div>
-            <!-- Brand Logo -->
-            <div class="h-20 flex items-center px-6 gap-3 border-b border-dark-border/60">
-                <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 text-lg shadow-inner">
-                    <i class="fa-solid fa-shield-halved"></i>
+            <!-- Brand Logo & Close Button -->
+            <div class="h-20 flex items-center justify-between px-6 border-b border-dark-border/60">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 text-lg shadow-inner">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-extrabold text-base tracking-tight text-white leading-none">ScamShield</h2>
+                        <span class="text-[10px] tracking-widest uppercase font-bold text-blue-400">Digital Safety</span>
+                    </div>
                 </div>
-                <div>
-                    <h2 class="font-extrabold text-base tracking-tight text-white leading-none">ScamShield</h2>
-                    <span class="text-[10px] tracking-widest uppercase font-bold text-blue-400">Digital Safety</span>
-                </div>
+
+                <!-- Close Button (Mobile Only) -->
+                <button id="closeSidebarBtn" class="md:hidden text-slate-400 hover:text-white p-1 rounded-lg focus:outline-none" aria-label="Close Sidebar">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
             </div>
 
             <!-- Navigation Links -->
-            <nav class="p-4 space-y-1.5 text-sm font-medium">
+            <nav class="p-4 space-y-1.5 text-sm font-medium sidebar-nav">
                 <!-- Home -->
                 <a href="{{ url_for('home_page') }}" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
                     <svg class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" viewBox="0 0 24 24">
@@ -113,7 +125,7 @@
         <!-- Bottom Profile & Logout -->
         <div class="p-4 border-t border-dark-border/60 space-y-2">
             <a href="{{ url_for('my_profile') }}" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-dark-hover transition">
-                <div class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 font-semibold border border-slate-700">
+                <div class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 font-semibold border border-slate-700 shrink-0">
                     <i class="fa-regular fa-user text-sm"></i>
                 </div>
                 <div class="overflow-hidden">
@@ -136,27 +148,37 @@
     <!-- =====================================================
          MAIN PAGE WRAPPER
     ===================================================== -->
-    <div class="flex-1 flex flex-col min-w-0" id="pageWrapper">
+    <div class="flex-1 flex flex-col min-w-0 w-full" id="pageWrapper">
 
-        <!-- Top Header Navigation -->
-        <header class="h-20 border-b border-dark-border flex items-center justify-between px-6 lg:px-10 bg-dark-base/80 backdrop-blur sticky top-0 z-30">
-            <div class="flex items-center gap-2">
-                <span class="text-xs uppercase font-bold tracking-widest text-slate-400">SCAMSHIELD</span>
-                <span class="text-slate-600">/</span>
-                <span class="text-sm font-semibold text-white">Report Scam</span>
+        <!-- Responsive Top Header Navigation -->
+        <header class="h-20 border-b border-dark-border flex items-center justify-between px-4 sm:px-6 lg:px-10 bg-dark-base/90 backdrop-blur sticky top-0 z-30">
+            
+            <!-- Left: Mobile Toggle + Breadcrumb -->
+            <div class="flex items-center gap-3">
+                <button id="mobileMenuBtn" class="md:hidden w-10 h-10 rounded-xl bg-dark-card border border-dark-border text-slate-300 hover:text-white flex items-center justify-center focus:outline-none active:scale-95 transition" aria-label="Open Navigation">
+                    <i class="fa-solid fa-bars-staggered text-base"></i>
+                </button>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-xs uppercase font-bold tracking-widest text-slate-400">SCAMSHIELD</span>
+                    <span class="text-slate-600 hidden xs:inline">/</span>
+                    <span class="text-sm font-semibold text-white truncate">Report Scam</span>
+                </div>
             </div>
 
-            <div class="flex items-center gap-6 text-sm">
-                <a href="{{ url_for('feedback') }}" class="text-slate-400 hover:text-white transition">Feedback</a>
+            <!-- Right Actions -->
+            <div class="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium">
+                <a href="{{ url_for('feedback') }}" class="text-slate-400 hover:text-white transition hidden sm:inline">Feedback</a>
                 
-                <a href="{{ url_for('alerts') }}" class="text-slate-400 hover:text-white transition flex items-center gap-1.5">
-                    <span>Alerts</span>
+                <a href="{{ url_for('alerts') }}" class="text-slate-400 hover:text-white transition flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-dark-card/60 sm:bg-transparent border border-dark-border sm:border-0">
+                    <i class="fa-regular fa-bell sm:hidden text-sm"></i>
+                    <span class="hidden sm:inline">Alerts</span>
                     <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
                 </a>
 
-                <a href="{{ url_for('learn_more') }}" class="text-slate-400 hover:text-white transition hidden sm:inline">Learn More</a>
+                <a href="{{ url_for('learn_more') }}" class="text-slate-400 hover:text-white transition hidden md:inline">Learn More</a>
 
-                <a href="{{ url_for('my_profile') }}" class="w-9 h-9 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 hover:bg-blue-600 hover:text-white transition">
+                <a href="{{ url_for('my_profile') }}" class="w-9 h-9 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 hover:bg-blue-600 hover:text-white transition" aria-label="Profile">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <circle cx="12" cy="8" r="3.5" />
                         <path d="M5 20C5.8 16.7 8.3 14.8 12 14.8C15.7 14.8 18.2 16.7 19 20" stroke-linecap="round"/>
@@ -166,36 +188,36 @@
         </header>
 
         <!-- Main Content Body -->
-        <main class="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-10">
+        <main class="flex-1 p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-8 sm:space-y-10">
 
             <!-- Hero Section -->
-            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1b1c3a] via-[#14182e] to-[#0a1324] border border-amber-500/20 p-8 lg:p-12 shadow-2xl">
-                <div class="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-amber-500/10 blur-3xl pointer-events-none"></div>
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1b1c3a] via-[#14182e] to-[#0a1324] border border-amber-500/20 p-6 sm:p-8 lg:p-12 shadow-2xl">
+                <div class="absolute -right-16 -top-16 w-80 sm:w-96 h-80 sm:h-96 rounded-full bg-amber-500/10 blur-3xl pointer-events-none"></div>
 
-                <div class="relative z-10 max-w-2xl">
-                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold tracking-widest uppercase bg-amber-500/20 text-amber-400 border border-amber-400/30 mb-3">
+                <div class="relative z-10 max-w-2xl space-y-3">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-widest uppercase bg-amber-500/20 text-amber-400 border border-amber-400/30">
                         <i class="fa-solid fa-bullhorn text-xs"></i> Community Shield
                     </span>
-                    <h1 class="text-3xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                    <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
                         Report a Scam
                     </h1>
-                    <p class="text-slate-300 text-sm lg:text-base mt-3 leading-relaxed">
+                    <p class="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed">
                         Help protect others by flagging fraudulent phone numbers, phishing URLs, or malicious financial scams.
                     </p>
                 </div>
             </div>
 
             <!-- Form & Guidelines Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
                 
                 <!-- Report Form (Left/Main) -->
-                <div class="lg:col-span-8 rounded-3xl border border-dark-border bg-dark-card p-6 lg:p-8 shadow-xl space-y-6">
+                <div class="lg:col-span-8 rounded-3xl border border-dark-border bg-dark-card p-5 sm:p-8 shadow-xl space-y-5 sm:space-y-6">
                     <div>
-                        <h2 class="text-xl font-bold text-white tracking-tight">Submit Fraud Report</h2>
+                        <h2 class="text-lg sm:text-xl font-bold text-white tracking-tight">Submit Fraud Report</h2>
                         <p class="text-xs text-slate-400 mt-1">Please provide at least a phone number <strong>or</strong> a suspicious link.</p>
                     </div>
 
-                    <form id="scamReportForm" class="space-y-6">
+                    <form id="scamReportForm" class="space-y-5 sm:space-y-6">
                         
                         <!-- Phone Number -->
                         <div class="space-y-2">
@@ -207,7 +229,7 @@
                                 name="phone_number"
                                 id="phone"
                                 placeholder="e.g. +91 9876543210"
-                                class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
+                                class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
                             >
                         </div>
 
@@ -221,7 +243,7 @@
                                 name="link"
                                 id="link"
                                 placeholder="https://fake-bank-login.com"
-                                class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
+                                class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
                             >
                         </div>
 
@@ -236,7 +258,7 @@
                                 rows="5"
                                 placeholder="Why are you reporting this? Describe the scam activity, impersonation, or payment demands..."
                                 required
-                                class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition resize-none"
+                                class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition resize-none"
                             ></textarea>
                         </div>
 
@@ -244,7 +266,7 @@
                         <button
                             type="submit"
                             id="reportBtn"
-                            class="w-full py-4 rounded-xl bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white font-bold text-sm shadow-lg shadow-amber-600/20 transition transform active:scale-[0.99] flex items-center justify-center gap-2"
+                            class="w-full py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-amber-600/20 transition transform active:scale-[0.99] flex items-center justify-center gap-2"
                         >
                             <i class="fa-solid fa-paper-plane"></i> Submit Scam Report
                         </button>
@@ -255,12 +277,12 @@
                 </div>
 
                 <!-- Guidelines / Side Card (Right) -->
-                <div class="lg:col-span-4 space-y-5">
+                <div class="lg:col-span-4 space-y-4 sm:space-y-5">
                     
                     <!-- Quick Links Card -->
-                    <div class="rounded-2xl border border-dark-border bg-dark-card p-6 shadow-lg space-y-4">
-                        <span class="text-xs uppercase font-bold tracking-wider text-blue-400">Quick Navigation</span>
-                        <a href="/checkscam-history" class="flex items-center justify-between p-3.5 rounded-xl bg-dark-cardLight border border-dark-border hover:border-blue-500/40 text-xs text-slate-300 hover:text-white transition">
+                    <div class="rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-lg space-y-3 sm:space-y-4">
+                        <span class="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-blue-400">Quick Navigation</span>
+                        <a href="/checkscam-history" class="flex items-center justify-between p-3 sm:p-3.5 rounded-xl bg-dark-cardLight border border-dark-border hover:border-blue-500/40 text-xs text-slate-300 hover:text-white transition">
                             <span class="flex items-center gap-2.5">
                                 <i class="fa-solid fa-clock-rotate-left text-blue-400"></i> View Scan History
                             </span>
@@ -269,21 +291,21 @@
                     </div>
 
                     <!-- Guidelines Card -->
-                    <div class="rounded-2xl border border-dark-border bg-dark-card p-6 shadow-lg space-y-4">
-                        <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                    <div class="rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-lg space-y-3 sm:space-y-4">
+                        <h3 class="font-bold text-white text-xs sm:text-sm flex items-center gap-2">
                             <i class="fa-solid fa-circle-info text-amber-400"></i> Submission Guidelines
                         </h3>
-                        <ul class="space-y-3 text-xs text-slate-400">
+                        <ul class="space-y-2.5 sm:space-y-3 text-xs text-slate-400">
                             <li class="flex items-start gap-2.5">
-                                <i class="fa-solid fa-check text-emerald-400 mt-0.5 text-[10px]"></i>
+                                <i class="fa-solid fa-check text-emerald-400 mt-0.5 text-[10px] shrink-0"></i>
                                 <span>Provide the exact domain or phone number with country code if known.</span>
                             </li>
                             <li class="flex items-start gap-2.5">
-                                <i class="fa-solid fa-check text-emerald-400 mt-0.5 text-[10px]"></i>
+                                <i class="fa-solid fa-check text-emerald-400 mt-0.5 text-[10px] shrink-0"></i>
                                 <span>Mention if they pretended to be a bank, courier service, or government agent.</span>
                             </li>
                             <li class="flex items-start gap-2.5">
-                                <i class="fa-solid fa-check text-emerald-400 mt-0.5 text-[10px]"></i>
+                                <i class="fa-solid fa-check text-emerald-400 mt-0.5 text-[10px] shrink-0"></i>
                                 <span>All submitted entries are analyzed and indexed for global community safety.</span>
                             </li>
                         </ul>
@@ -296,7 +318,7 @@
         </main>
 
         <!-- Footer -->
-        <footer class="border-t border-dark-border/60 py-6 px-6 lg:px-10 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <footer class="border-t border-dark-border/60 py-6 px-4 sm:px-6 lg:px-10 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
             <span>© 2026 ScamShield. Digital Safety Platform.</span>
             <span>Stay aware. Stay protected.</span>
         </footer>
@@ -304,78 +326,110 @@
     </div>
 
     <!-- =====================================================
-         JAVASCRIPT / AJAX HANDLER
+         JAVASCRIPT & MOBILE DRAWER HANDLER
     ===================================================== -->
     <script>
-        $("#scamReportForm").on("submit", function(e) {
-            e.preventDefault();
-
-            const phone = $("#phone").val().trim();
-            const link = $("#link").val().trim();
-            const reason = $("#reason").val().trim();
-
-            // Frontend validation: kam se kam phone ya link hona chahiye
-            if (!phone && !link) {
-                $("#reportResponse").html(`
-                    <div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2.5">
-                        <i class="fa-solid fa-circle-exclamation text-base shrink-0"></i>
-                        <span>Please enter at least a <strong>Phone Number</strong> OR a <strong>Link / URL</strong> to report.</span>
-                    </div>
-                `);
-                return;
+        $(document).ready(function () {
+            
+            // --- Mobile Drawer Toggle Logic ---
+            function openMobileSidebar() {
+                $('#sidebar').removeClass('-translate-x-full');
+                $('#sidebarBackdrop').removeClass('hidden');
+                $('body').addClass('overflow-hidden');
             }
 
-            if (!reason) {
-                $("#reportResponse").html(`
-                    <div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2.5">
-                        <i class="fa-solid fa-circle-exclamation text-base shrink-0"></i>
-                        <span>Please provide fraud details/reason for reporting.</span>
-                    </div>
-                `);
-                return;
+            function closeMobileSidebar() {
+                $('#sidebar').addClass('-translate-x-full');
+                $('#sidebarBackdrop').addClass('hidden');
+                $('body').removeClass('overflow-hidden');
             }
 
-            $("#reportBtn").prop("disabled", true).html(`<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Submitting Report...`);
-            $("#reportResponse").html(`
-                <div class="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs flex items-center gap-2.5">
-                    <i class="fa-solid fa-shield-halved fa-spin text-base shrink-0 text-blue-400"></i>
-                    <span>Submitting report to security database...</span>
-                </div>
-            `);
+            $('#mobileMenuBtn').on('click', function(e) {
+                e.stopPropagation();
+                openMobileSidebar();
+            });
 
-            $.ajax({
-                url: "/scam-report",
-                type: "POST",
-                data: {
-                    phone_number: phone,
-                    link: link,
-                    reason: reason
-                },
-                success: function(response) {
-                    const msg = response.message || "Scam reported successfully! Thank you for contributing to community safety.";
-                    $("#reportResponse").html(`
-                        <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2.5">
-                            <i class="fa-solid fa-circle-check text-base shrink-0 text-emerald-400"></i>
-                            <span>${msg}</span>
-                        </div>
-                    `);
-                    $("#scamReportForm")[0].reset();
-                },
-                error: function(xhr) {
-                    let msg = "Failed to report scam.";
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        msg = xhr.responseJSON.message;
-                    }
-                    $("#reportResponse").html(`
-                        <div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2.5">
-                            <i class="fa-solid fa-triangle-exclamation text-base shrink-0 text-rose-400"></i>
-                            <span>${msg}</span>
-                        </div>
-                    `);
-                },
-                complete: function() {
-                    $("#reportBtn").prop("disabled", false).html(`<i class="fa-solid fa-paper-plane mr-1.5"></i> Submit Scam Report`);
+            $('#closeSidebarBtn, #sidebarBackdrop').on('click', function() {
+                closeMobileSidebar();
+            });
+
+            $('.sidebar-nav a').on('click', function() {
+                if ($(window).width() < 768) {
+                    closeMobileSidebar();
                 }
+            });
+
+            // --- Form Submit AJAX Handler ---
+            $("#scamReportForm").on("submit", function(e) {
+                e.preventDefault();
+
+                const phone = $("#phone").val().trim();
+                const link = $("#link").val().trim();
+                const reason = $("#reason").val().trim();
+
+                // Validation
+                if (!phone && !link) {
+                    $("#reportResponse").html(`
+                        <div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2.5">
+                            <i class="fa-solid fa-circle-exclamation text-base shrink-0"></i>
+                            <span>Please enter at least a <strong>Phone Number</strong> OR a <strong>Link / URL</strong> to report.</span>
+                        </div>
+                    `);
+                    return;
+                }
+
+                if (!reason) {
+                    $("#reportResponse").html(`
+                        <div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2.5">
+                            <i class="fa-solid fa-circle-exclamation text-base shrink-0"></i>
+                            <span>Please provide fraud details/reason for reporting.</span>
+                        </div>
+                    `);
+                    return;
+                }
+
+                $("#reportBtn").prop("disabled", true).html(`<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Submitting Report...`);
+                $("#reportResponse").html(`
+                    <div class="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs flex items-center gap-2.5">
+                        <i class="fa-solid fa-shield-halved fa-spin text-base shrink-0 text-blue-400"></i>
+                        <span>Submitting report to security database...</span>
+                    </div>
+                `);
+
+                $.ajax({
+                    url: "/scam-report",
+                    type: "POST",
+                    data: {
+                        phone_number: phone,
+                        link: link,
+                        reason: reason
+                    },
+                    success: function(response) {
+                        const msg = response.message || "Scam reported successfully! Thank you for contributing to community safety.";
+                        $("#reportResponse").html(`
+                            <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2.5">
+                                <i class="fa-solid fa-circle-check text-base shrink-0 text-emerald-400"></i>
+                                <span>${msg}</span>
+                            </div>
+                        `);
+                        $("#scamReportForm")[0].reset();
+                    },
+                    error: function(xhr) {
+                        let msg = "Failed to report scam.";
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            msg = xhr.responseJSON.message;
+                        }
+                        $("#reportResponse").html(`
+                            <div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2.5">
+                                <i class="fa-solid fa-triangle-exclamation text-base shrink-0 text-rose-400"></i>
+                                <span>${msg}</span>
+                            </div>
+                        `);
+                    },
+                    complete: function() {
+                        $("#reportBtn").prop("disabled", false).html(`<i class="fa-solid fa-paper-plane mr-1.5"></i> Submit Scam Report`);
+                    }
+                });
             });
         });
     </script>
