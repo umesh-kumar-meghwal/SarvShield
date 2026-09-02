@@ -1,1671 +1,752 @@
 <!DOCTYPE html>
-
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScamShield - Dashboard & ScamCheck</title>
 
-<title>ScamCheck</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef6ff',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        },
+                        dark: {
+                            base: '#060B13',
+                            sidebar: '#080E1A',
+                            card: '#0D1728',
+                            cardLight: '#121F36',
+                            border: '#1E293B',
+                            hover: '#182744'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <!-- Chart.js & jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #060B13;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+    </style>
 </head>
 
-<body>
+<body class="bg-dark-base text-slate-100 flex min-h-screen overflow-x-hidden antialiased">
 
-<center>
-
-<h1>Dashboard</h1>
-
-<p><a href="/checkscam-history">Check Scam History</a></p>
-<p><a href="/scam-report">Report Scam</a></p>
-<p><a href="/report-history">Report History</a></p>
-<p><a href="/feedback">Feedback</a></p>
-
-<p>
-    <a href="/my-profile">
-
-        {% if data and data.profile_picture %}
-            <img
-                src="{{ data.profile_picture }}"
-                alt="Profile Picture"
-                width="100"
-                height="100"
-            >
-            <br>
-        {% endif %}
-
-        My Profile
-    </a>
-</p>
-
-<p><a href="/logout">Log Out</a></p>
-
-</center>
-
-<hr>
-<section class="space-y-5">
-
-    <div class="flex items-center justify-between">
+    <!-- =====================================================
+         SIDEBAR NAVIGATION
+    ===================================================== -->
+    <aside class="w-64 bg-dark-sidebar border-r border-dark-border flex flex-col justify-between shrink-0 hidden md:flex min-h-screen sticky top-0 z-40">
         <div>
-            <h2 class="text-2xl font-semibold">
-                🛡️ Trust Overview
-            </h2>
-
-            <p class="text-mute text-sm mt-1">
-                Your ScamShield security reputation
-            </p>
-        </div>
-
-        <button
-            id="refreshTrust"
-            type="button"
-            class="rounded-xl border border-line bg-panel px-4 py-2 text-sm hover:bg-slate-800 transition"
-        >
-            ↻ Refresh
-        </button>
-    </div>
-
-
-    <!-- TRUST SCORE + STATS -->
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
-        <!-- Trust Score -->
-
-        <div class="rounded-2xl border border-line bg-panel p-6">
-
-            <p class="text-mute text-sm">
-                Current Trust Score
-            </p>
-
-            <div class="flex items-end gap-2 mt-3">
-
-                <span
-                    id="trustScore"
-                    class="text-6xl font-bold"
-                >
-                    --
-                </span>
-
-                <span class="text-mute mb-2">
-                    /100
-                </span>
-
+            <!-- Logo -->
+            <div class="h-20 flex items-center px-6 gap-3 border-b border-dark-border/60">
+                <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 text-lg shadow-inner">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg tracking-tight text-white leading-none">ScamShield</h1>
+                    <span class="text-[10px] tracking-widest uppercase font-bold text-blue-400">Digital Safety</span>
+                </div>
             </div>
 
-            <div
-                id="trustLabel"
-                class="inline-flex mt-4 rounded-full px-4 py-2 text-sm font-semibold bg-slate-800"
-            >
-                Loading...
-            </div>
+            <!-- Navigation Links -->
+            <nav class="p-4 space-y-1.5 text-sm font-medium">
+                <a href="/home" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <i class="fa-regular fa-compass w-5 text-slate-400"></i>
+                    <span>Home</span>
+                </a>
+                
+                <a href="#scamCheckSection" class="flex items-center gap-3.5 px-4 py-3 rounded-xl bg-blue-600/15 text-blue-400 border border-blue-500/20 font-semibold shadow-sm transition">
+                    <i class="fa-solid fa-magnifying-glass w-5 text-blue-400"></i>
+                    <span>Scam Check</span>
+                </a>
 
-            <div class="mt-5 h-3 rounded-full bg-slate-800 overflow-hidden">
+                <a href="/scam-report" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <i class="fa-solid fa-triangle-exclamation w-5 text-slate-400"></i>
+                    <span>Report Scam</span>
+                </a>
 
-                <div
-                    id="trustBar"
-                    class="h-full rounded-full transition-all duration-700"
-                    style="width:0%"
-                ></div>
-
-            </div>
-
+                <a href="/checkscam-history" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <i class="fa-solid fa-clock-rotate-left w-5 text-slate-400"></i>
+                    <span>History</span>
+                </a>
+            </nav>
         </div>
 
+        <!-- Sidebar Bottom: Profile & Logout -->
+        <div class="p-4 border-t border-dark-border/60 space-y-2">
+            <a href="/my-profile" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-dark-hover transition">
+                {% if data and data.profile_picture %}
+                    <img src="{{ data.profile_picture }}" alt="Profile Picture" class="w-10 h-10 rounded-full object-cover border border-blue-500/40">
+                {% else %}
+                    <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 font-semibold border border-slate-700">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                {% endif %}
+                <div class="overflow-hidden">
+                    <p class="text-sm font-semibold text-white truncate">My Profile</p>
+                    <p class="text-xs text-slate-400 truncate">Manage Account</p>
+                </div>
+            </a>
 
-        <!-- Scam Checks -->
+            <a href="/logout" class="flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-rose-400 hover:bg-rose-500/10 text-sm font-medium transition">
+                <i class="fa-solid fa-arrow-right-from-bracket w-5"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
 
-        <div class="rounded-2xl border border-line bg-panel p-6">
+    <!-- =====================================================
+         MAIN CONTENT AREA
+    ===================================================== -->
+    <div class="flex-1 flex flex-col min-w-0">
 
-            <p class="text-mute text-sm">
-                Scam Checks
-            </p>
-
-            <div
-                id="scamCheckCount"
-                class="text-4xl font-bold mt-3"
-            >
-                --
+        <!-- Top Header Navigation -->
+        <header class="h-20 border-b border-dark-border flex items-center justify-between px-6 lg:px-10 bg-dark-base/80 backdrop-blur sticky top-0 z-30">
+            <div class="flex items-center gap-2">
+                <span class="text-xs uppercase font-bold tracking-widest text-slate-400">SCAMSHIELD</span>
+                <span class="text-slate-600">/</span>
+                <span class="text-sm font-semibold text-white">Dashboard</span>
             </div>
 
-            <p class="text-mute text-sm mt-2">
-                Previous security analyses
-            </p>
+            <div class="flex items-center gap-6 text-sm">
+                <a href="/feedback" class="text-slate-400 hover:text-white transition">Feedback</a>
+                <a href="/alerts" class="text-slate-400 hover:text-white transition">Alerts</a>
+                <a href="/learn-more" class="text-slate-400 hover:text-white transition hidden sm:inline">Learn More</a>
 
-        </div>
-
-
-        <!-- Reports -->
-
-        <div class="rounded-2xl border border-line bg-panel p-6">
-
-            <p class="text-mute text-sm">
-                Reports
-            </p>
-
-            <div
-                id="reportCount"
-                class="text-4xl font-bold mt-3"
-            >
-                --
+                <a href="/my-profile" class="w-9 h-9 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 hover:bg-blue-600 hover:text-white transition">
+                    <i class="fa-solid fa-user text-sm"></i>
+                </a>
             </div>
-
-            <p class="text-mute text-sm mt-2">
-                Spam & scam reports
-            </p>
-
-        </div>
-
-    </div>
-
-
-    <!-- TRUST GRAPH -->
-
-    <div class="rounded-2xl border border-line bg-panel p-6">
-
-        <div class="flex items-center justify-between mb-5">
-
-            <div>
-                <h3 class="text-lg font-semibold">
-                    📈 Trust Trend
-                </h3>
-
-                <p class="text-mute text-sm">
-                    Trust score based on your activity
-                </p>
-            </div>
-
-        </div>
-
-        <div class="relative h-72">
-
-            <canvas id="trustChart"></canvas>
-
-            <div
-                id="noTrustData"
-                class="absolute inset-0 flex items-center justify-center text-mute hidden"
-            >
-                No activity yet
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- RECENT ACTIVITY -->
-
-    <div class="rounded-2xl border border-line bg-panel p-6">
-
-        <h3 class="text-lg font-semibold mb-5">
-            🕒 Recent Security Activity
-        </h3>
-
-        <div
-            id="trustActivity"
-            class="space-y-3"
-        >
-            <p class="text-mute text-sm">
-                Loading activity...
-            </p>
-        </div>
-
-    </div>
-
-</section>
-
-<h1>🎯 ScamCheck</h1>
-
-<p>
-    Check whether a message, phone number, link or screenshot
-    may be suspicious.
-</p>
-<!-- ================= TRUST OVERVIEW ================= -->
-
-
-
-<!-- ================= END TRUST OVERVIEW ================= -->
-
-<!-- =====================================================
-     SCAM CHECK FORM
-===================================================== -->
-
-<form id="scamCheckForm" enctype="multipart/form-data">
-
-<label for="message">
-    📨 <b>Message</b>
-</label>
-
-<br>
-
-<textarea
-    id="message"
-    name="message"
-    rows="6"
-    cols="60"
-    placeholder="Enter suspicious message..."
-></textarea>
-
-<br><br>
-
-
-<label for="phone">
-    📞 <b>Phone Number</b>
-</label>
-
-<br>
-
-<input
-    type="text"
-    id="phone"
-    name="phone"
-    placeholder="9876543210"
->
-
-<br><br>
-
-
-<label for="link">
-    🔗 <b>Link / URL</b>
-</label>
-
-<br>
-
-<input
-    type="url"
-    id="link"
-    name="link"
-    placeholder="https://example.com"
->
-
-<br><br>
-
-
-<label for="screenshot">
-    🖼️ <b>Screenshot</b>
-</label>
-
-<br>
-
-<input
-    type="file"
-    id="screenshot"
-    name="screenshot"
-    accept="image/*"
->
-
-<br><br>
-
-
-<button type="submit" id="checkBtn">
-    🔍 Check Scam
-</button>
-
-
-</form>
-
-<hr>
-
-<!-- =====================================================
-     RESULT
-===================================================== -->
-
-<div id="result"></div>
-
-<script>
-
-/* =====================================================
-   ESCAPE HTML
-===================================================== */
-
-function escapeHtml(value) {
-
-    if (value === null || value === undefined) {
-        return "";
-    }
-
-    return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-
-/* =====================================================
-   NORMAL LIST
-===================================================== */
-
-function makeList(items, emptyText = "No indicators detected.") {
-
-    if (!Array.isArray(items) || items.length === 0) {
-        return "<p>" + escapeHtml(emptyText) + "</p>";
-    }
-
-    let html = "<ul>";
-
-    items.forEach(function(item) {
-
-        html += `
-            <li>${escapeHtml(item)}</li>
-        `;
-
-    });
-
-    html += "</ul>";
-
-    return html;
-}
-
-
-/* =====================================================
-   NUMBERED LIST
-===================================================== */
-
-function makeNumberedList(items, emptyText = "No information available.") {
-
-    if (!Array.isArray(items) || items.length === 0) {
-        return "<p>" + escapeHtml(emptyText) + "</p>";
-    }
-
-    let html = "<ol>";
-
-    items.forEach(function(item) {
-
-        html += `
-            <li>${escapeHtml(item)}</li>
-        `;
-
-    });
-
-    html += "</ol>";
-
-    return html;
-}
-
-
-/* =====================================================
-   FORM SUBMIT
-===================================================== */
-
-$("#scamCheckForm").on("submit", function(e) {
-
-    e.preventDefault();
-
-
-    /* =================================================
-       GET INPUTS
-    ================================================= */
-
-    const message = $("#message").val().trim();
-
-    const phone = $("#phone").val().trim();
-
-    const link = $("#link").val().trim();
-
-    const screenshotInput = $("#screenshot")[0];
-
-    const hasScreenshot =
-        screenshotInput &&
-        screenshotInput.files &&
-        screenshotInput.files.length > 0;
-
-
-    /* =================================================
-       CHECK AT LEAST ONE INPUT
-    ================================================= */
-
-    if (
-        !message &&
-        !phone &&
-        !link &&
-        !hasScreenshot
-    ) {
-
-        $("#result").html(`
-
-            <h3>❌ Please enter at least one input.</h3>
-
-            <p>
-                Enter a message, phone number,
-                link or screenshot.
-            </p>
-
-        `);
-
-        return;
-    }
-
-
-    /* =================================================
-       FORM DATA
-    ================================================= */
-
-    const formData = new FormData(this);
-
-
-    /* =================================================
-       BUTTON LOADING
-    ================================================= */
-
-    $("#checkBtn")
-        .prop("disabled", true)
-        .text("⏳ Checking Scam...");
-
-
-    $("#result").html(`
-
-        <h3>🔍 ScamCheck is analyzing...</h3>
-
-        <p>
-            Please wait while we analyze your input.
-        </p>
-
-    `);
-
-
-    /* =================================================
-       AJAX
-    ================================================= */
-
-    $.ajax({
-
-        url: "/scamcheck",
-
-        type: "POST",
-
-        data: formData,
-
-        processData: false,
-
-        contentType: false,
-
-        timeout: 120000,
-
-
-        /* =================================================
-           SUCCESS
-        ================================================= */
-
-        success: function(res) {
-
-            console.log("SCAMCHECK RESPONSE:", res);
-
-
-            if (!res || !res.success) {
-
-                $("#result").html(`
-
-                    <h2>❌ Analysis Failed</h2>
-
-                    <p>
-                        ${escapeHtml(
-                            res?.message ||
-                            "Unable to analyze the input."
-                        )}
+        </header>
+
+        <!-- Main Inner Content -->
+        <main class="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-10">
+
+            <!-- =====================================================
+                 HERO BANNER
+            ===================================================== -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#12274d] via-[#0b1b36] to-[#0a1324] border border-blue-900/40 p-8 lg:p-12 shadow-2xl">
+                <!-- Background Glow Circles -->
+                <div class="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none"></div>
+                <div class="absolute right-32 bottom-0 w-64 h-64 rounded-full bg-indigo-500/10 blur-2xl pointer-events-none"></div>
+
+                <div class="relative z-10 max-w-2xl">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold tracking-widest uppercase bg-blue-500/20 text-blue-400 border border-blue-400/30 mb-4">
+                        <i class="fa-solid fa-shield-heart text-xs"></i> Activity Center
+                    </span>
+                    <h2 class="text-3xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                        Your Security Hub
+                    </h2>
+                    <p class="text-slate-300 text-sm lg:text-base mt-4 leading-relaxed font-normal">
+                        Analyze suspicious messages, links, phone numbers, and images instantly with ScamShield intelligence engine.
                     </p>
+                </div>
+            </div>
 
+            <!-- =====================================================
+                 TRUST OVERVIEW SECTION
+            ===================================================== -->
+            <section class="space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-xs uppercase font-bold tracking-wider text-blue-400">Security Reputation</span>
+                        <h3 class="text-2xl font-bold text-white tracking-tight mt-0.5">🛡️ Trust Overview</h3>
+                    </div>
+
+                    <button id="refreshTrust" type="button" class="inline-flex items-center gap-2 rounded-xl border border-dark-border bg-dark-card px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-dark-hover hover:border-slate-700 transition">
+                        <i class="fa-solid fa-arrows-rotate"></i> Refresh Data
+                    </button>
+                </div>
+
+                <!-- 3 Metric Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+                    <!-- Trust Score -->
+                    <div class="rounded-2xl border border-dark-border bg-dark-card p-6 flex flex-col justify-between shadow-lg">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs uppercase tracking-wider font-semibold text-slate-400">Current Trust Score</p>
+                                <span class="p-2 rounded-lg bg-blue-500/10 text-blue-400 text-sm"><i class="fa-solid fa-gauge-high"></i></span>
+                            </div>
+                            <div class="flex items-baseline gap-1 mt-4">
+                                <span id="trustScore" class="text-5xl font-extrabold text-white tracking-tight">--</span>
+                                <span class="text-slate-500 text-lg font-bold">/100</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 space-y-3">
+                            <div id="trustLabel" class="inline-flex rounded-full px-3 py-1 text-xs font-semibold bg-slate-800 text-slate-300">
+                                Loading...
+                            </div>
+                            <div class="h-2 rounded-full bg-slate-800/80 overflow-hidden">
+                                <div id="trustBar" class="h-full bg-gradient-to-r from-blue-500 to-emerald-400 rounded-full transition-all duration-700" style="width:0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scam Checks -->
+                    <div class="rounded-2xl border border-dark-border bg-dark-card p-6 shadow-lg flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs uppercase tracking-wider font-semibold text-slate-400">Scam Checks</p>
+                                <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 text-sm"><i class="fa-solid fa-shield-virus"></i></span>
+                            </div>
+                            <div id="scamCheckCount" class="text-5xl font-extrabold text-white mt-4 tracking-tight">--</div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-5 flex items-center gap-1.5">
+                            <i class="fa-regular fa-circle-check text-indigo-400"></i> Previous security analyses completed
+                        </p>
+                    </div>
+
+                    <!-- Reports -->
+                    <div class="rounded-2xl border border-dark-border bg-dark-card p-6 shadow-lg flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs uppercase tracking-wider font-semibold text-slate-400">Reports Submitted</p>
+                                <span class="p-2 rounded-lg bg-amber-500/10 text-amber-400 text-sm"><i class="fa-solid fa-flag"></i></span>
+                            </div>
+                            <div id="reportCount" class="text-5xl font-extrabold text-white mt-4 tracking-tight">--</div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-bullhorn text-amber-400"></i> Community spam & fraud alerts
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Trust Graph & Recent Activity Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                    
+                    <!-- Graph -->
+                    <div class="lg:col-span-2 rounded-2xl border border-dark-border bg-dark-card p-6 shadow-lg">
+                        <div class="mb-5">
+                            <h4 class="font-bold text-white text-base">📈 Trust Score Trend</h4>
+                            <p class="text-xs text-slate-400">Historical performance based on security activity</p>
+                        </div>
+                        <div class="relative h-64 w-full">
+                            <canvas id="trustChart"></canvas>
+                            <div id="noTrustData" class="absolute inset-0 flex items-center justify-center text-xs text-slate-500 hidden">
+                                No activity recorded yet
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="rounded-2xl border border-dark-border bg-dark-card p-6 shadow-lg flex flex-col">
+                        <div class="mb-4">
+                            <h4 class="font-bold text-white text-base">🕒 Recent Activity</h4>
+                            <p class="text-xs text-slate-400">Latest scam & threat scans</p>
+                        </div>
+                        <div id="trustActivity" class="space-y-3 overflow-y-auto max-h-64 pr-1">
+                            <p class="text-xs text-slate-400">Loading security logs...</p>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 SCAM CHECK FORM SECTION
+            ===================================================== -->
+            <section id="scamCheckSection" class="pt-4 space-y-6">
+                <div>
+                    <span class="text-xs uppercase font-bold tracking-wider text-blue-400">Threat Detection</span>
+                    <h3 class="text-2xl font-bold text-white tracking-tight mt-0.5">🎯 ScamCheck Engine</h3>
+                    <p class="text-sm text-slate-400 mt-1">Submit single or multiple inputs to run an instant deep analysis.</p>
+                </div>
+
+                <div class="rounded-3xl border border-dark-border bg-dark-card p-6 lg:p-8 shadow-xl">
+                    <form id="scamCheckForm" enctype="multipart/form-data" class="space-y-6">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                            <!-- Message Textarea -->
+                            <div class="md:col-span-2 space-y-2">
+                                <label for="message" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
+                                    <i class="fa-regular fa-message text-blue-400 mr-1.5"></i> Suspicious Message Text
+                                </label>
+                                <textarea id="message" name="message" rows="4" placeholder="Paste the suspicious SMS, WhatsApp message, email body, or telegram chat here..." class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition resize-none"></textarea>
+                            </div>
+
+                            <!-- Phone Input -->
+                            <div class="space-y-2">
+                                <label for="phone" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
+                                    <i class="fa-solid fa-phone text-blue-400 mr-1.5"></i> Phone Number
+                                </label>
+                                <input type="text" id="phone" name="phone" placeholder="+91 98765 43210" class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                            </div>
+
+                            <!-- Link / URL Input -->
+                            <div class="space-y-2">
+                                <label for="link" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
+                                    <i class="fa-solid fa-link text-blue-400 mr-1.5"></i> Link / URL
+                                </label>
+                                <input type="url" id="link" name="link" placeholder="https://suspicious-domain.com/login" class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                            </div>
+
+                            <!-- File Upload / Screenshot -->
+                            <div class="md:col-span-2 space-y-2">
+                                <label for="screenshot" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
+                                    <i class="fa-regular fa-image text-blue-400 mr-1.5"></i> Screenshot / Image Evidence
+                                </label>
+                                <div class="flex items-center justify-center w-full">
+                                    <label for="screenshot" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dark-border border-dashed rounded-2xl cursor-pointer bg-dark-cardLight/50 hover:bg-dark-cardLight hover:border-blue-500/50 transition group">
+                                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400 group-hover:text-blue-400 mb-2 transition"></i>
+                                            <p class="text-xs text-slate-400"><span class="font-semibold text-blue-400">Click to upload</span> or drag and drop</p>
+                                            <p class="text-[11px] text-slate-500 mt-1">PNG, JPG, JPEG (Screenshot of payment, chats, QR code)</p>
+                                        </div>
+                                        <input type="file" id="screenshot" name="screenshot" accept="image/*" class="hidden">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="pt-2">
+                            <button type="submit" id="checkBtn" class="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-blue-600/30 transition transform active:scale-[0.99] flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-shield-halved"></i> Run Scam Analysis
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- =====================================================
+                     ANALYSIS RESULT CONTAINER
+                ===================================================== -->
+                <div id="result" class="transition-all duration-300"></div>
+
+            </section>
+        </main>
+    </div>
+
+    <!-- =====================================================
+         SCRIPTS & LOGIC
+    ===================================================== -->
+    <script>
+        /* =====================================================
+           ESCAPE HTML
+        ===================================================== */
+        function escapeHtml(value) {
+            if (value === null || value === undefined) return "";
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        /* =====================================================
+           LIST BUILDERS (STYLIZED)
+        ===================================================== */
+        function makeList(items, emptyText = "No indicators detected.") {
+            if (!Array.isArray(items) || items.length === 0) {
+                return `<p class="text-xs text-slate-400">${escapeHtml(emptyText)}</p>`;
+            }
+            let html = '<ul class="space-y-2">';
+            items.forEach(function (item) {
+                html += `
+                    <li class="flex items-start gap-2.5 text-xs text-slate-300">
+                        <i class="fa-solid fa-circle-notch text-blue-400 mt-1 text-[10px] shrink-0"></i>
+                        <span>${escapeHtml(item)}</span>
+                    </li>
+                `;
+            });
+            html += "</ul>";
+            return html;
+        }
+
+        function makeNumberedList(items, emptyText = "No information available.") {
+            if (!Array.isArray(items) || items.length === 0) {
+                return `<p class="text-xs text-slate-400">${escapeHtml(emptyText)}</p>`;
+            }
+            let html = '<ol class="space-y-2">';
+            items.forEach(function (item, idx) {
+                html += `
+                    <li class="flex items-start gap-3 text-xs text-slate-300">
+                        <span class="w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center shrink-0 text-[10px]">${idx + 1}</span>
+                        <span class="mt-0.5">${escapeHtml(item)}</span>
+                    </li>
+                `;
+            });
+            html += "</ol>";
+            return html;
+        }
+
+        /* =====================================================
+           FORM SUBMIT HANDLER
+        ===================================================== */
+        $("#scamCheckForm").on("submit", function (e) {
+            e.preventDefault();
+
+            const message = $("#message").val().trim();
+            const phone = $("#phone").val().trim();
+            const link = $("#link").val().trim();
+            const screenshotInput = $("#screenshot")[0];
+            const hasScreenshot = screenshotInput && screenshotInput.files && screenshotInput.files.length > 0;
+
+            if (!message && !phone && !link && !hasScreenshot) {
+                $("#result").html(`
+                    <div class="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 flex items-center gap-3 text-sm">
+                        <i class="fa-solid fa-circle-exclamation text-lg text-rose-400"></i>
+                        <span>Please provide at least one input (Message, Phone, Link, or Screenshot).</span>
+                    </div>
                 `);
-
                 return;
             }
 
-
-            /* =================================================
-               RESPONSE DATA
-            ================================================= */
-
-            const inputs = res.inputs || {};
-
-            const finalScore =
-                Number(res.final_score || 0);
-
-            const verdict =
-                res.verdict || "UNKNOWN";
-
-
-            let html = "";
-
-
-            /* =================================================
-               FINAL RESULT
-            ================================================= */
-
-            html += `
-
-                <hr>
-
-                <h2>🎯 Scam Analysis Result</h2>
-
-                <h1>
-                    ${finalScore}/100
-                </h1>
-
-                <h3>
-                    Verdict:
-                    ${escapeHtml(verdict)}
-                </h3>
-
-            `;
-
-
-            /* =================================================
-               SUBMITTED INPUTS
-            ================================================= */
-
-            html += `
-
-                <h3>📥 Submitted Inputs</h3>
-
-                <ul>
-
-                    ${
-                        inputs.message
-                        ? "<li>📨 Message: Yes</li>"
-                        : ""
-                    }
-
-                    ${
-                        inputs.phone
-                        ? "<li>📞 Phone: Yes</li>"
-                        : ""
-                    }
-
-                    ${
-                        inputs.link
-                        ? "<li>🔗 Link: Yes</li>"
-                        : ""
-                    }
-
-                    ${
-                        inputs.screenshot
-                        ? "<li>🖼️ Screenshot: Yes</li>"
-                        : ""
-                    }
-
-                </ul>
-
-            `;
-
-
-            /* =================================================
-               MESSAGE ANALYSIS
-               ONLY WHEN MESSAGE EXISTS
-            ================================================= */
-
-            if (inputs.message) {
-
-                html += `
-
-                    <hr>
-
-                    <h2>📨 Message Analysis</h2>
-
-                    <p>
-                        <b>Score:</b>
-                        ${Number(res.message_score || 0)}/100
-                    </p>
-
-                    <p>
-                        <b>Verdict:</b>
-                        ${escapeHtml(
-                            res.message_verdict || "UNKNOWN"
-                        )}
-                    </p>
-
-                    <p>
-                        <b>Language:</b>
-                        ${escapeHtml(
-                            res.message_language || "unknown"
-                        )}
-                    </p>
-
-                    <h4>Reasons</h4>
-
-                    ${
-                        makeList(
-                            res.message_reasons
-                        )
-                    }
-
-                `;
-
-            }
-
-
-            /* =================================================
-               PHONE ANALYSIS
-               ONLY WHEN PHONE EXISTS
-            ================================================= */
-
-            if (inputs.phone) {
-
-                const phoneScore =
-                    res.phone_score !== null &&
-                    res.phone_score !== undefined
-                    ? Number(res.phone_score) + "/100"
-                    : "N/A";
-
-
-                html += `
-
-                    <hr>
-
-                    <h2>📞 Phone Analysis</h2>
-
-                    <p>
-                        <b>Score:</b>
-                        ${phoneScore}
-                    </p>
-
-                    <p>
-                        <b>Reputation:</b>
-                        ${escapeHtml(
-                            res.phone_reputation || "UNKNOWN"
-                        )}
-                    </p>
-
-                    <p>
-                        <b>Report Count:</b>
-                        ${Number(
-                            res.phone_report_count || 0
-                        )}
-                    </p>
-
-                    <h4>Reasons</h4>
-
-                    ${
-                        makeList(
-                            res.phone_reasons
-                        )
-                    }
-
-                `;
-
-            }
-
-
-            /* =================================================
-               LINK ANALYSIS
-               ONLY WHEN LINK EXISTS
-            ================================================= */
-
-            if (inputs.link) {
-
-                html += `
-
-                    <hr>
-
-                    <h2>🔗 Link Analysis</h2>
-
-                    <p>
-                        <b>Score:</b>
-                        ${Number(
-                            res.link_score || 0
-                        )}/100
-                    </p>
-
-                    <p>
-                        <b>Verdict:</b>
-                        ${escapeHtml(
-                            res.link_verdict || "UNKNOWN"
-                        )}
-                    </p>
-
-                    <p>
-                        <b>Domain:</b>
-                        ${escapeHtml(
-                            res.link_domain || "Unknown"
-                        )}
-                    </p>
-
-                    <h4>Reasons</h4>
-
-                    ${
-                        makeList(
-                            res.link_reasons
-                        )
-                    }
-
-                `;
-
-            }
-
-
-            /* =================================================
-               SCREENSHOT ANALYSIS
-               ONLY WHEN SCREENSHOT EXISTS
-            ================================================= */
-
-            if (inputs.screenshot) {
-
-                html += `
-
-                    <hr>
-
-                    <h2>🖼️ Screenshot Analysis</h2>
-
-                    <p>
-                        <b>Score:</b>
-                        ${Number(
-                            res.screenshot_score || 0
-                        )}/100
-                    </p>
-
-                    <p>
-                        <b>Verdict:</b>
-                        ${escapeHtml(
-                            res.screenshot_verdict || "UNKNOWN"
-                        )}
-                    </p>
-
-                    <p>
-                        <b>Category:</b>
-                        ${escapeHtml(
-                            res.screenshot_category || "Unknown"
-                        )}
-                    </p>
-
-
-                    ${
-                        res.detected_text
-                        ?
-
-                        `
-
-                            <h4>📝 Detected Text</h4>
-
-                            <blockquote>
-                                ${escapeHtml(
-                                    res.detected_text
-                                )}
-                            </blockquote>
-
-                        `
-
-                        :
-
-                        `<p>No text detected.</p>`
-                    }
-
-
-                    <h4>Reasons</h4>
-
-                    ${
-                        makeList(
-                            res.screenshot_reasons
-                        )
-                    }
-
-                `;
-
-            }
-
-
-            /* =================================================
-               SCAM FINGERPRINT
-               ONLY IF DATA EXISTS
-            ================================================= */
-
-            if (
-                Array.isArray(res.scam_fingerprint) &&
-                res.scam_fingerprint.length > 0
-            ) {
-
-                html += `
-
-                    <hr>
-
-                    <h2>🧬 Scam Fingerprint</h2>
-
-                    ${
-                        makeList(
-                            res.scam_fingerprint
-                        )
-                    }
-
-                `;
-
-            }
-
-
-            /* =================================================
-               ATTACK CHAIN
-               ONLY IF DATA EXISTS
-            ================================================= */
-
-            if (
-                Array.isArray(res.attack_chain) &&
-                res.attack_chain.length > 0
-            ) {
-
-                html += `
-
-                    <hr>
-
-                    <h2>⚠️ Possible Attack Chain</h2>
-
-                    ${
-                        makeNumberedList(
-                            res.attack_chain
-                        )
-                    }
-
-                `;
-
-            }
-
-
-            /* =================================================
-               EVIDENCE
-               ONLY IF DATA EXISTS
-            ================================================= */
-
-            if (
-                Array.isArray(res.evidence) &&
-                res.evidence.length > 0
-            ) {
-
-                html += `
-
-                    <hr>
-
-                    <h2>🔎 Evidence</h2>
-
-                    ${
-                        makeList(
-                            res.evidence
-                        )
-                    }
-
-                `;
-
-            }
-
-
-            /* =================================================
-               WHY
-            ================================================= */
-
-            if (res.why) {
-
-                html += `
-
-                    <hr>
-
-                    <h2>💡 Why?</h2>
-
-                    <p>
-                        ${escapeHtml(res.why)}
-                    </p>
-
-                `;
-
-            }
-
-
-            /* =================================================
-               URGENCY
-               ONLY MESSAGE / LINK
-            ================================================= */
-
-            if (
-                inputs.message ||
-                inputs.link
-            ) {
-
-                html += `
-
-                    <hr>
-
-                    <h2>🚨 Urgency</h2>
-
-                    <p>
-                        <b>Level:</b>
-                        ${escapeHtml(
-                            res.urgency_level || "LOW"
-                        )}
-                    </p>
-
-                    <p>
-                        <b>Detected:</b>
-                        ${escapeHtml(
-                            res.urgency_detected ||
-                            "none detected"
-                        )}
-                    </p>
-
-                `;
-
-            }
-
-
-            /* =================================================
-               RECOMMENDED ACTION
-            ================================================= */
-
-            html += `
-
-                <hr>
-
-                <h2>🛡️ Recommended Action</h2>
-
-                <h3>
-                    ${escapeHtml(
-                        res.recommended_action ||
-                        "DO NOT INTERACT"
-                    )}
-                </h3>
-
-            `;
-
-
-            /* =================================================
-               WHY DANGEROUS
-            ================================================= */
-
-            if (res.why_dangerous) {
-
-                html += `
-
-                    <p>
-                        <b>Why dangerous:</b>
-                        ${escapeHtml(
-                            res.why_dangerous
-                        )}
-                    </p>
-
-                `;
-
-            }
-
-
-            /* =================================================
-               IMMEDIATE STEPS
-            ================================================= */
-
-            if (
-                Array.isArray(res.immediate_steps) &&
-                res.immediate_steps.length > 0
-            ) {
-
-                html += `
-
-                    <h3>Immediate Steps</h3>
-
-                    ${
-                        makeNumberedList(
-                            res.immediate_steps
-                        )
-                    }
-
-                `;
-
-            }
-
-
-            /* =================================================
-               RECOVERY STEPS
-            ================================================= */
-
-            if (
-                Array.isArray(res.recovery_steps) &&
-                res.recovery_steps.length > 0
-            ) {
-
-                html += `
-
-                    <h3>Recovery Steps</h3>
-
-                    ${
-                        makeNumberedList(
-                            res.recovery_steps
-                        )
-                    }
-
-                `;
-
-            }
-
-
-            /* =================================================
-               SAFE NEXT
-            ================================================= */
-
-            if (
-                Array.isArray(res.safe_next) &&
-                res.safe_next.length > 0
-            ) {
-
-                html += `
-
-                    <h3>Safe Next</h3>
-
-                    ${
-                        makeList(
-                            res.safe_next
-                        )
-                    }
-
-                `;
-
-            }
-
-
-            /* =================================================
-               SIGNAL SCORES
-               ONLY SHOW SUBMITTED SIGNALS
-            ================================================= */
-
-            html += `
-
-                <hr>
-
-                <h2>📊 Signal Scores</h2>
-
-                <table border="1" cellpadding="8">
-
-                    <thead>
-
-                        <tr>
-                            <th>Signal</th>
-                            <th>Score</th>
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        ${
-                            inputs.message
-                            ?
-
-                            `
-                                <tr>
-                                    <td>📨 Message</td>
-                                    <td>
-                                        ${Number(
-                                            res.message_score || 0
-                                        )}/100
-                                    </td>
-                                </tr>
-                            `
-
-                            :
-
-                            ""
-                        }
-
-
-                        ${
-                            inputs.phone
-                            ?
-
-                            `
-                                <tr>
-                                    <td>📞 Phone</td>
-                                    <td>
-                                        ${
-                                            res.phone_score !== null &&
-                                            res.phone_score !== undefined
-                                            ?
-                                            Number(
-                                                res.phone_score
-                                            ) + "/100"
-                                            :
-                                            "N/A"
-                                        }
-                                    </td>
-                                </tr>
-                            `
-
-                            :
-
-                            ""
-                        }
-
-
-                        ${
-                            inputs.link
-                            ?
-
-                            `
-                                <tr>
-                                    <td>🔗 Link</td>
-                                    <td>
-                                        ${Number(
-                                            res.link_score || 0
-                                        )}/100
-                                    </td>
-                                </tr>
-                            `
-
-                            :
-
-                            ""
-                        }
-
-
-                        ${
-                            inputs.screenshot
-                            ?
-
-                            `
-                                <tr>
-                                    <td>🖼️ Screenshot</td>
-                                    <td>
-                                        ${Number(
-                                            res.screenshot_score || 0
-                                        )}/100
-                                    </td>
-                                </tr>
-                            `
-
-                            :
-
-                            ""
-                        }
-
-
-                        <tr>
-
-                            <th>🎯 Final Score</th>
-
-                            <th>
-                                ${finalScore}/100
-                            </th>
-
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
-            `;
-
-
-            /* =================================================
-               COMPLETED
-            ================================================= */
-
-            html += `
-
-                <hr>
-
-                <h3>
-                    ✅ Analysis Completed
-                </h3>
-
-            `;
-
-
-            /* =================================================
-               DISPLAY
-            ================================================= */
-
-            $("#result").html(html);
-
-        },
-
-
-        /* =================================================
-           AJAX ERROR
-        ================================================= */
-
-        error: function(xhr, status, error) {
-
-            console.error(
-                "SCAMCHECK ERROR:",
-                xhr,
-                status,
-                error
-            );
-
-
-            let message =
-                "Something went wrong.";
-
-
-            if (status === "timeout") {
-
-                message =
-                    "Server took more than 120 seconds to respond.";
-
-            }
-
-            else if (xhr.responseJSON) {
-
-                message =
-                    xhr.responseJSON.message ||
-                    xhr.responseJSON.error ||
-                    message;
-
-            }
-
-            else if (xhr.responseText) {
-
-                message =
-                    xhr.responseText.substring(
-                        0,
-                        500
-                    );
-
-            }
-
-
-            $("#result").html(`
-
-                <hr>
-
-                <h2>❌ ScamCheck Error</h2>
-
-                <p>
-                    ${escapeHtml(message)}
-                </p>
-
-                <p>
-                    <b>HTTP Status:</b>
-                    ${escapeHtml(xhr.status)}
-                </p>
-
-                <p>
-                    <b>Status:</b>
-                    ${escapeHtml(status)}
-                </p>
-
-            `);
-
-        },
-
-
-        /* =================================================
-           COMPLETE
-        ================================================= */
-
-        complete: function() {
+            const formData = new FormData(this);
 
             $("#checkBtn")
-                .prop("disabled", false)
-                .text("🔍 Check Scam");
-
-        }
-
-    });
-
-});
-
-
-
-
-let trustChart = null;
-
-
-// =====================================
-// LOAD TRUST DATA
-// =====================================
-
-async function loadTrustData() {
-
-    try {
-
-        const response = await fetch("/api/user-trust");
-
-        const data = await response.json();
-
-        if (!data.success) {
-            throw new Error(data.message || "Unable to load trust data");
-        }
-
-
-        // -----------------------------
-        // SCORE
-        // -----------------------------
-
-        $("#trustScore").text(data.trust_score);
-
-        $("#scamCheckCount").text(data.scam_checks_count);
-
-        $("#reportCount").text(data.reports_count);
-
-
-        // -----------------------------
-        // TRUST LABEL
-        // -----------------------------
-
-        const label = $("#trustLabel");
-
-        label.text(data.trust_label);
-
-
-        // -----------------------------
-        // TRUST BAR
-        // -----------------------------
-
-        $("#trustBar").css(
-            "width",
-            data.trust_score + "%"
-        );
-
-
-        // -----------------------------
-        // GRAPH
-        // -----------------------------
-
-        createTrustChart(data.trend);
-
-
-        // -----------------------------
-        // ACTIVITY
-        // -----------------------------
-
-        renderTrustActivity(data.activities);
-
-
-    } catch (error) {
-
-        console.error("Trust data error:", error);
-
-        $("#trustScore").text("--");
-
-        $("#trustLabel").text("Unable to load");
-
-        $("#trustActivity").html(
-            `<p class="text-rose-400 text-sm">
-                Unable to load trust information.
-            </p>`
-        );
-
-    }
-
-}
-
-
-// =====================================
-// CREATE GRAPH
-// =====================================
-
-function createTrustChart(trend) {
-
-    const canvas = document.getElementById("trustChart");
-
-    if (!trend || trend.length === 0) {
-
-        $("#noTrustData").removeClass("hidden");
-
-        return;
-    }
-
-    $("#noTrustData").addClass("hidden");
-
-
-    const labels = trend.map(item => {
-
-        if (!item.date) return "";
-
-        return new Date(item.date).toLocaleDateString(
-            "en-IN",
-            {
-                day: "2-digit",
-                month: "short"
-            }
-        );
-
-    });
-
-
-    const scores = trend.map(
-        item => item.score
-    );
-
-
-    if (trustChart) {
-        trustChart.destroy();
-    }
-
-
-    trustChart = new Chart(canvas, {
-
-        type: "line",
-
-        data: {
-
-            labels: labels,
-
-            datasets: [{
-
-                label: "Trust Score",
-
-                data: scores,
-
-                tension: 0.35,
-
-                fill: true,
-
-                pointRadius: 5,
-
-                pointHoverRadius: 7
-
-            }]
-
-        },
-
-        options: {
-
-            responsive: true,
-
-            maintainAspectRatio: false,
-
-            scales: {
-
-                y: {
-
-                    min: 0,
-
-                    max: 100,
-
-                    ticks: {
-                        stepSize: 20
+                .prop("disabled", true)
+                .html(`<i class="fa-solid fa-spinner fa-spin"></i> Analyzing threat vectors...`);
+
+            $("#result").html(`
+                <div class="p-8 rounded-3xl bg-dark-card border border-dark-border text-center space-y-4 animate-pulse">
+                    <div class="w-14 h-14 mx-auto rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-shield-halved fa-spin"></i>
+                    </div>
+                    <h4 class="text-base font-bold text-white">ScamShield AI is analyzing your input...</h4>
+                    <p class="text-xs text-slate-400">Checking against verified scam databases, threat patterns, and language models.</p>
+                </div>
+            `);
+
+            $.ajax({
+                url: "/scamcheck",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                timeout: 120000,
+                success: function (res) {
+                    if (!res || !res.success) {
+                        $("#result").html(`
+                            <div class="p-6 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300">
+                                <h3 class="font-bold text-base flex items-center gap-2 mb-1">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Analysis Failed
+                                </h3>
+                                <p class="text-xs text-rose-400">${escapeHtml(res?.message || "Unable to analyze the input.")}</p>
+                            </div>
+                        `);
+                        return;
                     }
 
-                }
+                    const inputs = res.inputs || {};
+                    const finalScore = Number(res.final_score || 0);
+                    const verdict = (res.verdict || "UNKNOWN").toUpperCase();
 
-            },
+                    let verdictColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+                    let verdictIcon = "fa-shield-check";
+                    let scoreBarColor = "from-emerald-500 to-teal-400";
 
-            plugins: {
-
-                legend: {
-                    display: false
-                }
-
-            }
-
-        }
-
-    });
-
-}
-
-
-// =====================================
-// RECENT ACTIVITY
-// =====================================
-
-function renderTrustActivity(activities) {
-
-    const container = $("#trustActivity");
-
-    container.empty();
-
-
-    if (!activities || activities.length === 0) {
-
-        container.html(
-            `<p class="text-mute text-sm">
-                No security activity yet.
-            </p>`
-        );
-
-        return;
-    }
-
-
-    const recent = [...activities]
-        .reverse()
-        .slice(0, 6);
-
-
-    recent.forEach(activity => {
-
-        let icon = "🔵";
-
-        let badge = "bg-slate-800";
-
-        if (activity.type === "Scam Check") {
-
-            if (activity.verdict === "SCAM") {
-
-                icon = "🔴";
-
-                badge = "bg-red-500/10 text-red-400";
-
-            } else if (
-                activity.verdict === "SPAM" ||
-                activity.verdict === "SUSPICIOUS"
-            ) {
-
-                icon = "🟡";
-
-                badge = "bg-yellow-500/10 text-yellow-400";
-
-            } else {
-
-                icon = "🟢";
-
-                badge = "bg-green-500/10 text-green-400";
-
-            }
-
-        } else {
-
-            if (
-                activity.verdict.includes("SCAM") ||
-                activity.verdict.includes("FRAUD")
-            ) {
-
-                icon = "🔴";
-
-                badge = "bg-red-500/10 text-red-400";
-
-            } else {
-
-                icon = "🟡";
-
-                badge = "bg-yellow-500/10 text-yellow-400";
-
-            }
-
-        }
-
-
-        let date = "";
-
-        if (activity.date) {
-
-            date = new Date(
-                activity.date
-            ).toLocaleString(
-                "en-IN",
-                {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit"
-                }
-            );
-
-        }
-
-
-        container.append(`
-
-            <div class="flex items-center justify-between gap-4 rounded-xl border border-line p-4">
-
-                <div class="flex items-center gap-3">
-
-                    <div class="text-xl">
-                        ${icon}
-                    </div>
-
-                    <div>
-
-                        <p class="font-semibold">
-                            ${activity.type}
-                        </p>
-
-                        <p class="text-mute text-xs mt-1">
-                            ${date}
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="text-right">
-
-                    <span class="rounded-full px-3 py-1 text-xs font-semibold ${badge}">
-                        ${activity.verdict}
-                    </span>
-
-                    ${
-                        activity.score !== null
-                        ?
-                        `<p class="text-xs text-mute mt-2">
-                            Trust: ${activity.score}/100
-                        </p>`
-                        :
-                        ""
+                    if (verdict === "SCAM" || verdict === "FRAUD" || finalScore >= 70) {
+                        verdictColor = "bg-rose-500/10 text-rose-400 border-rose-500/30";
+                        verdictIcon = "fa-triangle-exclamation";
+                        scoreBarColor = "from-rose-600 to-red-500";
+                    } else if (verdict === "SPAM" || verdict === "SUSPICIOUS" || finalScore >= 40) {
+                        verdictColor = "bg-amber-500/10 text-amber-400 border-amber-500/30";
+                        verdictIcon = "fa-circle-exclamation";
+                        scoreBarColor = "from-amber-500 to-yellow-400";
                     }
 
-                </div>
+                    let html = `
+                        <div class="rounded-3xl border border-dark-border bg-dark-card p-6 lg:p-8 space-y-8 shadow-2xl">
+                            
+                            <!-- Header / Verdict Overview -->
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-dark-border pb-6">
+                                <div>
+                                    <span class="text-xs uppercase font-bold tracking-wider text-slate-400">Analysis Verdict</span>
+                                    <div class="flex items-center gap-3 mt-1.5">
+                                        <div class="px-4 py-1.5 rounded-xl border ${verdictColor} font-bold text-sm uppercase tracking-wide flex items-center gap-2">
+                                            <i class="fa-solid ${verdictIcon}"></i> ${escapeHtml(verdict)}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-xs text-slate-400 uppercase font-bold">Threat Score:</span>
+                                    <span class="text-4xl font-extrabold text-white">${finalScore}</span>
+                                    <span class="text-slate-500 font-bold text-sm">/100</span>
+                                </div>
+                            </div>
 
-            </div>
+                            <!-- Why / Explanation -->
+                            ${res.why ? `
+                                <div class="p-4 rounded-2xl bg-dark-cardLight border border-dark-border">
+                                    <h4 class="text-xs uppercase font-bold tracking-wider text-blue-400 mb-1">💡 Summary Assessment</h4>
+                                    <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(res.why)}</p>
+                                </div>
+                            ` : ''}
 
-        `);
+                            <!-- Breakdown Grid -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                ${inputs.message ? `
+                                    <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-bold text-sm text-white flex items-center gap-2"><i class="fa-regular fa-message text-blue-400"></i> Message Analysis</span>
+                                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">${Number(res.message_score || 0)}/100</span>
+                                        </div>
+                                        <div>${makeList(res.message_reasons)}</div>
+                                    </div>
+                                ` : ''}
 
-    });
+                                ${inputs.phone ? `
+                                    <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-bold text-sm text-white flex items-center gap-2"><i class="fa-solid fa-phone text-blue-400"></i> Phone Analysis</span>
+                                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">${res.phone_score !== null ? Number(res.phone_score) + '/100' : 'N/A'}</span>
+                                        </div>
+                                        <div>${makeList(res.phone_reasons)}</div>
+                                    </div>
+                                ` : ''}
 
-}
+                                ${inputs.link ? `
+                                    <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-bold text-sm text-white flex items-center gap-2"><i class="fa-solid fa-link text-blue-400"></i> Link Analysis</span>
+                                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">${Number(res.link_score || 0)}/100</span>
+                                        </div>
+                                        <div>${makeList(res.link_reasons)}</div>
+                                    </div>
+                                ` : ''}
 
+                                ${inputs.screenshot ? `
+                                    <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-bold text-sm text-white flex items-center gap-2"><i class="fa-regular fa-image text-blue-400"></i> Screenshot OCR Analysis</span>
+                                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">${Number(res.screenshot_score || 0)}/100</span>
+                                        </div>
+                                        ${res.detected_text ? `
+                                            <div class="p-2.5 rounded-lg bg-dark-card text-[11px] text-slate-400 font-mono italic max-h-20 overflow-y-auto">
+                                                "${escapeHtml(res.detected_text)}"
+                                            </div>
+                                        ` : ''}
+                                        <div>${makeList(res.screenshot_reasons)}</div>
+                                    </div>
+                                ` : ''}
+                            </div>
 
-// =====================================
-// REFRESH
-// =====================================
+                            <!-- Attack Chain & Action Steps -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                                ${Array.isArray(res.attack_chain) && res.attack_chain.length > 0 ? `
+                                    <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
+                                        <h4 class="text-xs uppercase font-bold tracking-wider text-amber-400"><i class="fa-solid fa-link-slash mr-1"></i> Threat / Attack Flow</h4>
+                                        ${makeNumberedList(res.attack_chain)}
+                                    </div>
+                                ` : ''}
 
-$("#refreshTrust").on(
-    "click",
-    loadTrustData
-);
+                                <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
+                                    <h4 class="text-xs uppercase font-bold tracking-wider text-emerald-400"><i class="fa-solid fa-shield-halved mr-1"></i> Recommended Next Steps</h4>
+                                    <p class="text-xs font-semibold text-white">${escapeHtml(res.recommended_action || "DO NOT INTERACT")}</p>
+                                    ${Array.isArray(res.immediate_steps) ? makeNumberedList(res.immediate_steps) : ''}
+                                </div>
+                            </div>
 
+                        </div>
+                    `;
 
-// =====================================
-// INITIAL LOAD
-// =====================================
+                    $("#result").html(html);
+                },
+                error: function (xhr, status, error) {
+                    let message = "Something went wrong.";
+                    if (status === "timeout") message = "Server took more than 120 seconds to respond.";
+                    else if (xhr.responseJSON) message = xhr.responseJSON.message || xhr.responseJSON.error || message;
+                    else if (xhr.responseText) message = xhr.responseText.substring(0, 300);
 
-$(document).ready(function () {
+                    $("#result").html(`
+                        <div class="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300">
+                            <h4 class="font-bold text-sm"><i class="fa-solid fa-circle-xmark mr-1"></i> Request Error</h4>
+                            <p class="text-xs text-rose-400 mt-1">${escapeHtml(message)}</p>
+                        </div>
+                    `);
+                },
+                complete: function () {
+                    $("#checkBtn")
+                        .prop("disabled", false)
+                        .html(`<i class="fa-solid fa-shield-halved"></i> Run Scam Analysis`);
+                }
+            });
+        });
 
-    loadTrustData();
+        /* =====================================================
+           TRUST OVERVIEW & CHART DATA
+        ===================================================== */
+        let trustChart = null;
 
-});
+        async function loadTrustData() {
+            try {
+                const response = await fetch("/api/user-trust");
+                const data = await response.json();
+                if (!data.success) throw new Error(data.message || "Unable to load trust data");
 
+                $("#trustScore").text(data.trust_score);
+                $("#scamCheckCount").text(data.scam_checks_count);
+                $("#reportCount").text(data.reports_count);
+                $("#trustLabel").text(data.trust_label);
+                $("#trustBar").css("width", data.trust_score + "%");
 
-</script>
+                createTrustChart(data.trend);
+                renderTrustActivity(data.activities);
 
+            } catch (error) {
+                console.error("Trust data error:", error);
+                $("#trustScore").text("--");
+                $("#trustLabel").text("Unable to load");
+                $("#trustActivity").html(`<p class="text-rose-400 text-xs">Unable to load security logs.</p>`);
+            }
+        }
+
+        function createTrustChart(trend) {
+            const canvas = document.getElementById("trustChart");
+            if (!trend || trend.length === 0) {
+                $("#noTrustData").removeClass("hidden");
+                return;
+            }
+            $("#noTrustData").addClass("hidden");
+
+            const labels = trend.map(item => {
+                if (!item.date) return "";
+                return new Date(item.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+            });
+
+            const scores = trend.map(item => item.score);
+
+            if (trustChart) trustChart.destroy();
+
+            const ctx = canvas.getContext("2d");
+            const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+            gradient.addColorStop(0, "rgba(59, 130, 246, 0.35)");
+            gradient.addColorStop(1, "rgba(59, 130, 246, 0.0)");
+
+            trustChart = new Chart(canvas, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Trust Score",
+                        data: scores,
+                        tension: 0.35,
+                        fill: true,
+                        backgroundColor: gradient,
+                        borderColor: "#3b82f6",
+                        borderWidth: 2.5,
+                        pointBackgroundColor: "#60a5fa",
+                        pointBorderColor: "#0D1728",
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            grid: { color: "rgba(255, 255, 255, 0.05)" },
+                            ticks: { color: "#64748b", stepSize: 20, font: { size: 10 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: "#64748b", font: { size: 10 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: "#0D1728",
+                            borderColor: "#1E293B",
+                            borderWidth: 1,
+                            titleFont: { size: 11 },
+                            bodyFont: { size: 11 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTrustActivity(activities) {
+            const container = $("#trustActivity");
+            container.empty();
+
+            if (!activities || activities.length === 0) {
+                container.html(`<p class="text-xs text-slate-500">No security activity yet.</p>`);
+                return;
+            }
+
+            const recent = [...activities].reverse().slice(0, 6);
+
+            recent.forEach(activity => {
+                let badge = "bg-slate-800 text-slate-300";
+                if (activity.verdict === "SCAM" || activity.verdict?.includes("SCAM")) {
+                    badge = "bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                } else if (activity.verdict === "SPAM" || activity.verdict === "SUSPICIOUS") {
+                    badge = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                } else {
+                    badge = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                }
+
+                let date = activity.date ? new Date(activity.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+
+                container.append(`
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-dark-cardLight border border-dark-border text-xs">
+                        <div>
+                            <p class="font-bold text-white">${escapeHtml(activity.type)}</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">${date}</p>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-md font-semibold text-[10px] ${badge}">
+                            ${escapeHtml(activity.verdict)}
+                        </span>
+                    </div>
+                `);
+            });
+        }
+
+        $("#refreshTrust").on("click", loadTrustData);
+        $(document).ready(function () {
+            loadTrustData();
+        });
+    </script>
 </body>
-
 </html>
