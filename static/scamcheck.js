@@ -1,662 +1,641 @@
 document.addEventListener("DOMContentLoaded", function () {
+"use strict";
 
-    /* =========================================================
-       ELEMENTS
-    ========================================================= */
+/* =========================================================
+   ELEMENTS
+========================================================= */
 
-    const form = document.getElementById("scamCheckForm");
+const form = document.getElementById("scamCheckForm");
 
-    if (!form) {
-        console.warn("ScamCheck form not found.");
+if (!form) {
+    console.warn("ScamCheck form not found.");
+    return;
+}
+
+const submitBtn =
+    form.querySelector("button[type='submit']") ||
+    document.getElementById("checkBtn");
+
+const messageInput = document.getElementById("message");
+const phoneInput = document.getElementById("phone");
+const linkInput = document.getElementById("link");
+const screenshotInput = document.getElementById("screenshot");
+
+const resultContainer =
+    document.getElementById("resultContainer") ||
+    document.getElementById("results");
+
+const errorBox = document.getElementById("errorBox");
+
+
+/* =========================================================
+   ERROR HANDLING
+========================================================= */
+
+function showError(message) {
+    if (errorBox) {
+        errorBox.textContent = message;
+        errorBox.style.display = "block";
+    } else {
+        alert(message);
+    }
+}
+
+function hideError() {
+    if (errorBox) {
+        errorBox.textContent = "";
+        errorBox.style.display = "none";
+    }
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+function setLoading(loading) {
+    if (!submitBtn) {
         return;
     }
 
-    const submitBtn =
-        form.querySelector("button[type='submit']") ||
-        document.getElementById("checkBtn");
+    if (loading) {
+        submitBtn.disabled = true;
 
-    const messageInput = document.getElementById("message");
-    const phoneInput = document.getElementById("phone");
-    const linkInput = document.getElementById("link");
-    const screenshotInput = document.getElementById("screenshot");
-
-    const resultContainer =
-        document.getElementById("resultContainer") ||
-        document.getElementById("results");
-
-    const errorBox =
-        document.getElementById("errorBox");
-
-    /* =========================================================
-       HELPERS
-    ========================================================= */
-
-    function showError(message) {
-        if (errorBox) {
-            errorBox.textContent = message;
-            errorBox.style.display = "block";
-        } else {
-            alert(message);
+        if (!submitBtn.dataset.originalText) {
+            submitBtn.dataset.originalText =
+                submitBtn.textContent.trim();
         }
+
+        submitBtn.textContent = "Checking...";
+    } else {
+        submitBtn.disabled = false;
+
+        submitBtn.textContent =
+            submitBtn.dataset.originalText || "Check Scam";
+    }
+}
+
+
+/* =========================================================
+   HTML ESCAPE
+========================================================= */
+
+function escapeHTML(value) {
+    if (value === null || value === undefined) {
+        return "";
     }
 
-    function hideError() {
-        if (errorBox) {
-            errorBox.textContent = "";
-            errorBox.style.display = "none";
-        }
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+/* =========================================================
+   GET INPUT VALUE
+========================================================= */
+
+function getValue(element) {
+    if (!element) {
+        return "";
     }
 
-    function setLoading(loading) {
+    return element.value.trim();
+}
 
-        if (!submitBtn) {
-            return;
-        }
 
-        if (loading) {
+/* =========================================================
+   URL EXTRACTION
+========================================================= */
 
-            submitBtn.disabled = true;
-
-            if (!submitBtn.dataset.originalText) {
-                submitBtn.dataset.originalText =
-                    submitBtn.textContent.trim();
-            }
-
-            submitBtn.textContent = "Checking...";
-
-        } else {
-
-            submitBtn.disabled = false;
-
-            submitBtn.textContent =
-                submitBtn.dataset.originalText || "Check Scam";
-        }
+function extractURL(text) {
+    if (!text) {
+        return "";
     }
 
-    function escapeHTML(value) {
+    const urlRegex =
+        /(https?:\/\/[^\s]+|www\.[^\s]+)/i;
 
-        if (value === null || value === undefined) {
-            return "";
-        }
+    const match = text.match(urlRegex);
 
-        return String(value)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+    if (!match) {
+        return "";
     }
 
-    function getValue(element) {
+    let url = match[0].replace(/[.,!?;:]+$/, "");
 
-        if (!element) {
-            return "";
-        }
-
-        return element.value.trim();
+    if (url.startsWith("www.")) {
+        url = "https://" + url;
     }
 
-    /* =========================================================
-       URL EXTRACTION
-    ========================================================= */
+    return url;
+}
 
-    function extractURL(text) {
 
-        if (!text) {
-            return "";
-        }
+/* =========================================================
+   VERDICT CLASS
+========================================================= */
 
-        const urlRegex =
-            /(https?:\/\/[^\s]+|www\.[^\s]+)/i;
+function getVerdictClass(verdict) {
+    const value = String(verdict || "").toLowerCase().trim();
 
-        const match = text.match(urlRegex);
-
-        if (!match) {
-            return "";
-        }
-
-        let url = match[0].replace(/[.,!?;:]+$/, "");
-
-        if (url.startsWith("www.")) {
-            url = "https://" + url;
-        }
-
-        return url;
+    if (
+        value === "safe" ||
+        value === "legitimate" ||
+        value === "clean"
+    ) {
+        return "safe";
     }
 
-    /* =========================================================
-       VERDICT CLASS
-    ========================================================= */
-
-    function getVerdictClass(verdict) {
-
-        const value =
-            String(verdict || "").toLowerCase();
-
-        if (
-            value === "safe" ||
-            value === "legitimate" ||
-            value === "clean"
-        ) {
-            return "safe";
-        }
-
-        if (
-            value === "scam" ||
-            value === "dangerous" ||
-            value === "malicious" ||
-            value === "fraud"
-        ) {
-            return "danger";
-        }
-
-        return "warning";
+    if (
+        value === "scam" ||
+        value === "dangerous" ||
+        value === "malicious" ||
+        value === "fraud"
+    ) {
+        return "danger";
     }
 
-    /* =========================================================
-       SCORE NORMALIZATION
-    ========================================================= */
+    return "warning";
+}
 
-    function normalizeScore(score) {
 
-        let number = Number(score);
+/* =========================================================
+   SCORE NORMALIZATION
+========================================================= */
 
-        if (Number.isNaN(number)) {
-            return 0;
-        }
+function normalizeScore(score) {
+    let number = Number(score);
 
-        number = Math.max(0, Math.min(100, number));
-
-        return Math.round(number);
+    if (Number.isNaN(number)) {
+        return 0;
     }
 
-    /* =========================================================
-       RESULT HTML
-    ========================================================= */
+    number = Math.max(0, Math.min(100, number));
 
-    function renderResult(data) {
-
-        if (!resultContainer) {
-            console.log("ScamShield Result:", data);
-            return;
-        }
-
-        const finalScore =
-            normalizeScore(
-                data.final_score ??
-                data.score ??
-                data.finalScore ??
-                0
-            );
-
-        const verdict =
-            data.verdict ||
-            data.final_verdict ||
-            data.finalVerdict ||
-            "UNKNOWN";
-
-        const verdictClass =
-            getVerdictClass(verdict);
-
-        const messageScore =
-            normalizeScore(
-                data.message_score ??
-                data.messageScore ??
-                0
-            );
-
-        const phoneScore =
-            normalizeScore(
-                data.phone_score ??
-                data.phoneScore ??
-                0
-            );
-
-        const linkScore =
-            normalizeScore(
-                data.link_score ??
-                data.linkScore ??
-                0
-            );
-
-        const screenshotScore =
-            normalizeScore(
-                data.screenshot_score ??
-                data.screenshotScore ??
-                0
-            );
-
-        const explanation =
-            data.scam_explanation ||
-            data.explanation ||
-            data.message_explanation ||
-            data.reason ||
-            "No additional explanation available.";
-
-        resultContainer.innerHTML = `
-
-            <div class="result-card">
-
-                <div class="result-header">
-
-                    <div>
-                        <span class="section-label">
-                            SCAMSHIELD ANALYSIS
-                        </span>
-
-                        <h2>Scan Result</h2>
-                    </div>
-
-                    <div class="final-score ${verdictClass}">
-                        <strong>${finalScore}</strong>
-                        <span>/100</span>
-                    </div>
-
-                </div>
+    return Math.round(number);
+}
 
 
-                <div class="verdict-box ${verdictClass}">
+/* =========================================================
+   RESULT RENDER
+========================================================= */
 
-                    <span class="verdict-label">
-                        VERDICT
-                    </span>
+function renderResult(data) {
+    if (!resultContainer) {
+        console.log("ScamShield Result:", data);
+        return;
+    }
 
-                    <strong>
-                        ${escapeHTML(verdict)}
-                    </strong>
+    const finalScore = normalizeScore(
+        data.final_score ??
+        data.score ??
+        data.finalScore ??
+        0
+    );
 
-                </div>
+    const verdict =
+        data.verdict ||
+        data.final_verdict ||
+        data.finalVerdict ||
+        "UNKNOWN";
 
+    const verdictClass = getVerdictClass(verdict);
 
-                <div class="analysis-grid">
+    const messageScore = normalizeScore(
+        data.message_score ??
+        data.messageScore ??
+        0
+    );
 
-                    <div class="analysis-item">
+    const phoneScore = normalizeScore(
+        data.phone_score ??
+        data.phoneScore ??
+        0
+    );
 
-                        <span>Message</span>
+    const linkScore = normalizeScore(
+        data.link_score ??
+        data.linkScore ??
+        0
+    );
 
-                        <strong>
-                            ${messageScore}/100
-                        </strong>
+    const screenshotScore = normalizeScore(
+        data.screenshot_score ??
+        data.screenshotScore ??
+        0
+    );
 
-                    </div>
+    const explanation =
+        data.scam_explanation ||
+        data.explanation ||
+        data.message_explanation ||
+        data.reason ||
+        "No additional explanation available.";
 
+    resultContainer.innerHTML = `
+        <div class="result-card">
 
-                    <div class="analysis-item">
+            <div class="result-header">
 
-                        <span>Phone</span>
-
-                        <strong>
-                            ${phoneScore}/100
-                        </strong>
-
-                    </div>
-
-
-                    <div class="analysis-item">
-
-                        <span>Link</span>
-
-                        <strong>
-                            ${linkScore}/100
-                        </strong>
-
-                    </div>
-
-
-                    <div class="analysis-item">
-
-                        <span>Screenshot</span>
-
-                        <strong>
-                            ${screenshotScore}/100
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-                <div class="explanation-box">
-
+                <div>
                     <span class="section-label">
-                        ANALYSIS
+                        SCAMSHIELD ANALYSIS
                     </span>
 
-                    <p>
-                        ${escapeHTML(explanation)}
-                    </p>
+                    <h2>Scan Result</h2>
+                </div>
 
+                <div class="final-score ${verdictClass}">
+                    <strong>${finalScore}</strong>
+                    <span>/100</span>
                 </div>
 
             </div>
-        `;
 
-        resultContainer.style.display = "block";
 
-        resultContainer.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-        });
+            <div class="verdict-box ${verdictClass}">
+
+                <span class="verdict-label">
+                    VERDICT
+                </span>
+
+                <strong>
+                    ${escapeHTML(verdict)}
+                </strong>
+
+            </div>
+
+
+            <div class="analysis-grid">
+
+                <div class="analysis-item">
+                    <span>Message</span>
+                    <strong>
+                        ${messageScore}/100
+                    </strong>
+                </div>
+
+                <div class="analysis-item">
+                    <span>Phone</span>
+                    <strong>
+                        ${phoneScore}/100
+                    </strong>
+                </div>
+
+                <div class="analysis-item">
+                    <span>Link</span>
+                    <strong>
+                        ${linkScore}/100
+                    </strong>
+                </div>
+
+                <div class="analysis-item">
+                    <span>Screenshot</span>
+                    <strong>
+                        ${screenshotScore}/100
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <div class="explanation-box">
+
+                <span class="section-label">
+                    ANALYSIS
+                </span>
+
+                <p>
+                    ${escapeHTML(explanation)}
+                </p>
+
+            </div>
+
+        </div>
+    `;
+
+    resultContainer.style.display = "block";
+
+    resultContainer.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+}
+
+
+/* =========================================================
+   SUBMIT SCAN
+========================================================= */
+
+async function submitScan() {
+    hideError();
+
+    const message = getValue(messageInput);
+    const phone = getValue(phoneInput);
+
+    let link = getValue(linkInput);
+
+    const screenshot =
+        screenshotInput &&
+        screenshotInput.files &&
+        screenshotInput.files.length > 0
+            ? screenshotInput.files[0]
+            : null;
+
+
+    /* -----------------------------------------------------
+       AUTO EXTRACT LINK FROM MESSAGE
+    ----------------------------------------------------- */
+
+    if (!link && message) {
+        link = extractURL(message);
+
+        if (link && linkInput) {
+            linkInput.value = link;
+        }
     }
 
-    /* =========================================================
-       AJAX REQUEST
-    ========================================================= */
 
-    async function submitScan() {
+    /* -----------------------------------------------------
+       VALIDATION
+    ----------------------------------------------------- */
+
+    if (
+        !message &&
+        !phone &&
+        !link &&
+        !screenshot
+    ) {
+        showError(
+            "Please enter a message, phone number, link, or screenshot."
+        );
+        return;
+    }
+
+
+    /* -----------------------------------------------------
+       FORM DATA
+    ----------------------------------------------------- */
+
+    const formData = new FormData();
+
+    formData.append("message", message);
+    formData.append("phone", phone);
+    formData.append("link", link);
+
+    if (screenshot) {
+        formData.append("screenshot", screenshot);
+    }
+
+
+    /* -----------------------------------------------------
+       LOADING
+    ----------------------------------------------------- */
+
+    setLoading(true);
+
+
+    /* -----------------------------------------------------
+       SERVER REQUEST
+    ----------------------------------------------------- */
+
+    try {
+        const response = await fetch("/scamcheck", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        });
+
+
+        let data;
+
+        try {
+            data = await response.json();
+        } catch (jsonError) {
+            console.error("JSON parsing error:", jsonError);
+            throw new Error(
+                "Server returned an invalid response."
+            );
+        }
+
+
+        /* -------------------------------------------------
+           SERVER ERROR
+        ------------------------------------------------- */
+
+        if (!response.ok) {
+            throw new Error(
+                data.error ||
+                data.message ||
+                `Scam check failed (${response.status}).`
+            );
+        }
+
+
+        if (
+            data.success === false ||
+            data.status === "error"
+        ) {
+            throw new Error(
+                data.error ||
+                data.message ||
+                "Unable to analyse this scan."
+            );
+        }
+
+
+        /* -------------------------------------------------
+           DISPLAY RESULT
+        ------------------------------------------------- */
+
+        console.log("ScamShield API response:", data);
+
+        renderResult(data);
+
+    } catch (error) {
+
+        console.error(
+            "ScamShield error:",
+            error
+        );
+
+        showError(
+            error.message ||
+            "Something went wrong. Please try again."
+        );
+
+    } finally {
+
+        setLoading(false);
+    }
+}
+
+
+/* =========================================================
+   FORM SUBMIT
+========================================================= */
+
+form.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    if (submitBtn && submitBtn.disabled) {
+        return;
+    }
+
+    submitScan();
+});
+
+
+/* =========================================================
+   ENTER KEY
+========================================================= */
+
+if (messageInput) {
+    messageInput.addEventListener("keydown", function (event) {
+
+        if (
+            event.key === "Enter" &&
+            !event.shiftKey
+        ) {
+            event.preventDefault();
+
+            if (!submitBtn || !submitBtn.disabled) {
+                submitScan();
+            }
+        }
+
+    });
+}
+
+
+/* =========================================================
+   SCREENSHOT VALIDATION
+========================================================= */
+
+if (screenshotInput) {
+
+    screenshotInput.addEventListener("change", function () {
+
+        const file = screenshotInput.files[0];
+
+        if (!file) {
+            return;
+        }
+
+        if (!file.type.startsWith("image/")) {
+
+            showError(
+                "Please select a valid image file."
+            );
+
+            screenshotInput.value = "";
+
+            return;
+        }
 
         hideError();
 
-        const message =
-            getValue(messageInput);
+        console.log(
+            "Screenshot selected:",
+            file.name
+        );
 
-        const phone =
-            getValue(phoneInput);
+    });
 
-        let link =
-            getValue(linkInput);
-
-        const screenshot =
-            screenshotInput &&
-            screenshotInput.files.length > 0
-                ? screenshotInput.files[0]
-                : null;
+}
 
 
-        /* -----------------------------------------------------
-           AUTO EXTRACT LINK FROM MESSAGE
-        ----------------------------------------------------- */
+/* =========================================================
+   CLEAR ERROR WHILE TYPING
+========================================================= */
 
-        if (!link && message) {
-            link = extractURL(message);
-        }
+[
+    messageInput,
+    phoneInput,
+    linkInput
+].forEach(function (input) {
 
-
-        /* -----------------------------------------------------
-           VALIDATION
-        ----------------------------------------------------- */
-
-        if (
-            !message &&
-            !phone &&
-            !link &&
-            !screenshot
-        ) {
-            showError(
-                "Please enter a message, phone number, link, or screenshot."
-            );
-
-            return;
-        }
-
-
-        /* -----------------------------------------------------
-           FORM DATA
-        ----------------------------------------------------- */
-
-        const formData = new FormData();
-
-        formData.append("message", message);
-        formData.append("phone", phone);
-        formData.append("link", link);
-
-        if (screenshot) {
-            formData.append(
-                "screenshot",
-                screenshot
-            );
-        }
-
-
-        /* -----------------------------------------------------
-           LOADING
-        ----------------------------------------------------- */
-
-        setLoading(true);
-
-
-        try {
-
-            const response =
-                await fetch("/scamcheck", {
-                    method: "POST",
-                    body: formData,
-                    headers: {
-                        "X-Requested-With":
-                            "XMLHttpRequest"
-                    }
-                });
-
-
-            let data;
-
-            try {
-
-                data = await response.json();
-
-            } catch (jsonError) {
-
-                throw new Error(
-                    "Server returned an invalid response."
-                );
-            }
-
-
-            /* -------------------------------------------------
-               SERVER ERROR
-            ------------------------------------------------- */
-
-            if (!response.ok) {
-
-                throw new Error(
-                    data.error ||
-                    data.message ||
-                    "Scam check failed."
-                );
-            }
-
-
-            if (
-                data.success === false ||
-                data.status === "error"
-            ) {
-
-                throw new Error(
-                    data.error ||
-                    data.message ||
-                    "Unable to analyse this scan."
-                );
-            }
-
-
-            /* -------------------------------------------------
-               DISPLAY RESULT
-            ------------------------------------------------- */
-
-            renderResult(data);
-
-
-        } catch (error) {
-
-            console.error(
-                "ScamShield error:",
-                error
-            );
-
-            showError(
-                error.message ||
-                "Something went wrong. Please try again."
-            );
-
-        } finally {
-
-            setLoading(false);
-        }
+    if (!input) {
+        return;
     }
 
+    input.addEventListener("input", function () {
+        hideError();
+    });
 
-    /* =========================================================
-       FORM SUBMIT
-    ========================================================= */
-
-    form.addEventListener(
-        "submit",
-        function (event) {
-
-            event.preventDefault();
-
-            submitScan();
-        }
-    );
+});
 
 
-    /* =========================================================
-       ENTER KEY
-    ========================================================= */
+/* =========================================================
+   SIDEBAR
+========================================================= */
 
-    if (messageInput) {
+const menuBtn =
+    document.getElementById("menuBtn");
 
-        messageInput.addEventListener(
-            "keydown",
-            function (event) {
-
-                if (
-                    event.key === "Enter" &&
-                    !event.shiftKey
-                ) {
-
-                    event.preventDefault();
-
-                    if (!submitBtn || !submitBtn.disabled) {
-                        submitScan();
-                    }
-                }
-            }
-        );
-    }
+const sidebar =
+    document.getElementById("sidebar");
 
 
-    /* =========================================================
-       SCREENSHOT PREVIEW
-    ========================================================= */
+if (menuBtn && sidebar) {
 
-    if (screenshotInput) {
+    menuBtn.addEventListener("click", function () {
 
-        screenshotInput.addEventListener(
-            "change",
-            function () {
+        if (window.innerWidth <= 800) {
 
-                const file =
-                    screenshotInput.files[0];
+            sidebar.classList.toggle("open");
 
-                if (!file) {
-                    return;
-                }
+        } else {
 
-                if (!file.type.startsWith("image/")) {
+            sidebar.classList.toggle("collapsed");
 
-                    showError(
-                        "Please select a valid image file."
-                    );
-
-                    screenshotInput.value = "";
-
-                    return;
-                }
-
-                hideError();
-
-                console.log(
-                    "Screenshot selected:",
-                    file.name
-                );
-            }
-        );
-    }
-
-
-    /* =========================================================
-       CLEAR ERROR WHEN USER TYPES
-    ========================================================= */
-
-    [
-        messageInput,
-        phoneInput,
-        linkInput
-    ].forEach(function (input) {
-
-        if (!input) {
-            return;
         }
 
-        input.addEventListener(
-            "input",
-            function () {
-                hideError();
-            }
-        );
     });
 
 
-    /* =========================================================
-       SIDEBAR
-    ========================================================= */
+    /* -----------------------------------------------------
+       CLOSE MOBILE SIDEBAR ON OUTSIDE CLICK
+    ----------------------------------------------------- */
 
-    const menuBtn =
-        document.getElementById("menuBtn");
+    document.addEventListener("click", function (event) {
 
-    const sidebar =
-        document.getElementById("sidebar");
+        if (window.innerWidth > 800) {
+            return;
+        }
 
+        if (
+            sidebar.classList.contains("open") &&
+            !sidebar.contains(event.target) &&
+            !menuBtn.contains(event.target)
+        ) {
+            sidebar.classList.remove("open");
+        }
 
-    if (menuBtn && sidebar) {
-
-        menuBtn.addEventListener(
-            "click",
-            function () {
-
-                if (window.innerWidth <= 800) {
-
-                    sidebar.classList.toggle("open");
-
-                } else {
-
-                    sidebar.classList.toggle("collapsed");
-                }
-            }
-        );
+    });
 
 
-        document.addEventListener(
-            "click",
-            function (event) {
+    /* -----------------------------------------------------
+       RESET MOBILE SIDEBAR ON RESIZE
+    ----------------------------------------------------- */
 
-                if (window.innerWidth > 800) {
-                    return;
-                }
+    window.addEventListener("resize", function () {
 
-                if (
-                    sidebar.classList.contains("open") &&
-                    !sidebar.contains(event.target) &&
-                    !menuBtn.contains(event.target)
-                ) {
+        if (window.innerWidth > 800) {
+            sidebar.classList.remove("open");
+        }
 
-                    sidebar.classList.remove("open");
-                }
-            }
-        );
+    });
+
+}
 
 
-        window.addEventListener(
-            "resize",
-            function () {
-
-                if (window.innerWidth > 800) {
-
-                    sidebar.classList.remove("open");
-                }
-            }
-        );
-    }
+console.log("ScamShield scamcheck.js loaded successfully.");
 
 });
