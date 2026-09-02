@@ -71,41 +71,57 @@
     </style>
 </head>
 
-<body class="bg-dark-base text-slate-100 flex min-h-screen overflow-x-hidden antialiased">
+<body class="bg-dark-base text-slate-100 flex min-h-screen overflow-x-hidden antialiased relative">
 
     <!-- =====================================================
-         SIDEBAR NAVIGATION
+         MOBILE BACKDROP OVERLAY
     ===================================================== -->
-    <aside class="w-64 bg-dark-sidebar border-r border-dark-border flex flex-col justify-between shrink-0 hidden md:flex min-h-screen sticky top-0 z-40">
+    <div id="sidebarBackdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
+
+    <!-- =====================================================
+         SIDEBAR NAVIGATION (DESKTOP & MOBILE DRAWER)
+    ===================================================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 md:w-64 bg-dark-sidebar border-r border-dark-border flex flex-col justify-between shrink-0 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300 ease-in-out">
         <div>
-            <!-- Logo -->
-            <div class="h-20 flex items-center px-6 gap-3 border-b border-dark-border/60">
-                <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 text-lg shadow-inner">
-                    <i class="fa-solid fa-shield-halved"></i>
+            <!-- Logo & Close Button -->
+            <div class="h-20 flex items-center justify-between px-6 border-b border-dark-border/60">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 text-lg shadow-inner">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-extrabold text-base tracking-tight text-white leading-none">ScamShield</h1>
+                        <span class="text-[10px] tracking-widest uppercase font-bold text-blue-400">Digital Safety</span>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="font-extrabold text-lg tracking-tight text-white leading-none">ScamShield</h1>
-                    <span class="text-[10px] tracking-widest uppercase font-bold text-blue-400">Digital Safety</span>
-                </div>
+
+                <!-- Close Button (Mobile Only) -->
+                <button id="closeSidebarBtn" class="md:hidden text-slate-400 hover:text-white p-1 rounded-lg focus:outline-none" aria-label="Close Sidebar">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
             </div>
 
             <!-- Navigation Links -->
-            <nav class="p-4 space-y-1.5 text-sm font-medium">
+            <nav class="p-4 space-y-1.5 text-sm font-medium sidebar-nav">
+                <!-- Home -->
                 <a href="/home" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
                     <i class="fa-regular fa-compass w-5 text-slate-400"></i>
                     <span>Home</span>
                 </a>
                 
-                <a href="#scamCheckSection" class="flex items-center gap-3.5 px-4 py-3 rounded-xl bg-blue-600/15 text-blue-400 border border-blue-500/20 font-semibold shadow-sm transition">
+                <!-- Scam Check (Active) -->
+                <a href="/scamcheck" class="flex items-center gap-3.5 px-4 py-3 rounded-xl bg-blue-600/15 text-blue-400 border border-blue-500/20 font-semibold shadow-sm transition">
                     <i class="fa-solid fa-magnifying-glass w-5 text-blue-400"></i>
                     <span>Scam Check</span>
                 </a>
 
+                <!-- Report Scam -->
                 <a href="/scam-report" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
                     <i class="fa-solid fa-triangle-exclamation w-5 text-slate-400"></i>
                     <span>Report Scam</span>
                 </a>
 
+                <!-- History -->
                 <a href="/checkscam-history" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
                     <i class="fa-solid fa-clock-rotate-left w-5 text-slate-400"></i>
                     <span>History</span>
@@ -117,20 +133,20 @@
         <div class="p-4 border-t border-dark-border/60 space-y-2">
             <a href="/my-profile" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-dark-hover transition">
                 {% if data and data.profile_picture %}
-                    <img src="{{ data.profile_picture }}" alt="Profile Picture" class="w-10 h-10 rounded-full object-cover border border-blue-500/40">
+                    <img src="{{ data.profile_picture }}" alt="Profile Picture" class="w-9 h-9 rounded-full object-cover border border-blue-500/40 shrink-0">
                 {% else %}
-                    <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 font-semibold border border-slate-700">
-                        <i class="fa-solid fa-user"></i>
+                    <div class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 font-semibold border border-slate-700 shrink-0">
+                        <i class="fa-solid fa-user text-sm"></i>
                     </div>
                 {% endif %}
                 <div class="overflow-hidden">
-                    <p class="text-sm font-semibold text-white truncate">My Profile</p>
-                    <p class="text-xs text-slate-400 truncate">Manage Account</p>
+                    <p class="text-xs font-semibold text-white truncate">My Profile</p>
+                    <p class="text-[10px] text-slate-400 truncate">Manage Account</p>
                 </div>
             </a>
 
-            <a href="/logout" class="flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-rose-400 hover:bg-rose-500/10 text-sm font-medium transition">
-                <i class="fa-solid fa-arrow-right-from-bracket w-5"></i>
+            <a href="/logout" class="flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-rose-400 hover:bg-rose-500/10 text-xs font-semibold transition">
+                <i class="fa-solid fa-arrow-right-from-bracket w-4"></i>
                 <span>Logout</span>
             </a>
         </div>
@@ -139,47 +155,63 @@
     <!-- =====================================================
          MAIN CONTENT AREA
     ===================================================== -->
-    <div class="flex-1 flex flex-col min-w-0">
+    <div class="flex-1 flex flex-col min-w-0 w-full" id="pageWrapper">
 
-        <!-- Top Header Navigation -->
-        <header class="h-20 border-b border-dark-border flex items-center justify-between px-6 lg:px-10 bg-dark-base/80 backdrop-blur sticky top-0 z-30">
-            <div class="flex items-center gap-2">
-                <span class="text-xs uppercase font-bold tracking-widest text-slate-400">SCAMSHIELD</span>
-                <span class="text-slate-600">/</span>
-                <span class="text-sm font-semibold text-white">Dashboard</span>
+        <!-- Responsive Top Header Navigation -->
+        <header class="h-20 border-b border-dark-border flex items-center justify-between px-4 sm:px-6 lg:px-10 bg-dark-base/90 backdrop-blur sticky top-0 z-30">
+            
+            <!-- Left: Mobile Toggle + Breadcrumb -->
+            <div class="flex items-center gap-3">
+                <!-- Mobile Hamburger Button -->
+                <button id="mobileMenuBtn" class="md:hidden w-10 h-10 rounded-xl bg-dark-card border border-dark-border text-slate-300 hover:text-white flex items-center justify-center focus:outline-none active:scale-95 transition" aria-label="Open Navigation">
+                    <i class="fa-solid fa-bars-staggered text-base"></i>
+                </button>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-xs uppercase font-bold tracking-widest text-slate-400">SCAMSHIELD</span>
+                    <span class="text-slate-600 hidden xs:inline">/</span>
+                    <span class="text-sm font-semibold text-white truncate">Dashboard</span>
+                </div>
             </div>
 
-            <div class="flex items-center gap-6 text-sm">
-                <a href="/feedback" class="text-slate-400 hover:text-white transition">Feedback</a>
-                <a href="/alerts" class="text-slate-400 hover:text-white transition">Alerts</a>
-                <a href="/learn-more" class="text-slate-400 hover:text-white transition hidden sm:inline">Learn More</a>
+            <!-- Right Actions -->
+            <div class="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium">
+                <a href="/feedback" class="text-slate-400 hover:text-white transition hidden sm:inline">Feedback</a>
+                
+                <a href="/alerts" class="text-slate-400 hover:text-white transition flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-dark-card/60 sm:bg-transparent border border-dark-border sm:border-0">
+                    <i class="fa-regular fa-bell sm:hidden text-sm"></i>
+                    <span class="hidden sm:inline">Alerts</span>
+                    <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                </a>
 
-                <a href="/my-profile" class="w-9 h-9 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 hover:bg-blue-600 hover:text-white transition">
+                <a href="/learn-more" class="text-slate-400 hover:text-white transition hidden md:inline">Learn More</a>
+
+                <a href="/my-profile" class="w-9 h-9 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 hover:bg-blue-600 hover:text-white transition" aria-label="Profile">
                     <i class="fa-solid fa-user text-sm"></i>
                 </a>
             </div>
         </header>
 
         <!-- Main Inner Content -->
-        <main class="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-10">
+        <main class="flex-1 p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-8 sm:space-y-10">
 
             <!-- =====================================================
                  HERO BANNER
             ===================================================== -->
-            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#12274d] via-[#0b1b36] to-[#0a1324] border border-blue-900/40 p-8 lg:p-12 shadow-2xl">
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#12274d] via-[#0b1b36] to-[#0a1324] border border-blue-900/40 p-6 sm:p-8 lg:p-12 shadow-2xl">
                 <!-- Background Glow Circles -->
-                <div class="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none"></div>
+                <div class="absolute -right-16 -top-16 w-80 sm:w-96 h-80 sm:h-96 rounded-full bg-blue-500/10 blur-3xl pointer-events-none"></div>
                 <div class="absolute right-32 bottom-0 w-64 h-64 rounded-full bg-indigo-500/10 blur-2xl pointer-events-none"></div>
 
-                <div class="relative z-10 max-w-2xl">
-                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold tracking-widest uppercase bg-blue-500/20 text-blue-400 border border-blue-400/30 mb-4">
+                <div class="relative z-10 max-w-2xl space-y-3">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-widest uppercase bg-blue-500/20 text-blue-400 border border-blue-400/30">
                         <i class="fa-solid fa-shield-heart text-xs"></i> Activity Center
                     </span>
-                    <h2 class="text-3xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                    <h2 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
                         Your Security Hub
                     </h2>
-                    <p class="text-slate-300 text-sm lg:text-base mt-4 leading-relaxed font-normal">
-                        Analyze suspicious messages, links, phone numbers, and images instantly with ScamShield intelligence engine.
+                    <p class="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed max-w-xl">
+                        Analyze suspicious messages, links, phone numbers, and screenshots instantly with ScamShield intelligence engine.
                     </p>
                 </div>
             </div>
@@ -187,35 +219,35 @@
             <!-- =====================================================
                  TRUST OVERVIEW SECTION
             ===================================================== -->
-            <section class="space-y-6">
+            <section class="space-y-4 sm:space-y-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <span class="text-xs uppercase font-bold tracking-wider text-blue-400">Security Reputation</span>
-                        <h3 class="text-2xl font-bold text-white tracking-tight mt-0.5">🛡️ Trust Overview</h3>
+                        <span class="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-blue-400">Security Reputation</span>
+                        <h3 class="text-xl sm:text-2xl font-bold text-white tracking-tight mt-0.5">🛡️ Trust Overview</h3>
                     </div>
 
-                    <button id="refreshTrust" type="button" class="inline-flex items-center gap-2 rounded-xl border border-dark-border bg-dark-card px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-dark-hover hover:border-slate-700 transition">
-                        <i class="fa-solid fa-arrows-rotate"></i> Refresh Data
+                    <button id="refreshTrust" type="button" class="inline-flex items-center gap-2 rounded-xl border border-dark-border bg-dark-card px-3 sm:px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-dark-hover transition">
+                        <i class="fa-solid fa-arrows-rotate"></i> <span>Refresh</span>
                     </button>
                 </div>
 
                 <!-- 3 Metric Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
 
                     <!-- Trust Score -->
-                    <div class="rounded-2xl border border-dark-border bg-dark-card p-6 flex flex-col justify-between shadow-lg">
+                    <div class="rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 flex flex-col justify-between shadow-lg">
                         <div>
                             <div class="flex items-center justify-between">
                                 <p class="text-xs uppercase tracking-wider font-semibold text-slate-400">Current Trust Score</p>
                                 <span class="p-2 rounded-lg bg-blue-500/10 text-blue-400 text-sm"><i class="fa-solid fa-gauge-high"></i></span>
                             </div>
-                            <div class="flex items-baseline gap-1 mt-4">
-                                <span id="trustScore" class="text-5xl font-extrabold text-white tracking-tight">--</span>
-                                <span class="text-slate-500 text-lg font-bold">/100</span>
+                            <div class="flex items-baseline gap-1 mt-3 sm:mt-4">
+                                <span id="trustScore" class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">--</span>
+                                <span class="text-slate-500 text-base sm:text-lg font-bold">/100</span>
                             </div>
                         </div>
 
-                        <div class="mt-5 space-y-3">
+                        <div class="mt-4 sm:mt-5 space-y-2.5">
                             <div id="trustLabel" class="inline-flex rounded-full px-3 py-1 text-xs font-semibold bg-slate-800 text-slate-300">
                                 Loading...
                             </div>
@@ -226,44 +258,44 @@
                     </div>
 
                     <!-- Scam Checks -->
-                    <div class="rounded-2xl border border-dark-border bg-dark-card p-6 shadow-lg flex flex-col justify-between">
+                    <div class="rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-lg flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between">
                                 <p class="text-xs uppercase tracking-wider font-semibold text-slate-400">Scam Checks</p>
                                 <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 text-sm"><i class="fa-solid fa-shield-virus"></i></span>
                             </div>
-                            <div id="scamCheckCount" class="text-5xl font-extrabold text-white mt-4 tracking-tight">--</div>
+                            <div id="scamCheckCount" class="text-4xl sm:text-5xl font-extrabold text-white mt-3 sm:mt-4 tracking-tight">--</div>
                         </div>
-                        <p class="text-xs text-slate-400 mt-5 flex items-center gap-1.5">
+                        <p class="text-xs text-slate-400 mt-4 sm:mt-5 flex items-center gap-1.5">
                             <i class="fa-regular fa-circle-check text-indigo-400"></i> Previous security analyses completed
                         </p>
                     </div>
 
                     <!-- Reports -->
-                    <div class="rounded-2xl border border-dark-border bg-dark-card p-6 shadow-lg flex flex-col justify-between">
+                    <div class="sm:col-span-2 lg:col-span-1 rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-lg flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between">
                                 <p class="text-xs uppercase tracking-wider font-semibold text-slate-400">Reports Submitted</p>
                                 <span class="p-2 rounded-lg bg-amber-500/10 text-amber-400 text-sm"><i class="fa-solid fa-flag"></i></span>
                             </div>
-                            <div id="reportCount" class="text-5xl font-extrabold text-white mt-4 tracking-tight">--</div>
+                            <div id="reportCount" class="text-4xl sm:text-5xl font-extrabold text-white mt-3 sm:mt-4 tracking-tight">--</div>
                         </div>
-                        <p class="text-xs text-slate-400 mt-5 flex items-center gap-1.5">
+                        <p class="text-xs text-slate-400 mt-4 sm:mt-5 flex items-center gap-1.5">
                             <i class="fa-solid fa-bullhorn text-amber-400"></i> Community spam & fraud alerts
                         </p>
                     </div>
                 </div>
 
                 <!-- Trust Graph & Recent Activity Grid -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
                     
                     <!-- Graph -->
-                    <div class="lg:col-span-2 rounded-2xl border border-dark-border bg-dark-card p-6 shadow-lg">
-                        <div class="mb-5">
-                            <h4 class="font-bold text-white text-base">📈 Trust Score Trend</h4>
+                    <div class="lg:col-span-2 rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-lg">
+                        <div class="mb-4 sm:mb-5">
+                            <h4 class="font-bold text-white text-sm sm:text-base">📈 Trust Score Trend</h4>
                             <p class="text-xs text-slate-400">Historical performance based on security activity</p>
                         </div>
-                        <div class="relative h-64 w-full">
+                        <div class="relative h-60 sm:h-64 w-full">
                             <canvas id="trustChart"></canvas>
                             <div id="noTrustData" class="absolute inset-0 flex items-center justify-center text-xs text-slate-500 hidden">
                                 No activity recorded yet
@@ -272,12 +304,12 @@
                     </div>
 
                     <!-- Recent Activity -->
-                    <div class="rounded-2xl border border-dark-border bg-dark-card p-6 shadow-lg flex flex-col">
+                    <div class="rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-lg flex flex-col">
                         <div class="mb-4">
-                            <h4 class="font-bold text-white text-base">🕒 Recent Activity</h4>
-                            <p class="text-xs text-slate-400">Latest scam & threat scans</p>
+                            <h4 class="font-bold text-white text-sm sm:text-base">🕒 Recent Activity</h4>
+                            <p class="text-xs text-slate-400">Latest threat scans</p>
                         </div>
-                        <div id="trustActivity" class="space-y-3 overflow-y-auto max-h-64 pr-1">
+                        <div id="trustActivity" class="space-y-3 overflow-y-auto max-h-60 sm:max-h-64 pr-1">
                             <p class="text-xs text-slate-400">Loading security logs...</p>
                         </div>
                     </div>
@@ -288,24 +320,24 @@
             <!-- =====================================================
                  SCAM CHECK FORM SECTION
             ===================================================== -->
-            <section id="scamCheckSection" class="pt-4 space-y-6">
+            <section id="scamCheckSection" class="pt-2 space-y-4 sm:space-y-6">
                 <div>
-                    <span class="text-xs uppercase font-bold tracking-wider text-blue-400">Threat Detection</span>
-                    <h3 class="text-2xl font-bold text-white tracking-tight mt-0.5">🎯 ScamCheck Engine</h3>
-                    <p class="text-sm text-slate-400 mt-1">Submit single or multiple inputs to run an instant deep analysis.</p>
+                    <span class="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-blue-400">Threat Detection</span>
+                    <h3 class="text-xl sm:text-2xl font-bold text-white tracking-tight mt-0.5">🎯 ScamCheck Engine</h3>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">Submit single or multiple inputs to run an instant deep analysis.</p>
                 </div>
 
-                <div class="rounded-3xl border border-dark-border bg-dark-card p-6 lg:p-8 shadow-xl">
-                    <form id="scamCheckForm" enctype="multipart/form-data" class="space-y-6">
+                <div class="rounded-3xl border border-dark-border bg-dark-card p-5 sm:p-8 shadow-xl">
+                    <form id="scamCheckForm" enctype="multipart/form-data" class="space-y-5 sm:space-y-6">
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
 
                             <!-- Message Textarea -->
                             <div class="md:col-span-2 space-y-2">
                                 <label for="message" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
                                     <i class="fa-regular fa-message text-blue-400 mr-1.5"></i> Suspicious Message Text
                                 </label>
-                                <textarea id="message" name="message" rows="4" placeholder="Paste the suspicious SMS, WhatsApp message, email body, or telegram chat here..." class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition resize-none"></textarea>
+                                <textarea id="message" name="message" rows="4" placeholder="Paste the suspicious SMS, WhatsApp message, email body, or telegram chat here..." class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition resize-none"></textarea>
                             </div>
 
                             <!-- Phone Input -->
@@ -313,7 +345,7 @@
                                 <label for="phone" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
                                     <i class="fa-solid fa-phone text-blue-400 mr-1.5"></i> Phone Number
                                 </label>
-                                <input type="text" id="phone" name="phone" placeholder="+91 98765 43210" class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                                <input type="text" id="phone" name="phone" placeholder="+91 98765 43210" class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                             </div>
 
                             <!-- Link / URL Input -->
@@ -321,7 +353,7 @@
                                 <label for="link" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
                                     <i class="fa-solid fa-link text-blue-400 mr-1.5"></i> Link / URL
                                 </label>
-                                <input type="url" id="link" name="link" placeholder="https://suspicious-domain.com/login" class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                                <input type="url" id="link" name="link" placeholder="https://suspicious-domain.com/login" class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                             </div>
 
                             <!-- File Upload / Screenshot -->
@@ -330,11 +362,11 @@
                                     <i class="fa-regular fa-image text-blue-400 mr-1.5"></i> Screenshot / Image Evidence
                                 </label>
                                 <div class="flex items-center justify-center w-full">
-                                    <label for="screenshot" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dark-border border-dashed rounded-2xl cursor-pointer bg-dark-cardLight/50 hover:bg-dark-cardLight hover:border-blue-500/50 transition group">
-                                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <label for="screenshot" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dark-border border-dashed rounded-2xl cursor-pointer bg-dark-cardLight/50 hover:bg-dark-cardLight hover:border-blue-500/50 transition group p-3 text-center">
+                                        <div class="flex flex-col items-center justify-center">
                                             <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400 group-hover:text-blue-400 mb-2 transition"></i>
                                             <p class="text-xs text-slate-400"><span class="font-semibold text-blue-400">Click to upload</span> or drag and drop</p>
-                                            <p class="text-[11px] text-slate-500 mt-1">PNG, JPG, JPEG (Screenshot of payment, chats, QR code)</p>
+                                            <p class="text-[10px] sm:text-[11px] text-slate-500 mt-1">PNG, JPG, JPEG (Payment chats, QR codes, receipts)</p>
                                         </div>
                                         <input type="file" id="screenshot" name="screenshot" accept="image/*" class="hidden">
                                     </label>
@@ -343,8 +375,8 @@
                         </div>
 
                         <!-- Submit Button -->
-                        <div class="pt-2">
-                            <button type="submit" id="checkBtn" class="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-blue-600/30 transition transform active:scale-[0.99] flex items-center justify-center gap-2">
+                        <div class="pt-1">
+                            <button type="submit" id="checkBtn" class="w-full py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-600/30 transition transform active:scale-[0.99] flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-shield-halved"></i> Run Scam Analysis
                             </button>
                         </div>
@@ -358,12 +390,53 @@
 
             </section>
         </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-dark-border/60 py-6 px-4 sm:px-6 lg:px-10 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+            <span>© 2026 ScamShield. Digital Safety Platform.</span>
+            <span>Stay aware. Stay protected.</span>
+        </footer>
+
     </div>
 
     <!-- =====================================================
          SCRIPTS & LOGIC
     ===================================================== -->
     <script>
+        /* =====================================================
+           MOBILE DRAWER TOGGLE
+        ===================================================== */
+        $(document).ready(function () {
+            function openMobileSidebar() {
+                $('#sidebar').removeClass('-translate-x-full');
+                $('#sidebarBackdrop').removeClass('hidden');
+                $('body').addClass('overflow-hidden');
+            }
+
+            function closeMobileSidebar() {
+                $('#sidebar').addClass('-translate-x-full');
+                $('#sidebarBackdrop').addClass('hidden');
+                $('body').removeClass('overflow-hidden');
+            }
+
+            $('#mobileMenuBtn').on('click', function (e) {
+                e.stopPropagation();
+                openMobileSidebar();
+            });
+
+            $('#closeSidebarBtn, #sidebarBackdrop').on('click', function () {
+                closeMobileSidebar();
+            });
+
+            $('.sidebar-nav a').on('click', function () {
+                if ($(window).width() < 768) {
+                    closeMobileSidebar();
+                }
+            });
+
+            loadTrustData();
+        });
+
         /* =====================================================
            ESCAPE HTML
         ===================================================== */
@@ -378,7 +451,7 @@
         }
 
         /* =====================================================
-           LIST BUILDERS (STYLIZED)
+           LIST BUILDERS
         ===================================================== */
         function makeList(items, emptyText = "No indicators detected.") {
             if (!Array.isArray(items) || items.length === 0) {
@@ -428,8 +501,8 @@
 
             if (!message && !phone && !link && !hasScreenshot) {
                 $("#result").html(`
-                    <div class="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 flex items-center gap-3 text-sm">
-                        <i class="fa-solid fa-circle-exclamation text-lg text-rose-400"></i>
+                    <div class="p-4 sm:p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 flex items-center gap-3 text-xs sm:text-sm">
+                        <i class="fa-solid fa-circle-exclamation text-lg text-rose-400 shrink-0"></i>
                         <span>Please provide at least one input (Message, Phone, Link, or Screenshot).</span>
                     </div>
                 `);
@@ -440,15 +513,15 @@
 
             $("#checkBtn")
                 .prop("disabled", true)
-                .html(`<i class="fa-solid fa-spinner fa-spin"></i> Analyzing threat vectors...`);
+                .html(`<i class="fa-solid fa-spinner fa-spin mr-1"></i> Analyzing threat vectors...`);
 
             $("#result").html(`
-                <div class="p-8 rounded-3xl bg-dark-card border border-dark-border text-center space-y-4 animate-pulse">
-                    <div class="w-14 h-14 mx-auto rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center text-2xl">
+                <div class="p-6 sm:p-8 rounded-3xl bg-dark-card border border-dark-border text-center space-y-3 sm:space-y-4 animate-pulse">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center text-xl sm:text-2xl">
                         <i class="fa-solid fa-shield-halved fa-spin"></i>
                     </div>
-                    <h4 class="text-base font-bold text-white">ScamShield AI is analyzing your input...</h4>
-                    <p class="text-xs text-slate-400">Checking against verified scam databases, threat patterns, and language models.</p>
+                    <h4 class="text-sm sm:text-base font-bold text-white">ScamShield AI is analyzing your input...</h4>
+                    <p class="text-[11px] sm:text-xs text-slate-400">Checking against verified scam databases, threat patterns, and language models.</p>
                 </div>
             `);
 
@@ -462,8 +535,8 @@
                 success: function (res) {
                     if (!res || !res.success) {
                         $("#result").html(`
-                            <div class="p-6 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300">
-                                <h3 class="font-bold text-base flex items-center gap-2 mb-1">
+                            <div class="p-5 sm:p-6 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300">
+                                <h3 class="font-bold text-sm sm:text-base flex items-center gap-2 mb-1">
                                     <i class="fa-solid fa-triangle-exclamation"></i> Analysis Failed
                                 </h3>
                                 <p class="text-xs text-rose-400">${escapeHtml(res?.message || "Unable to analyze the input.")}</p>
@@ -478,35 +551,32 @@
 
                     let verdictColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
                     let verdictIcon = "fa-shield-check";
-                    let scoreBarColor = "from-emerald-500 to-teal-400";
 
                     if (verdict === "SCAM" || verdict === "FRAUD" || finalScore >= 70) {
                         verdictColor = "bg-rose-500/10 text-rose-400 border-rose-500/30";
                         verdictIcon = "fa-triangle-exclamation";
-                        scoreBarColor = "from-rose-600 to-red-500";
                     } else if (verdict === "SPAM" || verdict === "SUSPICIOUS" || finalScore >= 40) {
                         verdictColor = "bg-amber-500/10 text-amber-400 border-amber-500/30";
                         verdictIcon = "fa-circle-exclamation";
-                        scoreBarColor = "from-amber-500 to-yellow-400";
                     }
 
                     let html = `
-                        <div class="rounded-3xl border border-dark-border bg-dark-card p-6 lg:p-8 space-y-8 shadow-2xl">
+                        <div class="rounded-3xl border border-dark-border bg-dark-card p-5 sm:p-8 space-y-6 sm:space-y-8 shadow-2xl">
                             
                             <!-- Header / Verdict Overview -->
-                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-dark-border pb-6">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-dark-border pb-5 sm:pb-6">
                                 <div>
-                                    <span class="text-xs uppercase font-bold tracking-wider text-slate-400">Analysis Verdict</span>
+                                    <span class="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-slate-400">Analysis Verdict</span>
                                     <div class="flex items-center gap-3 mt-1.5">
-                                        <div class="px-4 py-1.5 rounded-xl border ${verdictColor} font-bold text-sm uppercase tracking-wide flex items-center gap-2">
+                                        <div class="px-3 sm:px-4 py-1.5 rounded-xl border ${verdictColor} font-bold text-xs sm:text-sm uppercase tracking-wide flex items-center gap-2">
                                             <i class="fa-solid ${verdictIcon}"></i> ${escapeHtml(verdict)}
                                         </div>
                                     </div>
                                 </div>
                                 <div class="flex items-baseline gap-2">
                                     <span class="text-xs text-slate-400 uppercase font-bold">Threat Score:</span>
-                                    <span class="text-4xl font-extrabold text-white">${finalScore}</span>
-                                    <span class="text-slate-500 font-bold text-sm">/100</span>
+                                    <span class="text-3xl sm:text-4xl font-extrabold text-white">${finalScore}</span>
+                                    <span class="text-slate-500 font-bold text-xs sm:text-sm">/100</span>
                                 </div>
                             </div>
 
@@ -519,11 +589,11 @@
                             ` : ''}
 
                             <!-- Breakdown Grid -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                                 ${inputs.message ? `
-                                    <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
+                                    <div class="p-4 sm:p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
                                         <div class="flex justify-between items-center">
-                                            <span class="font-bold text-sm text-white flex items-center gap-2"><i class="fa-regular fa-message text-blue-400"></i> Message Analysis</span>
+                                            <span class="font-bold text-xs sm:text-sm text-white flex items-center gap-2"><i class="fa-regular fa-message text-blue-400"></i> Message Analysis</span>
                                             <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">${Number(res.message_score || 0)}/100</span>
                                         </div>
                                         <div>${makeList(res.message_reasons)}</div>
@@ -531,9 +601,9 @@
                                 ` : ''}
 
                                 ${inputs.phone ? `
-                                    <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
+                                    <div class="p-4 sm:p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
                                         <div class="flex justify-between items-center">
-                                            <span class="font-bold text-sm text-white flex items-center gap-2"><i class="fa-solid fa-phone text-blue-400"></i> Phone Analysis</span>
+                                            <span class="font-bold text-xs sm:text-sm text-white flex items-center gap-2"><i class="fa-solid fa-phone text-blue-400"></i> Phone Analysis</span>
                                             <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">${res.phone_score !== null ? Number(res.phone_score) + '/100' : 'N/A'}</span>
                                         </div>
                                         <div>${makeList(res.phone_reasons)}</div>
@@ -541,9 +611,9 @@
                                 ` : ''}
 
                                 ${inputs.link ? `
-                                    <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
+                                    <div class="p-4 sm:p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
                                         <div class="flex justify-between items-center">
-                                            <span class="font-bold text-sm text-white flex items-center gap-2"><i class="fa-solid fa-link text-blue-400"></i> Link Analysis</span>
+                                            <span class="font-bold text-xs sm:text-sm text-white flex items-center gap-2"><i class="fa-solid fa-link text-blue-400"></i> Link Analysis</span>
                                             <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">${Number(res.link_score || 0)}/100</span>
                                         </div>
                                         <div>${makeList(res.link_reasons)}</div>
@@ -551,9 +621,9 @@
                                 ` : ''}
 
                                 ${inputs.screenshot ? `
-                                    <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
+                                    <div class="p-4 sm:p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
                                         <div class="flex justify-between items-center">
-                                            <span class="font-bold text-sm text-white flex items-center gap-2"><i class="fa-regular fa-image text-blue-400"></i> Screenshot OCR Analysis</span>
+                                            <span class="font-bold text-xs sm:text-sm text-white flex items-center gap-2"><i class="fa-regular fa-image text-blue-400"></i> Screenshot OCR</span>
                                             <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">${Number(res.screenshot_score || 0)}/100</span>
                                         </div>
                                         ${res.detected_text ? `
@@ -567,16 +637,16 @@
                             </div>
 
                             <!-- Attack Chain & Action Steps -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 pt-1">
                                 ${Array.isArray(res.attack_chain) && res.attack_chain.length > 0 ? `
-                                    <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
-                                        <h4 class="text-xs uppercase font-bold tracking-wider text-amber-400"><i class="fa-solid fa-link-slash mr-1"></i> Threat / Attack Flow</h4>
+                                    <div class="p-4 sm:p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
+                                        <h4 class="text-xs uppercase font-bold tracking-wider text-amber-400"><i class="fa-solid fa-link-slash mr-1"></i> Threat Flow</h4>
                                         ${makeNumberedList(res.attack_chain)}
                                     </div>
                                 ` : ''}
 
-                                <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
-                                    <h4 class="text-xs uppercase font-bold tracking-wider text-emerald-400"><i class="fa-solid fa-shield-halved mr-1"></i> Recommended Next Steps</h4>
+                                <div class="p-4 sm:p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
+                                    <h4 class="text-xs uppercase font-bold tracking-wider text-emerald-400"><i class="fa-solid fa-shield-halved mr-1"></i> Recommended Action</h4>
                                     <p class="text-xs font-semibold text-white">${escapeHtml(res.recommended_action || "DO NOT INTERACT")}</p>
                                     ${Array.isArray(res.immediate_steps) ? makeNumberedList(res.immediate_steps) : ''}
                                 </div>
@@ -594,8 +664,8 @@
                     else if (xhr.responseText) message = xhr.responseText.substring(0, 300);
 
                     $("#result").html(`
-                        <div class="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300">
-                            <h4 class="font-bold text-sm"><i class="fa-solid fa-circle-xmark mr-1"></i> Request Error</h4>
+                        <div class="p-4 sm:p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300">
+                            <h4 class="font-bold text-xs sm:text-sm"><i class="fa-solid fa-circle-xmark mr-1"></i> Request Error</h4>
                             <p class="text-xs text-rose-400 mt-1">${escapeHtml(message)}</p>
                         </div>
                     `);
@@ -744,9 +814,6 @@
         }
 
         $("#refreshTrust").on("click", loadTrustData);
-        $(document).ready(function () {
-            loadTrustData();
-        });
     </script>
 </body>
 </html>
