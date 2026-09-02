@@ -1,0 +1,443 @@
+
+/* =========================================
+   GLOBAL.CSS - SCAMSHIELD DESIGN SYSTEM
+   File: static/style.css
+   ========================================= */
+
+
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+
+:root {
+    --bg-navy: #0A0F1D;
+    --bg-off-white: #F8FAFC;
+    --bg-light: #FFFFFF;
+
+    --accent-blue: #3B82F6;
+    --accent-blue-hover: #2563EB;
+    --glow-cyan: #06B6D4;
+
+    --text-main-light: #F8FAFC;
+    --text-muted-light: #94A3B8;
+
+    --text-main-dark: #0F172A;
+    --text-muted-dark: #475569;
+
+    --status-green: #10B981;
+    --status-yellow: #F59E0B;
+    --status-red: #EF4444;
+
+    --font-main: 'Inter', sans-serif;
+
+    --transition-smooth:
+        0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+
+/* =========================================================
+   BASE RESET
+   ========================================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-main);
+    line-height: 1.6;
+    overflow-x: hidden;
+    color: var(--text-main-dark);
+    background: var(--bg-light);
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+button,
+input,
+textarea,
+select {
+    font-family: inherit;
+}
+
+.antialiased {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* =========================================================
+   CONTAINER & UTILITIES
+   ========================================================= */
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.max-w-2xl {
+    max-width: 42rem;
+}
+
+.max-w-3xl {
+    max-width: 48rem;
+}
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+/* =========================================================
+   TYPOGRAPHY
+   ========================================================= */
+
+.section-heading {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+}
+
+.section-body {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--text-muted-dark);
+    margin-bottom: 3rem;
+}
+
+
+/* =========================================================
+   THEME CLASSES
+   ========================================================= */
+
+.dark-theme {
+    background-color: var(--bg-navy);
+    color: var(--text-main-light);
+}
+
+.dark-theme .section-body {
+    color: var(--text-muted-light);
+}
+
+.light-theme {
+    background-color: var(--bg-light);
+}
+
+.off-white-theme {
+    background-color: var(--bg-off-white);
+}
+
+.accent-theme {
+    background:
+        linear-gradient(
+            135deg,
+            var(--bg-navy),
+            #172554
+        );
+    color: var(--text-main-light);
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn-primary {
+    display: inline-block;
+
+    background-color: var(--accent-blue);
+    color: #fff;
+
+    padding: 0.75rem 1.5rem;
+
+    border-radius: 8px;
+
+    font-weight: 500;
+    text-decoration: none;
+
+    border: 1px solid transparent;
+
+    transition:
+        background-color var(--transition-smooth),
+        transform var(--transition-smooth),
+        box-shadow var(--transition-smooth);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-blue-hover);
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 25px rgba(59, 130, 246, 0.35);
+}
+
+.btn-large {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+}
+
+
+/* =========================================================
+   GLASS CARD
+   ========================================================= */
+
+.glass-card {
+    background: rgba(17, 24, 39, 0.7);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    border-radius: 16px;
+
+    padding: 2rem;
+
+    color: var(--text-main-light);
+
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, 0.08);
+}
+
+
+/* =========================================================
+   TEXT GLOW
+   ========================================================= */
+
+.text-glow {
+    text-shadow:
+        0 0 20px rgba(6, 182, 212, 0.4);
+}
+
+
+/* =========================================================
+   HOVER PHYSICS
+   ========================================================= */
+
+.hover-lift {
+    transition:
+        transform var(--transition-smooth),
+        box-shadow var(--transition-smooth),
+        border-color var(--transition-smooth);
+}
+
+.hover-lift:hover {
+    transform: translateY(-6px);
+
+    border-color:
+        rgba(6, 182, 212, 0.5);
+
+    box-shadow:
+        0 18px 45px rgba(15, 23, 42, 0.12);
+}
+
+
+/* =========================================================
+   GLOBAL FLOATING ANIMATION
+   ========================================================= */
+
+@keyframes float {
+
+    0% {
+        transform:
+            translateY(-8px)
+            rotate(0deg);
+    }
+
+    50% {
+        transform:
+            translateY(8px)
+            rotate(1.5deg);
+    }
+
+    100% {
+        transform:
+            translateY(-8px)
+            rotate(0deg);
+    }
+
+}
+
+.float-anim {
+    animation:
+        float 6s ease-in-out infinite;
+}
+
+.float-anim-delayed {
+    animation:
+        float 6s ease-in-out infinite reverse;
+
+    animation-delay: 3s;
+}
+
+
+/* =========================================================
+   SCROLL REVEAL
+   ========================================================= */
+
+.reveal-on-scroll {
+
+    opacity: 0;
+
+    transform:
+        translateY(45px);
+
+    transition:
+        opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+
+}
+
+.reveal-on-scroll.is-visible {
+
+    opacity: 1;
+
+    transform:
+        translateY(0);
+
+}
+
+
+/* =========================================================
+   STAGGER DELAYS
+   ========================================================= */
+
+.delayed-1 {
+    transition-delay: 0.15s;
+}
+
+.delayed-2 {
+    transition-delay: 0.3s;
+}
+
+.delayed-3 {
+    transition-delay: 0.45s;
+}
+
+.delayed-4 {
+    transition-delay: 0.6s;
+}
+
+.delayed-5 {
+    transition-delay: 0.75s;
+}
+
+
+/* =========================================================
+   NAVBAR SCROLL STATE
+   Controlled by index.js
+   ========================================================= */
+
+.navbar {
+    transition:
+        background 0.35s ease,
+        box-shadow 0.35s ease,
+        border-color 0.35s ease;
+}
+
+.navbar.navbar-scrolled {
+
+    background:
+        rgba(10, 15, 29, 0.96);
+
+    box-shadow:
+        0 10px 35px rgba(0, 0, 0, 0.35);
+
+    border-bottom-color:
+        rgba(255, 255, 255, 0.1);
+
+}
+
+
+/* =========================================================
+   FOCUS ACCESSIBILITY
+   ========================================================= */
+
+a:focus-visible,
+button:focus-visible {
+
+    outline:
+        2px solid var(--glow-cyan);
+
+    outline-offset: 4px;
+
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+
+    animation-duration: 0.01ms !important;
+
+    animation-iteration-count: 1 !important;
+
+    scroll-behavior: auto !important;
+
+    transition-duration: 0.01ms !important;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE TYPOGRAPHY
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .section-heading {
+        font-size: 2rem;
+    }
+
+    .section-body {
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+
+    .container {
+        width: 92%;
+    }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE DEVICES
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+    .section-heading {
+        font-size: 1.75rem;
+    }
+
+    .btn-large {
+        padding:
+            0.85rem 1.4rem;
+
+        font-size: 1rem;
+    }
+
+}

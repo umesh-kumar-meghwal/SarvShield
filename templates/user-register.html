@@ -1,597 +1,401 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
+    <title>Register | ScamShield AI</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
     >
 
-    <title>User Registration</title>
+    <!-- CSS -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='user-register.css') }}"
+    >
 
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
 </head>
 
 <body>
 
-    <h2>User Registration</h2>
+<main class="auth-page">
+
+    <section class="auth-card">
+
+        <!-- BRAND -->
+        <div class="brand-section">
+            <div class="brand-name">
+                SCAMSHIELD
+            </div>
+
+            <span class="brand-subtitle">
+                AI SECURITY
+            </span>
+        </div>
 
 
-    <!-- =========================
-         USER REGISTRATION FORM
-    ========================== -->
+        <!-- HEADING -->
+        <div class="auth-heading">
 
-    <form id="userRegisterForm">
+            <span class="eyebrow">
+                CREATE ACCOUNT
+            </span>
 
+            <h1>
+                Get started with ScamShield
+            </h1>
 
-        <!-- =========================
-             EMAIL
-        ========================== -->
-
-        <label>Email</label>
-
-        <input
-            type="email"
-            name="email"
-            id="email"
-            placeholder="Enter email"
-            required
-        >
-
-        <button
-            type="button"
-            id="sendOtpBtn"
-        >
-            Send OTP
-        </button>
-
-        <br>
-
-        <small id="otpTimer"></small>
-
-        <br><br>
-
-
-        <!-- =========================
-             OTP
-        ========================== -->
-
-        <div id="otpSection" style="display:none;">
-
-            <label>Enter OTP</label>
-
-            <input
-                type="text"
-                id="otp"
-                placeholder="Enter 6-digit OTP"
-                maxlength="6"
-                inputmode="numeric"
-            >
-
-            <button
-                type="button"
-                id="verifyOtpBtn"
-            >
-                Verify OTP
-            </button>
-
-            <br><br>
-
-            <div id="otpResponse"></div>
+            <p>
+                Create your account and start protecting
+                yourself from digital threats.
+            </p>
 
         </div>
 
 
-        <!-- =========================
-             NAME
-        ========================== -->
+        <!-- ================= EMAIL VERIFICATION ================= -->
 
-        <label>Name</label>
+        <div class="verification-box">
 
-        <input
-            type="text"
-            name="name"
-            id="name"
-            placeholder="Enter name"
-            required
+            <div class="verification-title">
+                <span class="verification-icon">✉</span>
+
+                <div>
+                    <strong>Email Verification</strong>
+                    <p>Verify your email before creating your account.</p>
+                </div>
+            </div>
+
+
+            <!-- EMAIL -->
+            <div class="form-group">
+
+                <label for="email">
+                    Email Address
+                </label>
+
+                <div class="email-action">
+
+                    <input
+                        type="email"
+                        name="email"
+                        id="email"
+                        placeholder="you@example.com"
+                        autocomplete="email"
+                        maxlength="254"
+                    >
+
+                    <button
+                        type="button"
+                        id="sendOtpBtn"
+                        class="send-otp-btn"
+                    >
+                        Send OTP
+                    </button>
+
+                </div>
+
+                <small
+                    id="emailError"
+                    class="field-error"
+                ></small>
+
+            </div>
+
+
+            <!-- OTP AREA -->
+
+            <div
+                id="otpSection"
+                class="otp-section"
+                style="display:none;"
+            >
+
+                <div class="otp-label-row">
+
+                    <label for="otp">
+                        Enter OTP
+                    </label>
+
+                    <span id="otpTimer">
+                        OTP sent
+                    </span>
+
+                </div>
+
+                <div class="otp-action">
+
+                    <input
+                        type="text"
+                        id="otp"
+                        name="otp"
+                        placeholder="Enter 6-digit OTP"
+                        maxlength="6"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                    >
+
+                    <button
+                        type="button"
+                        id="verifyOtpBtn"
+                        class="verify-otp-btn"
+                    >
+                        Verify
+                    </button>
+
+                </div>
+
+                <small
+                    id="otpError"
+                    class="field-error"
+                ></small>
+
+            </div>
+
+
+            <!-- EMAIL RESPONSE -->
+
+            <div
+                id="otpResponse"
+                class="otp-response"
+            ></div>
+
+        </div>
+
+
+        <!-- ================= REGISTRATION FORM ================= -->
+
+        <form
+            id="userRegisterForm"
+            novalidate
         >
 
-        <br><br>
+            <!-- NAME -->
+
+            <div class="form-group">
+
+                <label for="name">
+                    Full Name
+                </label>
+
+                <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    placeholder="Enter your full name"
+                    autocomplete="name"
+                    disabled
+                >
+
+                <small
+                    id="nameError"
+                    class="field-error"
+                ></small>
+
+            </div>
 
 
-        <!-- =========================
-             PASSWORD
-        ========================== -->
+            <!-- PASSWORD -->
 
-        <label>Password</label>
+            <div class="form-group">
 
-        <input
-            type="password"
-            name="password"
-            id="password"
-            placeholder="Enter Password"
-            required
+                <label for="password">
+                    Password
+                </label>
+
+                <div class="password-wrapper">
+
+                    <input
+                        type="password"
+                        name="password"
+                        id="password"
+                        placeholder="Create a strong password"
+                        autocomplete="new-password"
+                        disabled
+                    >
+
+                    <button
+                        type="button"
+                        class="password-toggle"
+                        id="togglePassword"
+                        disabled
+                    >
+                        Show
+                    </button>
+
+                </div>
+
+                <small
+                    id="passwordError"
+                    class="field-error"
+                ></small>
+
+            </div>
+
+
+            <!-- CONFIRM PASSWORD -->
+
+            <div class="form-group">
+
+                <label for="confirmPassword">
+                    Confirm Password
+                </label>
+
+                <div class="password-wrapper">
+
+                    <input
+                        type="password"
+                        id="confirmPassword"
+                        placeholder="Re-enter your password"
+                        autocomplete="new-password"
+                        disabled
+                    >
+
+                    <button
+                        type="button"
+                        class="password-toggle"
+                        id="toggleConfirmPassword"
+                        disabled
+                    >
+                        Show
+                    </button>
+
+                </div>
+
+                <small
+                    id="confirmPasswordError"
+                    class="field-error"
+                ></small>
+
+            </div>
+
+
+            <!-- PHONE -->
+
+            <div class="form-group">
+
+                <label for="phone">
+                    Phone Number
+                </label>
+
+                <input
+                    type="tel"
+                    name="phone"
+                    id="phone"
+                    placeholder="Enter your phone number"
+                    autocomplete="tel"
+                    inputmode="numeric"
+                    maxlength="10"
+                    disabled
+                >
+
+                <small
+                    id="phoneError"
+                    class="field-error"
+                ></small>
+
+            </div>
+
+
+            <!-- ADDRESS -->
+
+            <div class="form-group">
+
+                <label for="address">
+
+                    Address
+
+                    <span class="optional">
+                        Optional
+                    </span>
+
+                </label>
+
+                <textarea
+                    name="address"
+                    id="address"
+                    placeholder="Enter your address"
+                    autocomplete="street-address"
+                    rows="3"
+                    disabled
+                ></textarea>
+
+                <small
+                    id="addressError"
+                    class="field-error"
+                ></small>
+
+            </div>
+
+
+            <!-- RESPONSE -->
+
+            <div
+                id="registerResponse"
+                class="register-response"
+                role="alert"
+                aria-live="polite"
+            ></div>
+
+
+            <!-- REGISTER BUTTON -->
+
+            <button
+                type="submit"
+                id="registerBtn"
+                class="register-btn"
+                disabled
+            >
+
+                <span id="registerBtnText">
+                    Create Account
+                </span>
+
+                <span
+                    id="registerSpinner"
+                    class="spinner"
+                    hidden
+                ></span>
+
+            </button>
+
+        </form>
+
+
+        <!-- LOGIN LINK -->
+
+        <div class="auth-divider">
+            <span>Already have an account?</span>
+        </div>
+
+        <a
+            href="{{ url_for('login') }}"
+            class="login-link"
         >
+            Sign in to ScamShield
+        </a>
 
-        <br><br>
 
+        <p class="security-note">
+            Your security is our priority.
+        </p>
 
-        <!-- =========================
-             PHONE
-        ========================== -->
+    </section>
 
-        <label>Phone</label>
+</main>
 
-        <input
-            type="text"
-            name="phone"
-            id="phone"
-            placeholder="Enter Phone"
-            required
-        >
 
-        <br><br>
-
-
-        <!-- =========================
-             ADDRESS
-        ========================== -->
-
-        <label>Address</label>
-
-        <textarea
-            name="address"
-            id="address"
-            placeholder="Enter address"
-            required
-        ></textarea>
-
-        <br><br>
-
-
-        <!-- =========================
-             REGISTER
-        ========================== -->
-
-        <button
-            type="submit"
-            id="registerBtn"
-            disabled
-        >
-            Verify Email First
-        </button>
-
-    </form>
-
-
-    <br>
-
-    <h3>
-        <a href="/login">Login</a>
-    </h3>
-
-
-    <!-- =========================
-         REGISTER RESPONSE
-    ========================== -->
-
-    <div id="registerResponse"></div>
-
-
-<script>
-
-let otpVerified = false;
-
-let resendSeconds = 60;
-
-let resendInterval = null;
-
-
-/* =====================================================
-   SEND OTP
-===================================================== */
-
-$("#sendOtpBtn").on("click", function() {
-
-    let email = $("#email").val().trim();
-
-    if (!email) {
-
-        $("#otpResponse").html(
-            "<p style='color:red;'>Please enter your email.</p>"
-        );
-
-        return;
-    }
-
-
-    // Basic email validation
-
-    let emailPattern =
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailPattern.test(email)) {
-
-        $("#otpResponse").html(
-            "<p style='color:red;'>Please enter a valid email.</p>"
-        );
-
-        return;
-    }
-
-
-    $("#sendOtpBtn")
-        .prop("disabled", true)
-        .text("Sending...");
-
-
-    $.ajax({
-
-        url: "/send-otp",
-
-        type: "POST",
-
-        data: {
-            email: email
-        },
-
-
-        success: function(response) {
-
-            console.log("SEND OTP:", response);
-
-
-            $("#otpSection").show();
-
-
-            $("#otpResponse").html(
-                "<p style='color:green;'>" +
-                response.message +
-                "</p>"
-            );
-
-
-            // Start 60 second timer
-
-            startResendTimer();
-
-        },
-
-
-        error: function(xhr) {
-
-            console.log(
-                "SEND OTP ERROR:",
-                xhr.responseText
-            );
-
-
-            let message =
-                "Unable to send OTP.";
-
-
-            if (xhr.responseJSON) {
-
-                message =
-                    xhr.responseJSON.message ||
-                    message;
-
-            }
-
-
-            $("#otpResponse").html(
-                "<p style='color:red;'>" +
-                message +
-                "</p>"
-            );
-
-
-            $("#sendOtpBtn")
-                .prop("disabled", false)
-                .text("Send OTP");
-
-        }
-
-    });
-
-});
-
-
-/* =====================================================
-   60 SECOND RESEND TIMER
-===================================================== */
-
-function startResendTimer() {
-
-    resendSeconds = 60;
-
-
-    $("#sendOtpBtn")
-        .prop("disabled", true);
-
-
-    clearInterval(resendInterval);
-
-
-    $("#otpTimer").text(
-        "Resend OTP in " +
-        resendSeconds +
-        " seconds"
-    );
-
-
-    resendInterval = setInterval(function() {
-
-        resendSeconds--;
-
-
-        if (resendSeconds <= 0) {
-
-            clearInterval(resendInterval);
-
-
-            $("#sendOtpBtn")
-                .prop("disabled", false)
-                .text("Resend OTP");
-
-
-            $("#otpTimer").text(
-                "You can request a new OTP now."
-            );
-
-            return;
-        }
-
-
-        $("#otpTimer").text(
-            "Resend OTP in " +
-            resendSeconds +
-            " seconds"
-        );
-
-    }, 1000);
-
-}
-
-
-/* =====================================================
-   VERIFY OTP
-===================================================== */
-
-$("#verifyOtpBtn").on("click", function() {
-
-    let otp = $("#otp").val().trim();
-
-
-    if (!otp) {
-
-        $("#otpResponse").html(
-            "<p style='color:red;'>Please enter OTP.</p>"
-        );
-
-        return;
-    }
-
-
-    if (!/^\d{6}$/.test(otp)) {
-
-        $("#otpResponse").html(
-            "<p style='color:red;'>OTP must be 6 digits.</p>"
-        );
-
-        return;
-    }
-
-
-    $("#verifyOtpBtn")
-        .prop("disabled", true)
-        .text("Verifying...");
-
-
-    $.ajax({
-
-        url: "/verify-otp",
-
-        type: "POST",
-
-        data: {
-            otp: otp
-        },
-
-
-        success: function(response) {
-
-            console.log(
-                "VERIFY OTP:",
-                response
-            );
-
-
-            otpVerified = true;
-
-
-            $("#otpResponse").html(
-                "<p style='color:green;'>" +
-                response.message +
-                "</p>"
-            );
-
-
-            $("#verifyOtpBtn")
-                .prop("disabled", true)
-                .text("Email Verified ✓");
-
-
-            $("#email")
-                .prop("readonly", true);
-
-
-            $("#registerBtn")
-                .prop("disabled", false)
-                .text("Register");
-
-        },
-
-
-        error: function(xhr) {
-
-            console.log(
-                "VERIFY OTP ERROR:",
-                xhr.responseText
-            );
-
-
-            let message =
-                "Invalid OTP";
-
-
-            if (xhr.responseJSON) {
-
-                message =
-                    xhr.responseJSON.message ||
-                    message;
-
-            }
-
-
-            $("#otpResponse").html(
-                "<p style='color:red;'>" +
-                message +
-                "</p>"
-            );
-
-
-            $("#verifyOtpBtn")
-                .prop("disabled", false)
-                .text("Verify OTP");
-
-        }
-
-    });
-
-});
-
-
-/* =====================================================
-   FINAL REGISTRATION
-===================================================== */
-
-$("#userRegisterForm").on("submit", function(e) {
-
-    e.preventDefault();
-
-
-    // -------------------------
-    // CHECK OTP
-    // -------------------------
-
-    if (!otpVerified) {
-
-        $("#registerResponse").html(
-            "<p style='color:red;'>" +
-            "Please verify your email first." +
-            "</p>"
-        );
-
-        return;
-    }
-
-
-    // -------------------------
-    // DISABLE BUTTON
-    // -------------------------
-
-    $("#registerBtn")
-        .prop("disabled", true)
-        .text("Registering...");
-
-
-    // -------------------------
-    // SEND REGISTRATION
-    // -------------------------
-
-    $.ajax({
-
-        url: "/user-register",
-
-        type: "POST",
-
-        data: $(this).serialize(),
-
-
-        success: function(response) {
-
-            console.log(
-                "REGISTER SUCCESS:",
-                response
-            );
-
-
-            $("#registerResponse").html(
-                "<p style='color:green;'>" +
-                response.message +
-                "</p>"
-            );
-
-
-            if (response.redirect) {
-
-                window.location.href =
-                    response.redirect;
-
-            }
-
-        },
-
-
-        error: function(xhr) {
-
-            console.log(
-                "REGISTER ERROR:",
-                xhr.responseText
-            );
-
-
-            let message =
-                "Something went wrong";
-
-
-            if (xhr.responseJSON) {
-
-                message =
-                    xhr.responseJSON.message ||
-                    message;
-
-            }
-
-
-            $("#registerResponse").html(
-                "<p style='color:red;'>" +
-                message +
-                "</p>"
-            );
-
-
-            $("#registerBtn")
-                .prop("disabled", false)
-                .text("Register");
-
-        }
-
-    });
-
-});
-
-</script>
+<!-- JavaScript -->
+<script
+    src="{{ url_for('static', filename='user-register.js') }}"
+></script>
 
 </body>
-
 </html>
-
-
-
-

@@ -1,0 +1,819 @@
+/* =========================================
+   SCAMSHIELD - USER REGISTER
+========================================= */
+
+:root {
+    --navy: #0a0f1d;
+    --navy-light: #111827;
+
+    --blue: #3b82f6;
+    --blue-hover: #2563eb;
+
+    --cyan: #06b6d4;
+
+    --white: #ffffff;
+
+    --text: #0f172a;
+    --muted: #64748b;
+
+    --border: #cbd5e1;
+
+    --error: #dc2626;
+    --success: #059669;
+
+    --transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+
+/* =========================================
+   RESET
+========================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    font-family: "Inter", sans-serif;
+    color: var(--text);
+}
+
+
+/* =========================================
+   BACKGROUND
+========================================= */
+
+.auth-page {
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px 20px;
+
+    background:
+        radial-gradient(
+            circle at 15% 20%,
+            rgba(59, 130, 246, 0.18),
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at 85% 80%,
+            rgba(6, 182, 212, 0.12),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #050816,
+            #0a0f1d 50%,
+            #111827
+        );
+
+    position: relative;
+
+    overflow-x: hidden;
+}
+
+
+/* Decorative glow */
+
+.auth-page::before,
+.auth-page::after {
+    content: "";
+
+    position: absolute;
+
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+.auth-page::before {
+    width: 300px;
+    height: 300px;
+
+    top: -150px;
+    left: -100px;
+
+    background: rgba(59, 130, 246, 0.12);
+
+    filter: blur(70px);
+}
+
+.auth-page::after {
+    width: 280px;
+    height: 280px;
+
+    right: -100px;
+    bottom: -120px;
+
+    background: rgba(6, 182, 212, 0.10);
+
+    filter: blur(70px);
+}
+
+
+/* =========================================
+   CARD
+========================================= */
+
+.auth-card {
+    position: relative;
+
+    z-index: 2;
+
+    width: 100%;
+    max-width: 480px;
+
+    padding: 38px;
+
+    background: rgba(255, 255, 255, 0.98);
+
+    border: 1px solid rgba(255, 255, 255, 0.45);
+
+    border-radius: 22px;
+
+    box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.35);
+
+    animation: cardReveal 0.7s ease both;
+}
+
+@keyframes cardReveal {
+
+    from {
+        opacity: 0;
+        transform: translateY(25px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* =========================================
+   BRAND
+========================================= */
+
+.brand-section {
+    margin-bottom: 25px;
+}
+
+.brand-name {
+    color: var(--navy);
+
+    font-size: 1.15rem;
+
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+}
+
+.brand-subtitle {
+    display: block;
+
+    margin-top: 3px;
+
+    color: var(--blue);
+
+    font-size: 0.65rem;
+
+    font-weight: 700;
+
+    letter-spacing: 0.18em;
+}
+
+
+/* =========================================
+   HEADING
+========================================= */
+
+.auth-heading {
+    margin-bottom: 28px;
+}
+
+.eyebrow {
+    display: inline-block;
+
+    margin-bottom: 8px;
+
+    color: var(--blue);
+
+    font-size: 0.7rem;
+
+    font-weight: 700;
+
+    letter-spacing: 0.16em;
+}
+
+.auth-heading h1 {
+    margin-bottom: 9px;
+
+    color: var(--navy);
+
+    font-size: 2rem;
+
+    line-height: 1.15;
+
+    font-weight: 800;
+
+    letter-spacing: -0.03em;
+}
+
+.auth-heading p {
+    color: var(--muted);
+
+    font-size: 0.9rem;
+
+    line-height: 1.65;
+}
+
+
+/* =========================================
+   VERIFICATION BOX
+========================================= */
+
+.verification-box {
+    margin-bottom: 24px;
+
+    padding: 18px;
+
+    background: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+
+    border-radius: 14px;
+}
+
+.verification-title {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin-bottom: 17px;
+}
+
+.verification-icon {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: #eff6ff;
+
+    color: var(--blue);
+
+    border-radius: 10px;
+
+    font-size: 18px;
+}
+
+.verification-title strong {
+    display: block;
+
+    color: var(--navy);
+
+    font-size: 0.88rem;
+}
+
+.verification-title p {
+    margin-top: 3px;
+
+    color: var(--muted);
+
+    font-size: 0.7rem;
+}
+
+
+/* =========================================
+   FORM
+========================================= */
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #1e293b;
+
+    font-size: 0.82rem;
+
+    font-weight: 700;
+}
+
+.optional {
+    color: #94a3b8;
+
+    font-size: 0.7rem;
+
+    font-weight: 500;
+
+    margin-left: 5px;
+}
+
+
+/* =========================================
+   INPUT
+========================================= */
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+
+    padding: 12px 14px;
+
+    background: #ffffff;
+
+    color: var(--text);
+
+    border: 1px solid var(--border);
+
+    border-radius: 9px;
+
+    outline: none;
+
+    font-size: 0.88rem;
+
+    transition:
+        border-color var(--transition),
+        box-shadow var(--transition),
+        background var(--transition);
+}
+
+.form-group textarea {
+    resize: vertical;
+
+    min-height: 82px;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #94a3b8;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: var(--blue);
+
+    box-shadow:
+        0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+
+/* =========================================
+   DISABLED INPUT
+========================================= */
+
+.form-group input:disabled,
+.form-group textarea:disabled {
+    background: #f1f5f9;
+
+    color: #94a3b8;
+
+    cursor: not-allowed;
+
+    opacity: 0.75;
+}
+
+
+/* =========================================
+   EMAIL + OTP
+========================================= */
+
+.email-action,
+.otp-action {
+    display: flex;
+
+    gap: 8px;
+}
+
+.email-action input,
+.otp-action input {
+    flex: 1;
+
+    min-width: 0;
+}
+
+.send-otp-btn,
+.verify-otp-btn {
+    flex-shrink: 0;
+
+    padding: 0 14px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    font-size: 0.76rem;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background var(--transition),
+        transform var(--transition);
+}
+
+.send-otp-btn {
+    background: var(--navy);
+
+    color: white;
+}
+
+.send-otp-btn:hover:not(:disabled) {
+    background: var(--blue);
+
+    transform: translateY(-1px);
+}
+
+.send-otp-btn:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+}
+
+.verify-otp-btn {
+    background: var(--blue);
+
+    color: white;
+}
+
+.verify-otp-btn:hover:not(:disabled) {
+    background: var(--blue-hover);
+}
+
+.verify-otp-btn:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================
+   OTP
+========================================= */
+
+.otp-section {
+    margin-top: 15px;
+}
+
+.otp-label-row {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 7px;
+}
+
+.otp-label-row label {
+    margin: 0;
+}
+
+#otpTimer {
+    color: var(--blue);
+
+    font-size: 0.7rem;
+
+    font-weight: 600;
+}
+
+
+/* =========================================
+   PASSWORD
+========================================= */
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    padding-right: 65px;
+}
+
+.password-toggle {
+    position: absolute;
+
+    top: 50%;
+    right: 10px;
+
+    transform: translateY(-50%);
+
+    border: none;
+
+    background: transparent;
+
+    color: var(--blue);
+
+    font-size: 0.75rem;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    padding: 5px;
+}
+
+.password-toggle:hover:not(:disabled) {
+    color: var(--blue-hover);
+}
+
+.password-toggle:disabled {
+    color: #94a3b8;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================
+   ERRORS
+========================================= */
+
+.field-error {
+    display: block;
+
+    min-height: 17px;
+
+    margin-top: 5px;
+
+    color: var(--error);
+
+    font-size: 0.72rem;
+
+    line-height: 1.4;
+}
+
+.input-error {
+    border-color: var(--error) !important;
+
+    box-shadow:
+        0 0 0 3px rgba(220, 38, 38, 0.08) !important;
+}
+
+.input-valid {
+    border-color: var(--success) !important;
+}
+
+
+/* =========================================
+   OTP RESPONSE
+========================================= */
+
+.otp-response {
+    margin-top: 10px;
+}
+
+.otp-response .error-message,
+.otp-response .success-message {
+    padding: 9px 11px;
+
+    border-radius: 8px;
+
+    font-size: 0.74rem;
+
+    line-height: 1.5;
+}
+
+.error-message {
+    color: var(--error);
+
+    background: #fef2f2;
+
+    border: 1px solid #fecaca;
+}
+
+.success-message {
+    color: var(--success);
+
+    background: #ecfdf5;
+
+    border: 1px solid #a7f3d0;
+}
+
+
+/* =========================================
+   REGISTER RESPONSE
+========================================= */
+
+.register-response {
+    margin-bottom: 12px;
+}
+
+.register-response .error-message,
+.register-response .success-message {
+    padding: 10px 12px;
+
+    border-radius: 8px;
+
+    font-size: 0.78rem;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   REGISTER BUTTON
+========================================= */
+
+.register-btn {
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 48px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    background: var(--navy);
+
+    color: #ffffff;
+
+    font-size: 0.9rem;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background var(--transition),
+        transform var(--transition),
+        box-shadow var(--transition);
+}
+
+.register-btn:hover:not(:disabled) {
+    background: var(--blue);
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 10px 25px rgba(59, 130, 246, 0.25);
+}
+
+.register-btn:disabled {
+    opacity: 0.45;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================
+   SPINNER
+========================================= */
+
+.spinner {
+    width: 17px;
+    height: 17px;
+
+    margin-left: 9px;
+
+    border: 2px solid rgba(255, 255, 255, 0.35);
+
+    border-top-color: #ffffff;
+
+    border-radius: 50%;
+
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =========================================
+   LOGIN
+========================================= */
+
+.auth-divider {
+    display: flex;
+
+    align-items: center;
+
+    margin: 25px 0 16px;
+
+    color: #94a3b8;
+
+    font-size: 0.72rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+
+    flex: 1;
+
+    height: 1px;
+
+    background: #e2e8f0;
+}
+
+.auth-divider span {
+    padding: 0 12px;
+}
+
+.login-link {
+    display: block;
+
+    text-align: center;
+
+    padding: 11px;
+
+    border: 1px solid #bfdbfe;
+
+    border-radius: 9px;
+
+    color: var(--blue);
+
+    text-decoration: none;
+
+    font-size: 0.82rem;
+
+    font-weight: 700;
+
+    transition:
+        background var(--transition),
+        border-color var(--transition);
+}
+
+.login-link:hover {
+    background: #eff6ff;
+
+    border-color: var(--blue);
+}
+
+
+/* =========================================
+   SECURITY NOTE
+========================================= */
+
+.security-note {
+    margin-top: 20px;
+
+    text-align: center;
+
+    color: #94a3b8;
+
+    font-size: 0.7rem;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 520px) {
+
+    .auth-page {
+        padding: 20px 14px;
+    }
+
+    .auth-card {
+        padding: 28px 22px;
+
+        border-radius: 18px;
+    }
+
+    .auth-heading h1 {
+        font-size: 1.65rem;
+    }
+
+    .email-action,
+    .otp-action {
+        flex-direction: column;
+    }
+
+    .send-otp-btn,
+    .verify-otp-btn {
+        min-height: 44px;
+    }
+}

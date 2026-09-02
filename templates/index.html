@@ -1,6 +1,1201 @@
-<Center><h1>Scam Shield</h1>
-<h6>MIMT KOTA</h6>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ScamShield | Explainable Threat Intelligence</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- Flask Static CSS -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='index.css') }}"
+    >
+</head>
+
+<body class="antialiased">
+
+    <!-- =========================================================
+         NAVBAR
+    ========================================================== -->
+
+    <nav class="navbar glass-panel">
+        <div class="container nav-container">
+
+            <div class="logo">
+                <span class="logo-text text-glow">
+                    ScamShield
+                </span>
+            </div>
+
+            <ul class="nav-links">
+                <li>
+                    <a href="#vision">Vision</a>
+                </li>
+
+                <li>
+                    <a href="#how-it-works">How It Works</a>
+                </li>
+
+                <li>
+                    <a href="#features">Features</a>
+                </li>
+
+                <li>
+                    <a href="#faq">FAQ</a>
+                </li>
+            </ul>
+
+            <a
+                href="{{ url_for('login')}}"
+                class="btn btn-primary nav-button transition-all duration-200 hover:shadow-md"
+            >
+                Get Started
+            </a>
+
+        </div>
+    </nav>
 
 
-<h1><a href="/login">Get start</a></h1>
-    </Center>
+    <!-- =========================================================
+         HERO SECTION
+    ========================================================== -->
+
+    <section
+        id="hero"
+        class="hero-section dark-theme"
+    >
+
+        <!-- Background glow -->
+        <div class="bg-shape shape-1 float-anim"></div>
+        <div class="bg-shape shape-2 float-anim-delayed"></div>
+
+        <div class="container hero-container">
+
+            <!-- HERO TEXT -->
+            <div class="hero-content hero-text-animate">
+
+                <p class="hero-badge text-glow">
+                    Transparent. Explainable. Real-time.
+                </p>
+
+                <h1 class="hero-headline text-glow">
+                    Decoding Deception.
+                    <br>
+                    Empowering Action.
+                </h1>
+
+                <p class="hero-subheadline">
+                    ScamShield analyzes messages, links, screenshots, and numbers
+                    to explain risk and guide your safest next step.
+                </p>
+
+                <div class="hero-actions">
+                    <a
+                        href="/register"
+                        class="btn-primary btn-large hover-lift"
+                    >
+                        Get Started
+                    </a>
+                </div>
+
+            </div>
+
+
+            <!-- HERO IMAGE -->
+            <div class="hero-visual hero-image-animate">
+
+                <!--
+                    IMAGE WILL BE ADDED LATER.
+
+                    Example:
+
+                    <img
+                        src="{{ url_for('static', filename='images/hero-image.png') }}"
+                        alt="ScamShield threat analysis"
+                        class="hero-main-img"
+                    >
+                -->
+
+                <div class="hero-image-placeholder">
+
+                   <img
+                     src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y3liZXIlMjBzZWN1cml0eXxlbnwwfHwwfHx8MA%3D%3D"
+                   alt="scam shield threat anlysis"
+                   class="hero-main-img"
+                   >
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         VISION SECTION
+    ========================================================== -->
+
+    <section
+        id="vision"
+        class="vision-section light-theme vision-pattern"
+    >
+
+        <div class="container vision-container">
+
+            <div class="vision-content reveal-on-scroll">
+
+                <p class="section-eyebrow">
+                    THE SCAMSHIELD VISION
+                </p>
+
+                <h2 class="section-heading">
+                    Don't Just Detect.
+                    <span>Understand.</span>
+                </h2>
+
+                <p class="section-body">
+                    ScamShield doesn't stop at telling you that something is
+                    a scam. It explains why the content is dangerous, what
+                    signals make it suspicious, and what the attacker is
+                    trying to make you do.
+                </p>
+
+                <p class="section-body vision-secondary-text">
+                    Our goal is to turn confusing digital threats into clear,
+                    understandable decisions — so users can recognize
+                    deception, understand the risk, and take control of
+                    what happens next.
+                </p>
+
+            </div>
+
+
+            <div class="vision-highlight reveal-on-scroll delayed-1">
+
+                <div class="vision-highlight-line"></div>
+
+                <p>
+                    Detection tells you
+                    <strong>what</strong> happened.
+                </p>
+
+                <p>
+                    Explainability tells you
+                    <strong>why</strong>.
+                </p>
+
+                <p>
+                    SafeNext tells you
+                    <strong>what to do.</strong>
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         HOW IT WORKS
+    ========================================================== -->
+
+    <section
+        id="how-it-works"
+        class="process-section process-pattern"
+    >
+
+        <div class="container">
+
+            <div class="section-intro text-center reveal-on-scroll">
+
+                <p class="section-eyebrow">
+                    THE PROCESS
+                </p>
+
+                <h2 class="section-heading">
+                    How ScamShield Thinks
+                </h2>
+
+                <p class="section-body process-intro">
+                    From suspicious evidence to a clear decision, ScamShield
+                    combines multiple signals to understand the threat and
+                    guide you toward the safest next action.
+                </p>
+
+            </div>
+
+
+            <div class="process-flow">
+
+                <!-- STEP 01 -->
+
+                <div class="process-step reveal-on-scroll">
+
+                    <div class="step-card-large">
+
+                        <div class="step-number-large">
+                            01
+                        </div>
+
+                        <div class="step-content">
+
+                            <p class="step-label">
+                                INPUT
+                            </p>
+
+                            <h3 class="step-title">
+                                Submit Evidence
+                            </h3>
+
+                            <p class="step-desc">
+                                Add a suspicious SMS, URL, screenshot,
+                                email content, or phone number that you
+                                want to inspect.
+                            </p>
+
+                            <div class="step-example">
+                                <span>Message</span>
+                                <span>URL</span>
+                                <span>Screenshot</span>
+                                <span>Number</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CONNECTOR -->
+
+                <div class="step-connector animated-connector"></div>
+
+
+                <!-- STEP 02 -->
+
+                <div class="process-step reveal-on-scroll delayed-1">
+
+                    <div class="step-card-large">
+
+                        <div class="step-number-large">
+                            02
+                        </div>
+
+                        <div class="step-content">
+
+                            <p class="step-label">
+                                ANALYSIS
+                            </p>
+
+                            <h3 class="step-title">
+                                Analyze Multiple Signals
+                            </h3>
+
+                            <p class="step-desc">
+                                ScamShield examines language patterns,
+                                domains, links, numbers, known indicators
+                                and other available risk signals.
+                            </p>
+
+                            <div class="signal-list">
+                                <span>Language Pattern</span>
+                                <span>Domain Risk</span>
+                                <span>Sender Signal</span>
+                                <span>Threat Pattern</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CONNECTOR -->
+
+                <div class="step-connector animated-connector"></div>
+
+
+                <!-- STEP 03 -->
+
+                <div class="process-step reveal-on-scroll delayed-2">
+
+                    <div class="step-card-large">
+
+                        <div class="step-number-large">
+                            03
+                        </div>
+
+                        <div class="step-content">
+
+                            <p class="step-label">
+                                DECISION
+                            </p>
+
+                            <h3 class="step-title">
+                                Explain & Protect
+                            </h3>
+
+                            <p class="step-desc">
+                                Receive a risk score, supporting reasons,
+                                confidence level, and a clear SafeNext
+                                action plan.
+                            </p>
+
+                            <div class="result-preview">
+
+                                <span>
+                                    Risk Score
+                                </span>
+
+                                <strong>
+                                    87 / 100
+                                </strong>
+
+                                <small>
+                                    High Risk
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         FEATURES
+    ========================================================== -->
+
+    <section
+        id="features"
+        class="features-section off-white-theme"
+    >
+
+        <div class="container">
+
+            <div class="section-intro text-center reveal-on-scroll">
+
+                <p class="section-eyebrow">
+                    THE INTELLIGENCE LAYER
+                </p>
+
+                <h2 class="section-heading">
+                    See What ScamShield Can Do
+                </h2>
+
+                <p class="section-body features-intro">
+                    ScamShield turns raw evidence into understandable
+                    intelligence — giving you more than a simple
+                    "scam" or "safe" label.
+                </p>
+
+            </div>
+
+
+            <!-- FEATURE 01 -->
+
+            <div class="feature-showcase reveal-on-scroll">
+
+                <div class="feature-info">
+
+                    <p class="feature-number">
+                        01
+                    </p>
+
+                    <h3>
+                        Risk Score Generator
+                    </h3>
+
+                    <p>
+                        Converts multiple threat signals into a clear
+                        0–100 risk score so users can immediately understand
+                        how serious a suspicious piece of evidence may be.
+                    </p>
+
+                    <ul class="feature-points">
+                        <li>Multi-signal risk analysis</li>
+                        <li>Clear severity classification</li>
+                        <li>Confidence-backed result</li>
+                    </ul>
+
+                </div>
+
+
+                <div class="feature-demo risk-demo">
+
+                    <div class="risk-gauge">
+
+                        <div class="risk-gauge-inner">
+                            <strong>87</strong>
+                            <span>/ 100</span>
+                        </div>
+
+                    </div>
+
+                    <div class="risk-demo-info">
+
+                        <span class="risk-status">
+                            HIGH RISK
+                        </span>
+
+                        <p>
+                            Multiple suspicious signals detected.
+                        </p>
+
+                        <div class="risk-reasons">
+                            <span>Suspicious URL</span>
+                            <span>Urgency Language</span>
+                            <span>Unknown Sender</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FEATURE 02 -->
+
+            <div class="feature-showcase reverse reveal-on-scroll">
+
+                <div class="feature-info">
+
+                    <p class="feature-number">
+                        02
+                    </p>
+
+                    <h3>
+                        Attack Chain Visualizer
+                    </h3>
+
+                    <p>
+                        Shows how a deceptive interaction can move from
+                        the initial message to a potentially harmful outcome.
+                    </p>
+
+                    <ul class="feature-points">
+                        <li>Visual attack sequence</li>
+                        <li>Connected threat stages</li>
+                        <li>Easy-to-understand flow</li>
+                    </ul>
+
+                </div>
+
+
+                <div class="feature-demo attack-chain-demo">
+
+                    <div class="attack-node">
+                        <span>01</span>
+                        <strong>Unknown Sender</strong>
+                    </div>
+
+                    <div class="attack-line"></div>
+
+                    <div class="attack-node">
+                        <span>02</span>
+                        <strong>Fake Message</strong>
+                    </div>
+
+                    <div class="attack-line"></div>
+
+                    <div class="attack-node">
+                        <span>03</span>
+                        <strong>Malicious Link</strong>
+                    </div>
+
+                    <div class="attack-line"></div>
+
+                    <div class="attack-node">
+                        <span>04</span>
+                        <strong>Credential Request</strong>
+                    </div>
+
+                    <div class="attack-warning">
+                        Account Compromise Risk
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FEATURE 03 -->
+
+            <div class="feature-showcase reveal-on-scroll">
+
+                <div class="feature-info">
+
+                    <p class="feature-number">
+                        03
+                    </p>
+
+                    <h3>
+                        Scam Fingerprinting
+                    </h3>
+
+                    <p>
+                        Identifies recurring fraud patterns and compares
+                        suspicious evidence against recognizable scam
+                        characteristics.
+                    </p>
+
+                    <ul class="feature-points">
+                        <li>Pattern recognition</li>
+                        <li>Fraud characteristic matching</li>
+                        <li>Similarity-based intelligence</li>
+                    </ul>
+
+                </div>
+
+
+                <div class="feature-demo fingerprint-demo">
+
+                    <div class="fingerprint-header">
+                        <span>Pattern Match</span>
+                        <strong>94%</strong>
+                    </div>
+
+                    <div class="fingerprint-bar">
+                        <div class="fingerprint-progress"></div>
+                    </div>
+
+                    <div class="fingerprint-results">
+
+                        <div>
+                            <span>Urgency Trigger</span>
+                            <strong>Detected</strong>
+                        </div>
+
+                        <div>
+                            <span>Reward Claim</span>
+                            <strong>Detected</strong>
+                        </div>
+
+                        <div>
+                            <span>Payment Request</span>
+                            <strong>Detected</strong>
+                        </div>
+
+                        <div>
+                            <span>Known Scam Pattern</span>
+                            <strong>Matched</strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FEATURE 04 -->
+
+            <div class="feature-showcase reverse reveal-on-scroll">
+
+                <div class="feature-info">
+
+                    <p class="feature-number">
+                        04
+                    </p>
+
+                    <h3>
+                        Trust Graph Lite
+                    </h3>
+
+                    <p>
+                        Helps visualize relationships between suspicious
+                        numbers, domains, messages and reported threat
+                        indicators.
+                    </p>
+
+                    <ul class="feature-points">
+                        <li>Threat relationships</li>
+                        <li>Connected indicators</li>
+                        <li>Visual intelligence graph</li>
+                    </ul>
+
+                </div>
+
+
+                <div class="feature-demo trust-graph-demo">
+
+                    <div class="graph-node graph-center">
+                        Message
+                    </div>
+
+                    <div class="graph-node graph-top">
+                        Phone Number
+                    </div>
+
+                    <div class="graph-node graph-left">
+                        Domain
+                    </div>
+
+                    <div class="graph-node graph-right">
+                        Report
+                    </div>
+
+                    <div class="graph-node graph-bottom">
+                        Threat Pattern
+                    </div>
+
+                    <div class="graph-line line-top"></div>
+                    <div class="graph-line line-left"></div>
+                    <div class="graph-line line-right"></div>
+                    <div class="graph-line line-bottom"></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FEATURE 05 -->
+
+            <div class="feature-showcase reveal-on-scroll">
+
+                <div class="feature-info">
+
+                    <p class="feature-number">
+                        05
+                    </p>
+
+                    <h3>
+                        SafeNext Coach
+                    </h3>
+
+                    <p>
+                        Turns analysis into action by giving users a clear,
+                        practical recommendation for what they should do next.
+                    </p>
+
+                    <ul class="feature-points">
+                        <li>Action-focused guidance</li>
+                        <li>Risk-aware recommendations</li>
+                        <li>Simple next-step decisions</li>
+                    </ul>
+
+                </div>
+
+
+                <div class="feature-demo safenext-demo">
+
+                    <div class="safenext-header">
+                        <span>
+                            SAFENEXT RECOMMENDATION
+                        </span>
+                    </div>
+
+                    <div class="safenext-main">
+
+                        <h4>
+                            Do not interact with this message.
+                        </h4>
+
+                        <p>
+                            Multiple high-risk signals were detected.
+                        </p>
+
+                    </div>
+
+                    <div class="safenext-actions">
+
+                        <div>
+                            <strong>01</strong>
+                            Block the sender
+                        </div>
+
+                        <div>
+                            <strong>02</strong>
+                            Do not open the link
+                        </div>
+
+                        <div>
+                            <strong>03</strong>
+                            Report the message
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         INTELLIGENT DEFENSE
+    ========================================================== -->
+
+    <section
+        id="intelligent-defense"
+        class="signature-section intelligent-defense-section accent-theme"
+    >
+
+        <div class="container intelligent-defense-container">
+
+            <div class="intelligent-defense-content reveal-on-scroll">
+
+                <p class="section-eyebrow">
+                    INTELLIGENT DEFENSE
+                </p>
+
+                <h2 class="section-heading">
+                    From Detection
+                    <br>
+                    to Understanding.
+                </h2>
+
+                <p class="section-body">
+                    ScamShield exposes the mechanics behind digital deception.
+                    Instead of hiding the reasoning behind a prediction, it
+                    brings together patterns, signals, attack flow and
+                    confidence into an explanation users can understand.
+                </p>
+
+                <p class="section-body">
+                    The result is simple: less uncertainty, better decisions,
+                    and a safer next step.
+                </p>
+
+            </div>
+
+
+            <!-- IMAGE WILL BE ADDED LATER -->
+
+            <div class="intelligent-defense-visual reveal-on-scroll delayed-1">
+
+                <!--
+                    Add your selected image here later.
+
+                    Example:
+
+                    <img
+                        src="{{ url_for('static', filename='images/intelligent-defense.png') }}"
+                        alt="ScamShield intelligent threat analysis"
+                        class="intelligent-defense-image"
+                    >
+                -->
+
+               <img
+               src="https://plus.unsplash.com/premium_photo-1661877737564-3dfd7282efcb?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y3liZXIlMjBzZWN1cml0eXxlbnwwfHwwfHx8MA%3D%3D"
+               alt="ScamShild inteligent threat analysis"
+               class="intelligent-defense-image"
+               >
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         SCAM TYPES
+    ========================================================== -->
+
+    <section
+        id="scam-types"
+        class="scam-types-section light-theme"
+    >
+
+        <div class="container">
+
+            <div class="section-intro reveal-on-scroll">
+
+                <p class="section-eyebrow">
+                    THREAT AWARENESS
+                </p>
+
+                <h2 class="section-heading">
+                    Scam Types, Decoded
+                </h2>
+
+                <p class="section-body">
+                    Different scams use different tricks, but most follow
+                    recognizable patterns. ScamShield helps turn those
+                    patterns into information you can understand.
+                </p>
+
+            </div>
+
+
+            <div class="scam-types-layout">
+
+                <!-- SCAM TYPE LIST -->
+
+                <div class="scam-type-list reveal-on-scroll">
+
+                    <div class="scam-type active">
+
+                        <span>01</span>
+
+                        <div>
+                            <h3>
+                                Phishing & Fake Login
+                            </h3>
+
+                            <p>
+                                Fake links designed to capture passwords
+                                or sensitive information.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="scam-type">
+
+                        <span>02</span>
+
+                        <div>
+                            <h3>
+                                Payment & UPI Scams
+                            </h3>
+
+                            <p>
+                                Messages that pressure users into sending
+                                money or approving transactions.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="scam-type">
+
+                        <span>03</span>
+
+                        <div>
+                            <h3>
+                                Job & Internship Scams
+                            </h3>
+
+                            <p>
+                                Fake opportunities used to collect money
+                                or personal information.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="scam-type">
+
+                        <span>04</span>
+
+                        <div>
+                            <h3>
+                                Reward & Lottery Scams
+                            </h3>
+
+                            <p>
+                                Fake prizes used to create urgency and
+                                demand payment or information.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- EXPLANATION PANEL -->
+
+                <div class="scam-explanation reveal-on-scroll delayed-1">
+
+                    <div class="scam-explanation-header">
+
+                        <span>
+                            EXAMPLE ANALYSIS
+                        </span>
+
+                        <strong>
+                            PHISHING
+                        </strong>
+
+                    </div>
+
+                    <div class="scam-message">
+                        "Your account requires immediate verification.
+                        Click the link below to avoid suspension."
+                    </div>
+
+                    <div class="scam-analysis">
+
+                        <div class="analysis-row">
+                            <span>Urgency</span>
+                            <strong>Detected</strong>
+                        </div>
+
+                        <div class="analysis-row">
+                            <span>Account Impersonation</span>
+                            <strong>Detected</strong>
+                        </div>
+
+                        <div class="analysis-row">
+                            <span>Suspicious Link</span>
+                            <strong>Detected</strong>
+                        </div>
+
+                    </div>
+
+                    <div class="scam-explanation-result">
+
+                        <span>
+                            WHY IT MATTERS
+                        </span>
+
+                        <p>
+                            The message creates urgency and directs the
+                            user toward a potentially unsafe verification
+                            link.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         FAQ
+    ========================================================== -->
+
+    <section
+        id="faq"
+        class="faq-section light-theme"
+    >
+
+        <div class="container faq-container">
+
+            <div class="faq-heading reveal-on-scroll">
+
+                <p class="section-eyebrow">
+                    NEED TO KNOW
+                </p>
+
+                <h2 class="section-heading">
+                    Frequently Asked Questions
+                </h2>
+
+                <p class="section-body">
+                    Find quick answers about what ScamShield analyzes,
+                    how its explanations work, and what happens to your
+                    submissions.
+                </p>
+
+            </div>
+
+
+            <div class="accordion-container">
+
+                <div class="accordion-item glass-card hover-lift reveal-on-scroll">
+
+                    <button class="accordion-header">
+                        What does ScamShield check?
+                    </button>
+
+                    <div class="accordion-content">
+                        <p>
+                            We analyze SMS messages, URLs, uploaded screenshots,
+                            and phone numbers to detect recognizable fraud
+                            patterns.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="accordion-item glass-card hover-lift reveal-on-scroll">
+
+                    <button class="accordion-header">
+                        Is my data stored securely?
+                    </button>
+
+                    <div class="accordion-content">
+                        <p>
+                            Submissions are processed with security and privacy
+                            in mind, while personal identifiers can be removed
+                            from intelligence records where applicable.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="accordion-item glass-card hover-lift reveal-on-scroll">
+
+                    <button class="accordion-header">
+                        How do I know the score is reliable?
+                    </button>
+
+                    <div class="accordion-content">
+                        <p>
+                            Every score is supported by a transparent set of
+                            reasons and a confidence level based on the signals
+                            available during analysis.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="accordion-item glass-card hover-lift reveal-on-scroll">
+
+                    <button class="accordion-header">
+                        What happens after I report a scam?
+                    </button>
+
+                    <div class="accordion-content">
+                        <p>
+                            Reports can contribute to broader threat
+                            intelligence, helping identify recurring patterns
+                            and protect users from similar fraudulent activity.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         FOOTER
+    ========================================================== -->
+
+    <footer class="site-footer dark-theme">
+
+        <div class="container footer-content">
+
+            <div class="footer-brand">
+
+                <span class="logo-text">
+                    ScamShield
+                </span>
+
+                <p>
+                    Explainable intelligence for a safer digital world.
+                </p>
+
+                <a
+                    href="/home"
+                    class="footer-cta"
+                >
+                    Start protecting yourself →
+                </a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h4>
+                    Product
+                </h4>
+
+                <a href="#vision">Vision</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#features">Features</a>
+                <a href="#scam-types">Scam Types</a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h4>
+                    Safety
+                </h4>
+
+                <a href="/report">Report a Scam</a>
+                <a href="#faq">FAQ</a>
+                <a href="/contact">Support</a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h4>
+                    ScamShield
+                </h4>
+
+                <a href="#hero">Back to Top</a>
+                <a href="/register">Get Started</a>
+                <a href="/contact">Contact Us</a>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer-bottom">
+
+            <div class="container footer-bottom-content">
+
+                <p>
+                    © 2026 ScamShield Project. All rights reserved.
+                </p>
+
+                <p>
+                    Think twice. Scan smart. Stay protected.
+                </p>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- =========================================================
+         JAVASCRIPT
+    ========================================================== -->
+
+    <script
+        src="{{ url_for('static', filename='index.js') }}"
+    ></script>
+
+</body>
+</html>

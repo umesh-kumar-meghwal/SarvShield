@@ -2049,8 +2049,175 @@ def user_trust():
         return jsonify({
             "success": False,
             "message": str(e)
+        }), 500   
+    
+    
+    
+
+    try:
+
+        if "email" not in session:
+            return jsonify({
+                "success": False,
+                "message": "Please login again."
+            }), 401
+
+        user_email = str(
+            session.get("email", "")
+        ).strip().lower()
+
+        print("TRUST USER EMAIL:", repr(user_email))
+        print("TRUST USER TYPE:", repr(session.get("usertype")))
+
+        # IMPORTANT:
+        # Don't reject here based on exact "user" string
+        # until we confirm your actual session value.
+
+        # Scam checks
+        scam_result = (
+            supabase
+            .table("scam_checks")
+            .select(
+                "id,user_email,final_score,verdict,created_at"
+            )
+            .eq("user_email", user_email)
+            .order("created_at", desc=False)
+            .execute()
+        )
+
+        scam_checks = scam_result.data or []
+
+        # Reports
+        report_result = (
+            supabase
+            .table("scam_reports")
+            .select(
+                "id,user_email,phone,link,reason,created_at"
+            )
+            .eq("user_email", user_email)
+            .order("created_at", desc=False)
+            .execute()
+        )
+
+        reports = report_result.data or []
+
+        print("SCAM CHECKS:", len(scam_checks))
+        print("REPORTS:", len(reports))
+
+        # -----------------------------
+        # TRUST SCORE
+        # -----------------------------
+
+        if scam_checks:
+
+            trust_values = []
+
+            for row in scam_checks:
+
+                try:
+                    risk = float(
+                        row.get("final_score") or 0
+                    )
+                except:
+                    risk = 0
+
+                risk = max(0, min(100, risk))
+
+                trust_values.append(
+                    100 - risk
+                )
+
+            trust_score = round(
+                sum(trust_values) /
+                len(trust_values)
+            )
+
+        else:
+            trust_score = 100
+
+        # -----------------------------
+        # LABEL
+        # -----------------------------
+
+        if trust_score >= 80:
+            label = "TRUSTED"
+        elif trust_score >= 50:
+            label = "CAUTION"
+        else:
+            label = "HIGH RISK"
+
+        # -----------------------------
+        # ACTIVITIES
+        # -----------------------------
+
+        activities = []
+
+        for row in scam_checks:
+
+            try:
+                risk = float(
+                    row.get("final_score") or 0
+                )
+            except:
+                risk = 0
+
+            activities.append({
+                "date": row.get("created_at"),
+                "type": "Scam Check",
+                "verdict": str(
+                    row.get("verdict") or "UNKNOWN"
+                ).upper(),
+                "risk_score": round(risk),
+                "trust_score": round(100 - risk)
+            })
+
+        for row in reports:
+
+            activities.append({
+                "date": row.get("created_at"),
+                "type": "Spam Report",
+                "verdict": "REPORTED",
+                "risk_score": None,
+                "trust_score": None
+            })
+
+        activities.sort(
+            key=lambda x: x.get("date") or ""
+        )
+
+        # -----------------------------
+        # TREND
+        # -----------------------------
+
+        trend = []
+
+        for activity in activities:
+
+            if activity["type"] == "Scam Check":
+
+                trend.append({
+                    "date": activity["date"],
+                    "score": activity["trust_score"]
+                })
+
+        return jsonify({
+            "success": True,
+            "trust_score": trust_score,
+            "trust_label": label,
+            "scam_checks_count": len(scam_checks),
+            "reports_count": len(reports),
+            "activities": activities,
+            "trend": trend
+        })
+
+    except Exception as e:
+
+        print("TRUST API ERROR:", repr(e))
+
+        return jsonify({
+            "success": False,
+            "message": str(e)
         }), 500
-        
 
     print("========== TRUST API ==========")
     print("SESSION:", dict(session))

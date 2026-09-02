@@ -1,0 +1,250 @@
+:root {
+    --bg-deep: #0B1120;
+    --surface: #131B2E;
+    --surface-light: #18233A;
+    --accent: #4F7CFF;
+    --accent-soft: #7C9CFF;
+    --alert-amber: #FFB020;
+    --danger-red: #FF4D5E;
+    --safe-green: #2ED180;
+    --text-main: #E8ECF4;
+    --text-muted: #8B93A8;
+    --border: rgba(255, 255, 255, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Inter, Arial, sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-main);
+}
+
+.alerts-page {
+    min-height: 100vh;
+    max-width: 1050px;
+    margin: auto;
+    padding: 42px 28px 30px;
+}
+
+.top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 65px;
+}
+
+.back-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    transition: 0.2s ease;
+}
+
+.back-link:hover {
+    color: var(--text-main);
+}
+
+.brand {
+    text-align: right;
+}
+
+.brand-name {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.brand-subtitle {
+    margin-top: 3px;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.8px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 30px;
+    margin-bottom: 38px;
+}
+
+.eyebrow {
+    color: var(--accent-soft);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+
+h1 {
+    font-size: 42px;
+    letter-spacing: -1px;
+}
+
+.intro {
+    max-width: 610px;
+    margin-top: 12px;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.alert-count {
+    min-width: 115px;
+    padding: 17px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    text-align: center;
+}
+
+.count-number {
+    display: block;
+    font-size: 25px;
+    font-weight: 700;
+    color: var(--accent-soft);
+}
+
+.count-label {
+    display: block;
+    margin-top: 4px;
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.alerts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.alert-card {
+    display: flex;
+    gap: 18px;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    transition: 0.25s ease;
+}
+
+.alert-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(79, 124, 255, 0.3);
+}
+
+.alert-indicator {
+    width: 4px;
+    min-width: 4px;
+    border-radius: 5px;
+    background: #39445A;
+}
+
+.alert-card.unread .alert-indicator {
+    background: var(--accent);
+}
+
+.alert-content {
+    width: 100%;
+}
+
+.alert-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 12px;
+}
+
+.alert-type {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.alert-type.security {
+    color: var(--danger-red);
+}
+
+.alert-type.warning {
+    color: var(--alert-amber);
+}
+
+.alert-type.update {
+    color: var(--safe-green);
+}
+
+.alert-time {
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.alert-card h2 {
+    font-size: 17px;
+    margin-bottom: 8px;
+}
+
+.alert-card p {
+    max-width: 760px;
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.alert-action {
+    display: inline-block;
+    margin-top: 15px;
+    color: var(--accent-soft);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.alert-action:hover {
+    color: white;
+}
+
+footer {
+    margin-top: 60px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+}
+
+footer p {
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+@media (max-width: 650px) {
+
+    .alerts-page {
+        padding: 28px 18px;
+    }
+
+    .top-row {
+        margin-bottom: 45px;
+    }
+
+    .page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    h1 {
+        font-size: 34px;
+    }
+
+    .alert-count {
+        width: 100%;
+    }
+
+    .alert-card {
+        padding: 19px;
+    }

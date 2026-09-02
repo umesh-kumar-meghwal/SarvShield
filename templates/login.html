@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -10,72 +9,691 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Login</title>
+    <title>Login | ScamShield</title>
 
+    <!-- Google Font -->
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Inter", sans-serif;
+            min-height: 100vh;
+            background:
+                radial-gradient(
+                    circle at top left,
+                    rgba(45, 212, 191, 0.10),
+                    transparent 35%
+                ),
+                radial-gradient(
+                    circle at bottom right,
+                    rgba(59, 130, 246, 0.08),
+                    transparent 35%
+                ),
+                #070d19;
+
+            color: #f8fafc;
+        }
+
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 450px;
+
+            background: rgba(15, 23, 42, 0.92);
+
+            border: 1px solid #26344d;
+
+            border-radius: 24px;
+
+            padding: 42px;
+
+            box-shadow:
+                0 25px 70px rgba(0, 0, 0, 0.45),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
+
+            backdrop-filter: blur(14px);
+        }
+
+        /* =========================
+           BRAND
+        ========================= */
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 38px;
+        }
+
+        .brand-name {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-name::first-letter {
+            color: #ffffff;
+        }
+
+        .brand-line {
+            width: 38px;
+            height: 3px;
+            background: #2dd4bf;
+            border-radius: 999px;
+        }
+
+        /* =========================
+           HEADING
+        ========================= */
+
+        .login-heading {
+            margin-bottom: 30px;
+        }
+
+        .eyebrow {
+            color: #2dd4bf;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.8px;
+            margin-bottom: 10px;
+        }
+
+        .login-heading h1 {
+            font-size: 32px;
+            line-height: 1.2;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* =========================
+           FORM
+        ========================= */
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #e2e8f0;
+        }
+
+        input {
+            width: 100%;
+
+            height: 52px;
+
+            padding: 0 15px;
+
+            border-radius: 12px;
+
+            border: 1px solid #334155;
+
+            background: #0a1220;
+
+            color: #f8fafc;
+
+            font-family: inherit;
+
+            font-size: 14px;
+
+            outline: none;
+
+            transition: 0.2s ease;
+        }
+
+        input::placeholder {
+            color: #64748b;
+        }
+
+        input:focus {
+            border-color: #2dd4bf;
+
+            box-shadow:
+                0 0 0 3px rgba(45, 212, 191, 0.10);
+        }
+
+        /* =========================
+           PASSWORD
+        ========================= */
+
+        .password-box {
+            position: relative;
+        }
+
+        .password-box input {
+            padding-right: 52px;
+        }
+
+        .eye-button {
+            position: absolute;
+
+            right: 10px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            width: 38px;
+            height: 38px;
+
+            border: none;
+
+            background: transparent;
+
+            color: #64748b;
+
+            cursor: pointer;
+
+            border-radius: 8px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .eye-button:hover {
+            color: #2dd4bf;
+            background: rgba(45, 212, 191, 0.08);
+        }
+
+        .eye-button svg {
+            width: 21px;
+            height: 21px;
+
+            fill: none;
+
+            stroke: currentColor;
+
+            stroke-width: 1.8;
+        }
+
+        /* =========================
+           ERRORS
+        ========================= */
+
+        .field-error {
+            display: block;
+
+            min-height: 16px;
+
+            margin-top: 6px;
+
+            color: #fb7185;
+
+            font-size: 12px;
+        }
+
+        .login-response {
+            display: none;
+
+            margin-bottom: 18px;
+
+            padding: 12px 14px;
+
+            border-radius: 10px;
+
+            background: rgba(244, 63, 94, 0.08);
+
+            border: 1px solid rgba(244, 63, 94, 0.25);
+
+            color: #fb7185;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+        }
+
+        /* =========================
+           LOGIN BUTTON
+        ========================= */
+
+        .login-btn {
+            width: 100%;
+
+            height: 52px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background: #2dd4bf;
+
+            color: #061018;
+
+            font-family: inherit;
+
+            font-size: 14px;
+
+            font-weight: 800;
+
+            cursor: pointer;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 10px;
+
+            transition: 0.2s ease;
+        }
+
+        .login-btn:hover {
+            background: #5eead4;
+
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 8px 25px rgba(45, 212, 191, 0.18);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* =========================
+           SPINNER
+        ========================= */
+
+        .spinner {
+            width: 17px;
+            height: 17px;
+
+            border: 2px solid rgba(0, 0, 0, 0.25);
+
+            border-top-color: #061018;
+
+            border-radius: 50%;
+
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* =========================
+           REGISTER
+        ========================= */
+
+        .register-section {
+            text-align: center;
+
+            margin-top: 28px;
+
+            padding-top: 24px;
+
+            border-top: 1px solid #1e293b;
+        }
+
+        .register-section p {
+            color: #64748b;
+
+            font-size: 13px;
+
+            margin-bottom: 8px;
+        }
+
+        .register-link {
+            color: #2dd4bf;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            text-decoration: none;
+        }
+
+        .register-link:hover {
+            color: #5eead4;
+            text-decoration: underline;
+        }
+
+        /* =========================
+           SECURITY NOTE
+        ========================= */
+
+        .security-note {
+            text-align: center;
+
+            color: #475569;
+
+            font-size: 11px;
+
+            margin-top: 25px;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 520px) {
+
+            .login-page {
+                padding: 15px;
+            }
+
+            .login-card {
+                padding: 30px 22px;
+
+                border-radius: 20px;
+            }
+
+            .login-heading h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-    <h2>Login</h2>
+    <main class="login-page">
 
-    <form id="loginForm">
+        <section class="login-card">
 
-        <label>Email</label>
+            <!-- Brand -->
+            <div class="brand">
 
-        <br>
+                <span class="brand-name">
+                    ScamShield
+                </span>
 
-        <input
-            type="email"
-            name="email"
-            placeholder="Enter email"
-            required
-        >
+                <span class="brand-line"></span>
 
-        <br><br>
+            </div>
 
 
-        <label>Password</label>
+            <!-- Heading -->
+            <div class="login-heading">
 
-        <br>
+                <p class="eyebrow">
+                    SECURE ACCESS
+                </p>
 
-        <input
-            type="password"
-            name="password"
-            placeholder="Enter password"
-            required
-        >
+                <h1>
+                    Welcome back
+                </h1>
 
-        <br><br>
+                <p class="subtitle">
+                    Sign in to continue protecting yourself
+                    from digital threats.
+                </p>
 
-
-        <button
-            type="submit"
-            id="loginBtn"
-        >
-            Login
-        </button>
-
-    </form>
-    <h3><a href="/user-register">Register</a></h3>
+            </div>
 
 
-    <!-- Response -->
-    <div id="loginResponse"></div>
+            <!-- Login Form -->
+            <form id="loginForm" novalidate>
+
+                <!-- Email -->
+                <div class="form-group">
+
+                    <label for="email">
+                        Email address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="you@example.com"
+                        autocomplete="email"
+                        maxlength="254"
+                        required
+                    >
+
+                    <small
+                        id="emailError"
+                        class="field-error"
+                    ></small>
+
+                </div>
+
+
+                <!-- Password -->
+                <div class="form-group">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <div class="password-box">
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            maxlength="128"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            id="togglePassword"
+                            class="eye-button"
+                            aria-label="Show password"
+                            title="Show password"
+                        >
+
+                            <svg
+                                id="eyeIcon"
+                                viewBox="0 0 24 24"
+                            >
+
+                                <path
+                                    d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"
+                                ></path>
+
+                                <circle
+                                    cx="12"
+                                    cy="12"
+                                    r="2.5"
+                                ></circle>
+
+                            </svg>
+
+                        </button>
+
+                    </div>
+
+                    <small
+                        id="passwordError"
+                        class="field-error"
+                    ></small>
+
+                </div>
+
+
+                <!-- Backend Response -->
+                <div
+                    id="loginResponse"
+                    class="login-response"
+                    role="alert"
+                    aria-live="polite"
+                ></div>
+
+
+                <!-- Login Button -->
+                <button
+                    type="submit"
+                    id="loginBtn"
+                    class="login-btn"
+                >
+
+                    <span id="loginBtnText">
+                        Sign in
+                    </span>
+
+                    <span
+                        id="loginSpinner"
+                        class="spinner"
+                        hidden
+                    ></span>
+
+                </button>
+
+            </form>
+
+
+            <!-- Register -->
+            <div class="register-section">
+
+                <p>
+                    New to ScamShield?
+                </p>
+
+                <a
+                    href="{{ url_for('user_register') }}"
+                    class="register-link"
+                >
+                    Create an account
+                </a>
+
+            </div>
+
+
+            <!-- Security Note -->
+            <p class="security-note">
+                Your security is our priority.
+            </p>
+
+        </section>
+
+    </main>
 
 
     <script>
 
-        $("#loginForm").on("submit", function(e) {
+        /* =========================
+           PASSWORD SHOW / HIDE
+        ========================= */
+
+        $("#togglePassword").on("click", function () {
+
+            const password = $("#password");
+
+            const isPassword =
+                password.attr("type") === "password";
+
+            password.attr(
+                "type",
+                isPassword ? "text" : "password"
+            );
+
+            $(this).attr(
+                "aria-label",
+                isPassword
+                    ? "Hide password"
+                    : "Show password"
+            );
+
+            $(this).attr(
+                "title",
+                isPassword
+                    ? "Hide password"
+                    : "Show password"
+            );
+
+        });
+
+
+        /* =========================
+           LOGIN
+        ========================= */
+
+        $("#loginForm").on("submit", function (e) {
 
             e.preventDefault();
 
+            $("#emailError").text("");
+            $("#passwordError").text("");
+            $("#loginResponse").hide().html("");
+
+            const email =
+                $("#email").val().trim();
+
+            const password =
+                $("#password").val();
+
+
+            /* Validation */
+
+            if (!email) {
+
+                $("#emailError")
+                    .text("Please enter your email address.");
+
+                return;
+            }
+
+
+            if (!password) {
+
+                $("#passwordError")
+                    .text("Please enter your password.");
+
+                return;
+            }
+
+
+            /* Loading state */
 
             $("#loginBtn")
-                .prop("disabled", true)
-                .text("Logging in...");
+                .prop("disabled", true);
 
+            $("#loginBtnText")
+                .text("Signing in...");
+
+            $("#loginSpinner")
+                .prop("hidden", false);
+
+
+            /* AJAX */
 
             $.ajax({
 
@@ -85,47 +703,86 @@
 
                 data: $(this).serialize(),
 
+                success: function (response) {
 
-                success: function(response) {
+                    /*
+                     * Flask login route should return:
+                     *
+                     * {
+                     *     "redirect": "/user-dashboard"
+                     * }
+                     */
 
-                    // Flask route redirect decide karega
-                    window.location.href = response.redirect;
+                    if (
+                        response &&
+                        response.redirect
+                    ) {
 
-                },
+                        window.location.href =
+                            response.redirect;
 
+                    } else {
 
-                error: function(xhr) {
-
-                    let message = "Something went wrong";
-
-                    if (xhr.responseJSON) {
-
-                        message =
-                            xhr.responseJSON.message ||
-                            message;
+                        showError(
+                            "Invalid server response."
+                        );
 
                     }
 
-                    $("#loginResponse").html(
-                        "<p style='color:red;'>" +
-                        message +
-                        "</p>"
-                    );
+                },
+
+                error: function (xhr) {
+
+                    let message =
+                        "Invalid email or password.";
+
+                    if (
+                        xhr.responseJSON &&
+                        xhr.responseJSON.message
+                    ) {
+
+                        message =
+                            xhr.responseJSON.message;
+                    }
+
+                    showError(message);
 
                 },
 
-
-                complete: function() {
+                complete: function () {
 
                     $("#loginBtn")
-                        .prop("disabled", false)
-                        .text("Login");
+                        .prop("disabled", false);
+
+                    $("#loginBtnText")
+                        .text("Sign in");
+
+                    $("#loginSpinner")
+                        .prop("hidden", true);
 
                 }
 
             });
 
         });
+
+
+        /* =========================
+           ERROR DISPLAY
+        ========================= */
+
+        function showError(message) {
+
+            $("#loginResponse")
+                .html(
+                    "<strong>Login failed</strong><br>" +
+                    $("<div>")
+                        .text(message)
+                        .html()
+                )
+                .fadeIn(150);
+
+        }
 
     </script>
 
