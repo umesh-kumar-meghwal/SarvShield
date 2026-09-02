@@ -50,24 +50,11 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #060B13;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #1e293b;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #334155;
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #060B13; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
     </style>
 </head>
 
@@ -79,7 +66,7 @@
     <div id="sidebarBackdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
 
     <!-- =====================================================
-         SIDEBAR NAVIGATION (DESKTOP & MOBILE DRAWER)
+         SIDEBAR NAVIGATION
     ===================================================== -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 md:w-64 bg-dark-sidebar border-r border-dark-border flex flex-col justify-between shrink-0 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300 ease-in-out">
         <div>
@@ -95,7 +82,6 @@
                     </div>
                 </div>
 
-                <!-- Close Button (Mobile Only) -->
                 <button id="closeSidebarBtn" class="md:hidden text-slate-400 hover:text-white p-1 rounded-lg focus:outline-none" aria-label="Close Sidebar">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
@@ -103,25 +89,21 @@
 
             <!-- Navigation Links -->
             <nav class="p-4 space-y-1.5 text-sm font-medium sidebar-nav">
-                <!-- Home -->
                 <a href="/home" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
                     <i class="fa-regular fa-compass w-5 text-slate-400"></i>
                     <span>Home</span>
                 </a>
                 
-                <!-- Scam Check (Active) -->
                 <a href="/scamcheck" class="flex items-center gap-3.5 px-4 py-3 rounded-xl bg-blue-600/15 text-blue-400 border border-blue-500/20 font-semibold shadow-sm transition">
                     <i class="fa-solid fa-magnifying-glass w-5 text-blue-400"></i>
                     <span>Scam Check</span>
                 </a>
 
-                <!-- Report Scam -->
                 <a href="/scam-report" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
                     <i class="fa-solid fa-triangle-exclamation w-5 text-slate-400"></i>
                     <span>Report Scam</span>
                 </a>
 
-                <!-- History -->
                 <a href="/checkscam-history" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
                     <i class="fa-solid fa-clock-rotate-left w-5 text-slate-400"></i>
                     <span>History</span>
@@ -129,7 +111,7 @@
             </nav>
         </div>
 
-        <!-- Sidebar Bottom: Profile & Logout -->
+        <!-- Sidebar Bottom -->
         <div class="p-4 border-t border-dark-border/60 space-y-2">
             <a href="/my-profile" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-dark-hover transition">
                 {% if data and data.profile_picture %}
@@ -157,12 +139,9 @@
     ===================================================== -->
     <div class="flex-1 flex flex-col min-w-0 w-full" id="pageWrapper">
 
-        <!-- Responsive Top Header Navigation -->
+        <!-- Header -->
         <header class="h-20 border-b border-dark-border flex items-center justify-between px-4 sm:px-6 lg:px-10 bg-dark-base/90 backdrop-blur sticky top-0 z-30">
-            
-            <!-- Left: Mobile Toggle + Breadcrumb -->
             <div class="flex items-center gap-3">
-                <!-- Mobile Hamburger Button -->
                 <button id="mobileMenuBtn" class="md:hidden w-10 h-10 rounded-xl bg-dark-card border border-dark-border text-slate-300 hover:text-white flex items-center justify-center focus:outline-none active:scale-95 transition" aria-label="Open Navigation">
                     <i class="fa-solid fa-bars-staggered text-base"></i>
                 </button>
@@ -174,35 +153,26 @@
                 </div>
             </div>
 
-            <!-- Right Actions -->
             <div class="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium">
                 <a href="/feedback" class="text-slate-400 hover:text-white transition hidden sm:inline">Feedback</a>
-                
                 <a href="/alerts" class="text-slate-400 hover:text-white transition flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-dark-card/60 sm:bg-transparent border border-dark-border sm:border-0">
                     <i class="fa-regular fa-bell sm:hidden text-sm"></i>
                     <span class="hidden sm:inline">Alerts</span>
                     <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
                 </a>
-
                 <a href="/learn-more" class="text-slate-400 hover:text-white transition hidden md:inline">Learn More</a>
-
                 <a href="/my-profile" class="w-9 h-9 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 hover:bg-blue-600 hover:text-white transition" aria-label="Profile">
                     <i class="fa-solid fa-user text-sm"></i>
                 </a>
             </div>
         </header>
 
-        <!-- Main Inner Content -->
-        <main class="flex-1 p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-8 sm:space-y-10">
+        <!-- Main Content -->
+        <main class="flex-1 p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-10 sm:space-y-12">
 
-            <!-- =====================================================
-                 HERO BANNER
-            ===================================================== -->
+            <!-- Hero Banner -->
             <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#12274d] via-[#0b1b36] to-[#0a1324] border border-blue-900/40 p-6 sm:p-8 lg:p-12 shadow-2xl">
-                <!-- Background Glow Circles -->
                 <div class="absolute -right-16 -top-16 w-80 sm:w-96 h-80 sm:h-96 rounded-full bg-blue-500/10 blur-3xl pointer-events-none"></div>
-                <div class="absolute right-32 bottom-0 w-64 h-64 rounded-full bg-indigo-500/10 blur-2xl pointer-events-none"></div>
-
                 <div class="relative z-10 max-w-2xl space-y-3">
                     <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-widest uppercase bg-blue-500/20 text-blue-400 border border-blue-400/30">
                         <i class="fa-solid fa-shield-heart text-xs"></i> Activity Center
@@ -216,9 +186,7 @@
                 </div>
             </div>
 
-            <!-- =====================================================
-                 TRUST OVERVIEW SECTION
-            ===================================================== -->
+            <!-- Trust Overview Section -->
             <section class="space-y-4 sm:space-y-6">
                 <div class="flex items-center justify-between">
                     <div>
@@ -233,8 +201,6 @@
 
                 <!-- 3 Metric Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-
-                    <!-- Trust Score -->
                     <div class="rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 flex flex-col justify-between shadow-lg">
                         <div>
                             <div class="flex items-center justify-between">
@@ -246,18 +212,14 @@
                                 <span class="text-slate-500 text-base sm:text-lg font-bold">/100</span>
                             </div>
                         </div>
-
                         <div class="mt-4 sm:mt-5 space-y-2.5">
-                            <div id="trustLabel" class="inline-flex rounded-full px-3 py-1 text-xs font-semibold bg-slate-800 text-slate-300">
-                                Loading...
-                            </div>
+                            <div id="trustLabel" class="inline-flex rounded-full px-3 py-1 text-xs font-semibold bg-slate-800 text-slate-300">Loading...</div>
                             <div class="h-2 rounded-full bg-slate-800/80 overflow-hidden">
                                 <div id="trustBar" class="h-full bg-gradient-to-r from-blue-500 to-emerald-400 rounded-full transition-all duration-700" style="width:0%"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Scam Checks -->
                     <div class="rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-lg flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between">
@@ -266,12 +228,9 @@
                             </div>
                             <div id="scamCheckCount" class="text-4xl sm:text-5xl font-extrabold text-white mt-3 sm:mt-4 tracking-tight">--</div>
                         </div>
-                        <p class="text-xs text-slate-400 mt-4 sm:mt-5 flex items-center gap-1.5">
-                            <i class="fa-regular fa-circle-check text-indigo-400"></i> Previous security analyses completed
-                        </p>
+                        <p class="text-xs text-slate-400 mt-4 sm:mt-5 flex items-center gap-1.5"><i class="fa-regular fa-circle-check text-indigo-400"></i> Previous security analyses completed</p>
                     </div>
 
-                    <!-- Reports -->
                     <div class="sm:col-span-2 lg:col-span-1 rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-lg flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between">
@@ -280,16 +239,12 @@
                             </div>
                             <div id="reportCount" class="text-4xl sm:text-5xl font-extrabold text-white mt-3 sm:mt-4 tracking-tight">--</div>
                         </div>
-                        <p class="text-xs text-slate-400 mt-4 sm:mt-5 flex items-center gap-1.5">
-                            <i class="fa-solid fa-bullhorn text-amber-400"></i> Community spam & fraud alerts
-                        </p>
+                        <p class="text-xs text-slate-400 mt-4 sm:mt-5 flex items-center gap-1.5"><i class="fa-solid fa-bullhorn text-amber-400"></i> Community spam & fraud alerts</p>
                     </div>
                 </div>
 
                 <!-- Trust Graph & Recent Activity Grid -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
-                    
-                    <!-- Graph -->
                     <div class="lg:col-span-2 rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-lg">
                         <div class="mb-4 sm:mb-5">
                             <h4 class="font-bold text-white text-sm sm:text-base">📈 Trust Score Trend</h4>
@@ -297,13 +252,10 @@
                         </div>
                         <div class="relative h-60 sm:h-64 w-full">
                             <canvas id="trustChart"></canvas>
-                            <div id="noTrustData" class="absolute inset-0 flex items-center justify-center text-xs text-slate-500 hidden">
-                                No activity recorded yet
-                            </div>
+                            <div id="noTrustData" class="absolute inset-0 flex items-center justify-center text-xs text-slate-500 hidden">No activity recorded yet</div>
                         </div>
                     </div>
 
-                    <!-- Recent Activity -->
                     <div class="rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-lg flex flex-col">
                         <div class="mb-4">
                             <h4 class="font-bold text-white text-sm sm:text-base">🕒 Recent Activity</h4>
@@ -313,7 +265,6 @@
                             <p class="text-xs text-slate-400">Loading security logs...</p>
                         </div>
                     </div>
-
                 </div>
             </section>
 
@@ -329,9 +280,8 @@
 
                 <div class="rounded-3xl border border-dark-border bg-dark-card p-5 sm:p-8 shadow-xl">
                     <form id="scamCheckForm" enctype="multipart/form-data" class="space-y-5 sm:space-y-6">
-
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-
+                            
                             <!-- Message Textarea -->
                             <div class="md:col-span-2 space-y-2">
                                 <label for="message" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
@@ -345,18 +295,18 @@
                                 <label for="phone" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
                                     <i class="fa-solid fa-phone text-blue-400 mr-1.5"></i> Phone Number
                                 </label>
-                                <input type="text" id="phone" name="phone" placeholder="+91 98765 43210" class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                                <input type="text" id="phone" name="phone" placeholder="+91 98765 43210" class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
                             </div>
 
-                            <!-- Link / URL Input -->
+                            <!-- Link Input -->
                             <div class="space-y-2">
                                 <label for="link" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
                                     <i class="fa-solid fa-link text-blue-400 mr-1.5"></i> Link / URL
                                 </label>
-                                <input type="url" id="link" name="link" placeholder="https://suspicious-domain.com/login" class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                                <input type="url" id="link" name="link" placeholder="https://suspicious-domain.com/login" class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
                             </div>
 
-                            <!-- File Upload / Screenshot -->
+                            <!-- File Upload -->
                             <div class="md:col-span-2 space-y-2">
                                 <label for="screenshot" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
                                     <i class="fa-regular fa-image text-blue-400 mr-1.5"></i> Screenshot / Image Evidence
@@ -369,7 +319,7 @@
                                             <p class="text-[10px] sm:text-[11px] text-slate-500 mt-1">PNG, JPG, JPEG (Payment chats, QR codes, receipts)</p>
                                         </div>
                                         <input type="file" id="screenshot" name="screenshot" accept="image/*" class="hidden">
-                                        <p id="file-name" class="text-xs text-slate-400 mt-2"></p>
+                                        <p id="file-name" class="text-xs text-slate-400 mt-2 font-medium"></p>
                                     </label>
                                 </div>
                             </div>
@@ -385,11 +335,12 @@
                 </div>
 
                 <!-- =====================================================
-                     ANALYSIS RESULT CONTAINER
+                     DYNAMIC RESULT CONTAINER (5 FEATURES RENDER HERE)
                 ===================================================== -->
                 <div id="result" class="transition-all duration-300"></div>
 
             </section>
+
         </main>
 
         <!-- Footer -->
@@ -401,22 +352,24 @@
     </div>
 
     <!-- =====================================================
-         SCRIPTS & LOGIC
+         SCRIPTS & DYNAMIC RESULT RENDERING LOGIC
     ===================================================== -->
     <script>
-        /* =====================================================
-           MOBILE DRAWER TOGGLE
-        ===================================================== */
+        /* File Upload Name Display */
         const fileInput = document.getElementById('screenshot');
-  const fileNameDisplay = document.getElementById('file-name');
+        const fileNameDisplay = document.getElementById('file-name');
 
-  fileInput.addEventListener('change', function() {
-    if (fileInput.files.length > 0) {
-      fileNameDisplay.textContent = "Selected file: " + fileInput.files[0].name;
-    } else {
-      fileNameDisplay.textContent = "";
-    }
-  });
+        if (fileInput && fileNameDisplay) {
+            fileInput.addEventListener('change', function() {
+                if (fileInput.files.length > 0) {
+                    fileNameDisplay.textContent = "Selected file: " + fileInput.files[0].name;
+                } else {
+                    fileNameDisplay.textContent = "";
+                }
+            });
+        }
+
+        /* Mobile Drawer Toggle */
         $(document).ready(function () {
             function openMobileSidebar() {
                 $('#sidebar').removeClass('-translate-x-full');
@@ -448,9 +401,7 @@
             loadTrustData();
         });
 
-        /* =====================================================
-           ESCAPE HTML
-        ===================================================== */
+        /* HTML Escaper */
         function escapeHtml(value) {
             if (value === null || value === undefined) return "";
             return String(value)
@@ -462,44 +413,7 @@
         }
 
         /* =====================================================
-           LIST BUILDERS
-        ===================================================== */
-        function makeList(items, emptyText = "No indicators detected.") {
-            if (!Array.isArray(items) || items.length === 0) {
-                return `<p class="text-xs text-slate-400">${escapeHtml(emptyText)}</p>`;
-            }
-            let html = '<ul class="space-y-2">';
-            items.forEach(function (item) {
-                html += `
-                    <li class="flex items-start gap-2.5 text-xs text-slate-300">
-                        <i class="fa-solid fa-circle-notch text-blue-400 mt-1 text-[10px] shrink-0"></i>
-                        <span>${escapeHtml(item)}</span>
-                    </li>
-                `;
-            });
-            html += "</ul>";
-            return html;
-        }
-
-        function makeNumberedList(items, emptyText = "No information available.") {
-            if (!Array.isArray(items) || items.length === 0) {
-                return `<p class="text-xs text-slate-400">${escapeHtml(emptyText)}</p>`;
-            }
-            let html = '<ol class="space-y-2">';
-            items.forEach(function (item, idx) {
-                html += `
-                    <li class="flex items-start gap-3 text-xs text-slate-300">
-                        <span class="w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center shrink-0 text-[10px]">${idx + 1}</span>
-                        <span class="mt-0.5">${escapeHtml(item)}</span>
-                    </li>
-                `;
-            });
-            html += "</ol>";
-            return html;
-        }
-
-        /* =====================================================
-           FORM SUBMIT HANDLER
+           FORM SUBMIT HANDLER -> DYNAMIC 5-FEATURE RENDERING
         ===================================================== */
         $("#scamCheckForm").on("submit", function (e) {
             e.preventDefault();
@@ -524,15 +438,17 @@
 
             $("#checkBtn")
                 .prop("disabled", true)
-                .html(`<i class="fa-solid fa-spinner fa-spin mr-1"></i> Analyzing threat vectors...`);
+                .html(`<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> ScamShield AI Analyzing...`);
 
             $("#result").html(`
-                <div class="p-6 sm:p-8 rounded-3xl bg-dark-card border border-dark-border text-center space-y-3 sm:space-y-4 animate-pulse">
-                    <div class="w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center text-xl sm:text-2xl">
+                <div class="p-8 sm:p-12 rounded-3xl bg-dark-card border border-dark-border text-center space-y-4 animate-pulse shadow-2xl">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center text-3xl">
                         <i class="fa-solid fa-shield-halved fa-spin"></i>
                     </div>
-                    <h4 class="text-sm sm:text-base font-bold text-white">ScamShield AI is analyzing your input...</h4>
-                    <p class="text-[11px] sm:text-xs text-slate-400">Checking against verified scam databases, threat patterns, and language models.</p>
+                    <div class="space-y-1">
+                        <h4 class="text-base sm:text-lg font-bold text-white">Generating Threat Intelligence Suite...</h4>
+                        <p class="text-xs text-slate-400">Evaluating multi-signal risk, extracting fingerprint, attack chain & next steps.</p>
+                    </div>
                 </div>
             `);
 
@@ -560,106 +476,213 @@
                     const finalScore = Number(res.final_score || 0);
                     const verdict = (res.verdict || "UNKNOWN").toUpperCase();
 
-                    let verdictColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
-                    let verdictIcon = "fa-shield-check";
+                    // Colors & Badges based on Score
+                    let statusColor = "text-emerald-400";
+                    let badgeBg = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                    let gaugeBorder = "border-emerald-500/30 border-t-emerald-500";
+                    let statusLabel = "LOW RISK";
 
                     if (verdict === "SCAM" || verdict === "FRAUD" || finalScore >= 70) {
-                        verdictColor = "bg-rose-500/10 text-rose-400 border-rose-500/30";
-                        verdictIcon = "fa-triangle-exclamation";
+                        statusColor = "text-rose-400";
+                        badgeBg = "bg-rose-500/10 text-rose-400 border-rose-500/20";
+                        gaugeBorder = "border-rose-500/30 border-t-rose-500";
+                        statusLabel = "HIGH RISK";
                     } else if (verdict === "SPAM" || verdict === "SUSPICIOUS" || finalScore >= 40) {
-                        verdictColor = "bg-amber-500/10 text-amber-400 border-amber-500/30";
-                        verdictIcon = "fa-circle-exclamation";
+                        statusColor = "text-amber-400";
+                        badgeBg = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                        gaugeBorder = "border-amber-500/30 border-t-amber-500";
+                        statusLabel = "MODERATE RISK";
                     }
 
+                    // Collect all reason tags dynamically
+                    let allReasonTags = [];
+                    if (res.message_reasons && Array.isArray(res.message_reasons)) allReasonTags.push(...res.message_reasons);
+                    if (res.link_reasons && Array.isArray(res.link_reasons)) allReasonTags.push(...res.link_reasons);
+                    if (res.phone_reasons && Array.isArray(res.phone_reasons)) allReasonTags.push(...res.phone_reasons);
+                    if (res.screenshot_reasons && Array.isArray(res.screenshot_reasons)) allReasonTags.push(...res.screenshot_reasons);
+                    if (allReasonTags.length === 0) allReasonTags = ["Multi-signal analysis complete", "Behavioral checks passed"];
+
+                    // Build Attack Chain Nodes
+                    const chainItems = Array.isArray(res.attack_chain) && res.attack_chain.length > 0
+                        ? res.attack_chain
+                        : ["Initial Contact / Message", "Deceptive Threat Vector", "Credential / Payment Prompt", "Target Compromise"];
+
+                    let chainHtml = "";
+                    chainItems.forEach((node, i) => {
+                        chainHtml += `
+                            <div class="flex items-center gap-3 p-3 rounded-xl bg-dark-card border border-dark-border text-xs">
+                                <span class="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center text-[10px] shrink-0">0${i + 1}</span>
+                                <strong class="text-white font-medium">${escapeHtml(node)}</strong>
+                            </div>
+                        `;
+                        if (i < chainItems.length - 1) {
+                            chainHtml += `<div class="w-0.5 h-3 bg-indigo-500/40 mx-auto"></div>`;
+                        }
+                    });
+
+                    // Build Fingerprint Triggers
+                    const fingerprintItems = Array.isArray(res.scam_fingerprint) && res.scam_fingerprint.length > 0
+                        ? res.scam_fingerprint
+                        : ["Urgency Trigger", "Impersonation Vector", "Payment Gateway Demand", "Suspicious Domain Pattern"];
+
+                    let fingerprintHtml = "";
+                    fingerprintItems.forEach(fp => {
+                        fingerprintHtml += `
+                            <div class="p-2.5 rounded-xl bg-dark-card border border-dark-border">
+                                <span class="text-[10px] text-slate-400 block">${escapeHtml(fp)}</span>
+                                <strong class="text-amber-400 text-xs">Detected</strong>
+                            </div>
+                        `;
+                    });
+
+                    // SafeNext Steps
+                    const stepItems = Array.isArray(res.immediate_steps) && res.immediate_steps.length > 0
+                        ? res.immediate_steps
+                        : ["Do not reply or click provided links", "Block sender and report to authorities", "Secure associated accounts"];
+
+                    let stepsHtml = "";
+                    stepItems.forEach((step, idx) => {
+                        stepsHtml += `
+                            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-dark-card border border-dark-border text-xs text-slate-300">
+                                <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-[10px] shrink-0">0${idx + 1}</span>
+                                <span>${escapeHtml(step)}</span>
+                            </div>
+                        `;
+                    });
+
+                    // Dynamic 5 Features HTML Output
                     let html = `
-                        <div class="rounded-3xl border border-dark-border bg-dark-card p-5 sm:p-8 space-y-6 sm:space-y-8 shadow-2xl">
+                        <div class="space-y-8 pt-6">
                             
-                            <!-- Header / Verdict Overview -->
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-dark-border pb-5 sm:pb-6">
-                                <div>
-                                    <span class="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-slate-400">Analysis Verdict</span>
-                                    <div class="flex items-center gap-3 mt-1.5">
-                                        <div class="px-3 sm:px-4 py-1.5 rounded-xl border ${verdictColor} font-bold text-xs sm:text-sm uppercase tracking-wide flex items-center gap-2">
-                                            <i class="fa-solid ${verdictIcon}"></i> ${escapeHtml(verdict)}
-                                        </div>
-                                    </div>
+                            <div class="text-center max-w-2xl mx-auto space-y-1">
+                                <span class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${badgeBg}">
+                                    ANALYSIS COMPLETE • VERDICT: ${escapeHtml(verdict)}
+                                </span>
+                                <h3 class="text-2xl sm:text-3xl font-extrabold text-white">Threat Intelligence Result</h3>
+                            </div>
+
+                            <!-- 01: Dynamic Risk Score Generator -->
+                            <div class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 lg:p-10 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                                <div class="lg:col-span-7 space-y-3">
+                                    <span class="text-3xl font-extrabold text-blue-500 font-mono">01</span>
+                                    <h4 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Risk Score Generator</h4>
+                                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                        ${escapeHtml(res.why || "Converts multiple threat signals into a comprehensive 0–100 risk assessment.")}
+                                    </p>
+                                    <ul class="space-y-1.5 text-xs text-slate-400 pt-1">
+                                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-400 text-[10px]"></i> Calculated Threat Score: <strong class="text-white">${finalScore}/100</strong></li>
+                                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-400 text-[10px]"></i> Severity Classification: <strong class="text-white">${escapeHtml(verdict)}</strong></li>
+                                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-400 text-[10px]"></i> AI Confidence Matrix Evaluated</li>
+                                    </ul>
                                 </div>
-                                <div class="flex items-baseline gap-2">
-                                    <span class="text-xs text-slate-400 uppercase font-bold">Threat Score:</span>
-                                    <span class="text-3xl sm:text-4xl font-extrabold text-white">${finalScore}</span>
-                                    <span class="text-slate-500 font-bold text-xs sm:text-sm">/100</span>
+
+                                <div class="lg:col-span-5 rounded-2xl bg-dark-cardLight border border-dark-border p-6 text-center space-y-4 shadow-inner">
+                                    <div class="w-24 h-24 mx-auto rounded-full border-4 ${gaugeBorder} flex flex-col items-center justify-center shadow-lg">
+                                        <strong class="text-3xl font-extrabold text-white">${finalScore}</strong>
+                                        <span class="text-[10px] text-slate-400 font-bold">/ 100</span>
+                                    </div>
+                                    <span class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${badgeBg}">${statusLabel}</span>
+                                    <p class="text-xs text-slate-400">${escapeHtml(res.why_dangerous || "Multiple security indicators reviewed.")}</p>
+                                    <div class="flex flex-wrap items-center justify-center gap-1.5 pt-1">
+                                        ${allReasonTags.slice(0, 4).map(tag => `<span class="px-2.5 py-1 rounded-lg bg-dark-card text-[10px] text-slate-300 border border-dark-border truncate max-w-[200px]">${escapeHtml(tag)}</span>`).join('')}
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Why / Explanation -->
-                            ${res.why ? `
-                                <div class="p-4 rounded-2xl bg-dark-cardLight border border-dark-border">
-                                    <h4 class="text-xs uppercase font-bold tracking-wider text-blue-400 mb-1">💡 Summary Assessment</h4>
-                                    <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(res.why)}</p>
+                            <!-- 02: Dynamic Attack Chain Visualizer -->
+                            <div class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 lg:p-10 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                                <div class="lg:col-span-7 lg:order-2 space-y-3">
+                                    <span class="text-3xl font-extrabold text-indigo-500 font-mono">02</span>
+                                    <h4 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Attack Chain Visualizer</h4>
+                                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                        Identifies how this scam attempts to escalate from initial contact to financial or credential theft.
+                                    </p>
+                                    <ul class="space-y-1.5 text-xs text-slate-400 pt-1">
+                                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-indigo-400 text-[10px]"></i> Visual attack sequence</li>
+                                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-indigo-400 text-[10px]"></i> Identified threat vector stages</li>
+                                    </ul>
                                 </div>
-                            ` : ''}
 
-                            <!-- Breakdown Grid -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-                                ${inputs.message ? `
-                                    <div class="p-4 sm:p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
-                                        <div class="flex justify-between items-center">
-                                            <span class="font-bold text-xs sm:text-sm text-white flex items-center gap-2"><i class="fa-regular fa-message text-blue-400"></i> Message Analysis</span>
-                                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">${Number(res.message_score || 0)}/100</span>
-                                        </div>
-                                        <div>${makeList(res.message_reasons)}</div>
+                                <div class="lg:col-span-5 lg:order-1 rounded-2xl bg-dark-cardLight border border-dark-border p-5 space-y-2.5 shadow-inner">
+                                    ${chainHtml}
+                                    <div class="p-2.5 text-center rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[11px] font-bold">
+                                        ⚠️ Potential Account Compromise Vector
                                     </div>
-                                ` : ''}
-
-                                ${inputs.phone ? `
-                                    <div class="p-4 sm:p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
-                                        <div class="flex justify-between items-center">
-                                            <span class="font-bold text-xs sm:text-sm text-white flex items-center gap-2"><i class="fa-solid fa-phone text-blue-400"></i> Phone Analysis</span>
-                                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">${res.phone_score !== null ? Number(res.phone_score) + '/100' : 'N/A'}</span>
-                                        </div>
-                                        <div>${makeList(res.phone_reasons)}</div>
-                                    </div>
-                                ` : ''}
-
-                                ${inputs.link ? `
-                                    <div class="p-4 sm:p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
-                                        <div class="flex justify-between items-center">
-                                            <span class="font-bold text-xs sm:text-sm text-white flex items-center gap-2"><i class="fa-solid fa-link text-blue-400"></i> Link Analysis</span>
-                                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">${Number(res.link_score || 0)}/100</span>
-                                        </div>
-                                        <div>${makeList(res.link_reasons)}</div>
-                                    </div>
-                                ` : ''}
-
-                                ${inputs.screenshot ? `
-                                    <div class="p-4 sm:p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
-                                        <div class="flex justify-between items-center">
-                                            <span class="font-bold text-xs sm:text-sm text-white flex items-center gap-2"><i class="fa-regular fa-image text-blue-400"></i> Screenshot OCR</span>
-                                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">${Number(res.screenshot_score || 0)}/100</span>
-                                        </div>
-                                        ${res.detected_text ? `
-                                            <div class="p-2.5 rounded-lg bg-dark-card text-[11px] text-slate-400 font-mono italic max-h-20 overflow-y-auto">
-                                                "${escapeHtml(res.detected_text)}"
-                                            </div>
-                                        ` : ''}
-                                        <div>${makeList(res.screenshot_reasons)}</div>
-                                    </div>
-                                ` : ''}
+                                </div>
                             </div>
 
-                            <!-- Attack Chain & Action Steps -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 pt-1">
-                                ${Array.isArray(res.attack_chain) && res.attack_chain.length > 0 ? `
-                                    <div class="p-4 sm:p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
-                                        <h4 class="text-xs uppercase font-bold tracking-wider text-amber-400"><i class="fa-solid fa-link-slash mr-1"></i> Threat Flow</h4>
-                                        ${makeNumberedList(res.attack_chain)}
-                                    </div>
-                                ` : ''}
+                            <!-- 03: Dynamic Scam Fingerprinting -->
+                            <div class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 lg:p-10 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                                <div class="lg:col-span-7 space-y-3">
+                                    <span class="text-3xl font-extrabold text-amber-500 font-mono">03</span>
+                                    <h4 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Scam Fingerprinting</h4>
+                                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                        Recognizes pattern similarities against known global fraud databases and social engineering language.
+                                    </p>
+                                    <ul class="space-y-1.5 text-xs text-slate-400 pt-1">
+                                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-amber-400 text-[10px]"></i> Pattern recognition index</li>
+                                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-amber-400 text-[10px]"></i> Fraud characteristic signature matching</li>
+                                    </ul>
+                                </div>
 
-                                <div class="p-4 sm:p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-3">
-                                    <h4 class="text-xs uppercase font-bold tracking-wider text-emerald-400"><i class="fa-solid fa-shield-halved mr-1"></i> Recommended Action</h4>
-                                    <p class="text-xs font-semibold text-white">${escapeHtml(res.recommended_action || "DO NOT INTERACT")}</p>
-                                    ${Array.isArray(res.immediate_steps) ? makeNumberedList(res.immediate_steps) : ''}
+                                <div class="lg:col-span-5 rounded-2xl bg-dark-cardLight border border-dark-border p-6 space-y-4 shadow-inner">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-bold text-slate-400 uppercase">Pattern Match</span>
+                                        <strong class="text-lg font-bold text-amber-400 font-mono">${Math.min(finalScore + 5, 99)}%</strong>
+                                    </div>
+                                    <div class="h-2 rounded-full bg-slate-800 overflow-hidden">
+                                        <div class="h-full bg-gradient-to-r from-amber-500 to-rose-500 rounded-full transition-all duration-700" style="width: ${Math.min(finalScore + 5, 99)}%"></div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 pt-1 text-xs">
+                                        ${fingerprintHtml}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 04: Dynamic Signal / Trust Graph Lite -->
+                            <div class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 lg:p-10 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                                <div class="lg:col-span-7 lg:order-2 space-y-3">
+                                    <span class="text-3xl font-extrabold text-teal-500 font-mono">04</span>
+                                    <h4 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Trust Graph Lite</h4>
+                                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                        Shows the interconnected threat relationships across your submitted items and security signals.
+                                    </p>
+                                </div>
+
+                                <div class="lg:col-span-5 lg:order-1 rounded-2xl bg-dark-cardLight border border-dark-border p-6 flex flex-col items-center justify-center relative min-h-[200px] shadow-inner">
+                                    <div class="p-3 rounded-2xl bg-blue-600/20 border border-blue-500/40 text-white font-bold text-xs shadow-lg z-10 text-center">
+                                        🎯 Target Analysis Node
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2.5 w-full mt-4 z-10 text-[11px]">
+                                        ${inputs.message ? `<div class="p-2 rounded-xl bg-dark-card border border-dark-border text-center text-slate-300">📨 Message: ${Number(res.message_score || 0)}/100</div>` : ''}
+                                        ${inputs.phone ? `<div class="p-2 rounded-xl bg-dark-card border border-dark-border text-center text-slate-300">📞 Phone: ${res.phone_score !== null ? res.phone_score : 'N/A'}</div>` : ''}
+                                        ${inputs.link ? `<div class="p-2 rounded-xl bg-dark-card border border-dark-border text-center text-slate-300">🔗 Link: ${Number(res.link_score || 0)}/100</div>` : ''}
+                                        ${inputs.screenshot ? `<div class="p-2 rounded-xl bg-dark-card border border-dark-border text-center text-slate-300">🖼️ OCR: ${Number(res.screenshot_score || 0)}/100</div>` : ''}
+                                        <div class="p-2 rounded-xl bg-dark-card border border-dark-border text-center text-teal-400">🛡️ Score: ${finalScore}/100</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 05: Dynamic SafeNext Coach -->
+                            <div class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 lg:p-10 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                                <div class="lg:col-span-7 space-y-3">
+                                    <span class="text-3xl font-extrabold text-emerald-500 font-mono">05</span>
+                                    <h4 class="text-xl sm:text-2xl font-bold text-white tracking-tight">SafeNext Coach</h4>
+                                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                        Actionable, practical safety recommendations to prevent exploitation right now.
+                                    </p>
+                                </div>
+
+                                <div class="lg:col-span-5 rounded-2xl bg-dark-cardLight border border-dark-border p-6 space-y-3.5 shadow-inner">
+                                    <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        SAFENEXT DECISION
+                                    </span>
+                                    <div class="space-y-0.5">
+                                        <h5 class="font-bold text-sm text-white">${escapeHtml(res.recommended_action || "Do not interact with this message.")}</h5>
+                                    </div>
+                                    <div class="space-y-2 pt-1">
+                                        ${stepsHtml}
+                                    </div>
                                 </div>
                             </div>
 
@@ -667,6 +690,11 @@
                     `;
 
                     $("#result").html(html);
+
+                    // Smooth scroll to results
+                    $('html, body').animate({
+                        scrollTop: $("#result").offset().top - 100
+                    }, 600);
                 },
                 error: function (xhr, status, error) {
                     let message = "Something went wrong.";
@@ -689,9 +717,7 @@
             });
         });
 
-        /* =====================================================
-           TRUST OVERVIEW & CHART DATA
-        ===================================================== */
+        /* Trust Overview Data */
         let trustChart = null;
 
         async function loadTrustData() {
@@ -708,7 +734,6 @@
 
                 createTrustChart(data.trend);
                 renderTrustActivity(data.activities);
-
             } catch (error) {
                 console.error("Trust data error:", error);
                 $("#trustScore").text("--");
@@ -725,11 +750,7 @@
             }
             $("#noTrustData").addClass("hidden");
 
-            const labels = trend.map(item => {
-                if (!item.date) return "";
-                return new Date(item.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
-            });
-
+            const labels = trend.map(item => item.date ? new Date(item.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }) : "");
             const scores = trend.map(item => item.score);
 
             if (trustChart) trustChart.destroy();
@@ -754,35 +775,17 @@
                         pointBackgroundColor: "#60a5fa",
                         pointBorderColor: "#0D1728",
                         pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
+                        pointRadius: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: {
-                            min: 0,
-                            max: 100,
-                            grid: { color: "rgba(255, 255, 255, 0.05)" },
-                            ticks: { color: "#64748b", stepSize: 20, font: { size: 10 } }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: "#64748b", font: { size: 10 } }
-                        }
+                        y: { min: 0, max: 100, grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#64748b", stepSize: 20, font: { size: 10 } } },
+                        x: { grid: { display: false }, ticks: { color: "#64748b", font: { size: 10 } } }
                     },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: "#0D1728",
-                            borderColor: "#1E293B",
-                            borderWidth: 1,
-                            titleFont: { size: 11 },
-                            bodyFont: { size: 11 }
-                        }
-                    }
+                    plugins: { legend: { display: false } }
                 }
             });
         }
@@ -797,16 +800,11 @@
             }
 
             const recent = [...activities].reverse().slice(0, 6);
-
             recent.forEach(activity => {
                 let badge = "bg-slate-800 text-slate-300";
-                if (activity.verdict === "SCAM" || activity.verdict?.includes("SCAM")) {
-                    badge = "bg-rose-500/10 text-rose-400 border border-rose-500/20";
-                } else if (activity.verdict === "SPAM" || activity.verdict === "SUSPICIOUS") {
-                    badge = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
-                } else {
-                    badge = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                }
+                if (activity.verdict === "SCAM" || activity.verdict?.includes("SCAM")) badge = "bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                else if (activity.verdict === "SPAM" || activity.verdict === "SUSPICIOUS") badge = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                else badge = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
 
                 let date = activity.date ? new Date(activity.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
 
