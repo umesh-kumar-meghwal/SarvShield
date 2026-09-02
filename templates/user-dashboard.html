@@ -369,6 +369,7 @@
                                             <p class="text-[10px] sm:text-[11px] text-slate-500 mt-1">PNG, JPG, JPEG (Payment chats, QR codes, receipts)</p>
                                         </div>
                                         <input type="file" id="screenshot" name="screenshot" accept="image/*" class="hidden">
+                                        <p id="file-name" class="text-xs text-slate-400 mt-2"></p>
                                     </label>
                                 </div>
                             </div>
@@ -406,6 +407,16 @@
         /* =====================================================
            MOBILE DRAWER TOGGLE
         ===================================================== */
+        const fileInput = document.getElementById('screenshot');
+  const fileNameDisplay = document.getElementById('file-name');
+
+  fileInput.addEventListener('change', function() {
+    if (fileInput.files.length > 0) {
+      fileNameDisplay.textContent = "Selected file: " + fileInput.files[0].name;
+    } else {
+      fileNameDisplay.textContent = "";
+    }
+  });
         $(document).ready(function () {
             function openMobileSidebar() {
                 $('#sidebar').removeClass('-translate-x-full');
