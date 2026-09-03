@@ -1518,216 +1518,118 @@ def feedbacks():
         print("Feedback Error:", e)
         return "Unable to fetch feedbacks", 500
 
-
-
-
-@app.route("/my-feedback", methods=["GET", "POST"])
-def my_feedback():
-
-    if "email" not in session or session.get("usertype") != "user":
-        return redirect("/error")
-
-    user_email = session.get("email")
-
-    try:
-
-        # =========================================
-        # POST - ADD FEEDBACK
-        # =========================================
-
-        if request.method == "POST":
-
-            rating = request.form.get("rating", "").strip()
-            message = request.form.get("message", "").strip()
-
-            if not rating:
-                return jsonify({
-                    "success": False,
-                    "message": "Please select a rating."
-                }), 400
-
-            if not message:
-                return jsonify({
-                    "success": False,
-                    "message": "Please enter your feedback."
-                }), 400
-
-            try:
-                rating = int(rating)
-            except ValueError:
-                return jsonify({
-                    "success": False,
-                    "message": "Invalid rating."
-                }), 400
-
-            if rating < 1 or rating > 5:
-                return jsonify({
-                    "success": False,
-                    "message": "Rating must be between 1 and 5."
-                }), 400
-
-            supabase.table("feedback").insert({
-                "email": user_email,
-                "rating": rating,
-                "message": message
-            }).execute()
-
-            return jsonify({
-                "success": True,
-                "message": "Feedback submitted successfully!"
-            }), 200
-
-
-        # =========================================
-        # GET - FEEDBACK LIST
-        # =========================================
-
-        result = (
-            supabase
-            .table("feedback")
-            .select("*")
-            .eq("email", user_email)
-            .order("created_at", desc=True)
-            .execute()
-        )
-
-        return render_template(
-            "my-feedback.html",
-            feedbacks=result.data
-        )
-
-
-    except Exception as e:
-
-        print("My Feedback Error:", e)
-
-        return jsonify({
-            "success": False,
-            "message": str(e)
-        }), 500
-
-
-
-
-
-
 @app.route("/feedback", methods=["GET", "POST"])
 def feedback():
-
     if "email" not in session or session.get("usertype") != "user":
         return redirect("/error")
 
     user_email = session.get("email")
 
     try:
+        # User profile picture aur name fetch karein (table: 'user')
+        user_data = {}
+        try:
+            user_profile = (
+                supabase.table("user")  # <-- Yahan 'user' table aayega
+                .select("name, profile_picture")
+                .eq("email", user_email)
+                .limit(1)
+                .execute()
+            )
+            if user_profile.data:
+                user_data = user_profile.data[0]
+        except Exception:
+            user_data = {}
 
-        # =========================================
-        # CHECK SCAMCHECK USED OR NOT
-        # =========================================
-
+        # 1. Check if user has used ScamCheck at least once
         scam_result = (
-            supabase
-            .table("scam_checks")
+            supabase.table("scam_checks")
             .select("id")
             .eq("user_email", user_email)
             .limit(1)
             .execute()
         )
 
-        # ScamCheck use nahi kiya
         if not scam_result.data:
-
             return render_template(
                 "feedback.html",
-                can_feedback=False
+                can_feedback=False,
+                already_submitted=False,
+                data=user_data
             )
 
+        # 2. Check if user has ALREADY submitted feedback
+        existing_feedback = (
+            supabase.table("feedback")
+            .select("*")
+            .eq("email", user_email)
+            .order("id", desc=True)
+            .limit(1)
+            .execute()
+        )
+
+        user_feedback = existing_feedback.data[0] if existing_feedback.data else None
 
         # =========================================
-        # GET
+        # GET REQUEST
         # =========================================
-
         if request.method == "GET":
-
             return render_template(
                 "feedback.html",
-                can_feedback=True
+                can_feedback=True,
+                already_submitted=(user_feedback is not None),
+                user_feedback=user_feedback,
+                data=user_data
             )
 
-
         # =========================================
-        # POST
+        # POST REQUEST (SUBMISSION)
         # =========================================
+        if user_feedback:
+            return jsonify({
+                "success": False,
+                "message": "You have already submitted your feedback."
+            }), 400
 
         rating = request.form.get("rating", "").strip()
         message = request.form.get("message", "").strip()
 
-
         if not rating:
-
             return jsonify({
                 "success": False,
                 "message": "Please select a rating."
             }), 400
 
-
         if not message:
-
             return jsonify({
                 "success": False,
-                "message": "Please enter your feedback."
+                "message": "Please enter your feedback message."
             }), 400
 
-
-        # =========================================
-        # DOUBLE SECURITY CHECK
-        # =========================================
-
-        scam_check = (
-            supabase
-            .table("scam_checks")
-            .select("id")
-            .eq("user_email", user_email)
-            .limit(1)
-            .execute()
-        )
-
-        if not scam_check.data:
-
-            return jsonify({
-                "success": False,
-                "message": "You must use ScamCheck before submitting feedback."
-            }), 403
-
-
-        # =========================================
-        # SAVE FEEDBACK
-        # =========================================
-
-        supabase \
-            .table("feedback") \
-            .insert({
-                "email": user_email,
-                "rating": int(rating),
-                "message": message
-            }) \
-            .execute()
-
+        # Save Feedback in Supabase
+        supabase.table("feedback").insert({
+            "email": user_email,
+            "rating": int(rating),
+            "message": message
+        }).execute()
 
         return jsonify({
             "success": True,
             "message": "Thank you! Your feedback has been submitted successfully."
         }), 200
 
-
     except Exception as e:
-
         print("Feedback Error:", e)
-
         return jsonify({
             "success": False,
             "message": str(e)
         }), 500
+
+
+
+
+
+
 
 
 
