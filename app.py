@@ -2250,21 +2250,49 @@ def user_delete(email):
 
 @app.route('/history')
 def history():
-    return render_template('history.html')
+    if "email" not in session or session.get("usertype") != "user":
+        return redirect("/error")
+    user_email = session.get("email")
+    response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+    data = response.data
+    if not data:
+        return redirect("/error")
+    return render_template('history.html',data=data)
 
 @app.route('/alerts')
 def alerts():
-    return render_template('alerts.html')
+    if "email" not in session or session.get("usertype") != "user":
+        return redirect("/error")
+    user_email = session.get("email")
+    response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+    data = response.data
+    if not data:
+        return redirect("/error")
+    return render_template('alerts.html',data=data)
 
 @app.route('/learn-more')
 def learn_more():
-    return render_template('learn-more.html')
+    if "email" not in session or session.get("usertype") != "user":
+            return redirect("/error")
+    user_email = session.get("email")
+    response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+    data = response.data
+    if not data:
+        return redirect("/error")
+    return render_template('learn-more.html',data=data)
 
 
 # 2. MAIN HOME / DASHBOARD PAGE 
 @app.route('/home')
 def home_page():
-    return render_template('home.html')
+    if "email" not in session or session.get("usertype") != "user":
+        return redirect("/error")
+    user_email = session.get("email")
+    response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+    data = response.data
+    if not data:
+        return redirect("/error")
+    return render_template('home.html',data=data)
 
 # =========================================================
 # SINGLE SCAM RESULT DETAIL ROUTE (BY ID)
@@ -2303,8 +2331,12 @@ def scam_result_detail(scan_id):
                 .get_public_url(scan["screenshot"])
         else:
             scan["screenshot_url"] = None
+        response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+        data = response.data
+        if not data:
+            return redirect("/error")
 
-        return render_template("scam-result.html", scan=scan)
+        return render_template("scam-result.html", scan=scan,data=data)
 
     except Exception as e:
         print("FETCH SCAM RESULT ERROR:", repr(e))
@@ -2331,7 +2363,11 @@ def report_history():
             .execute()
         )
         reports = result.data or []
-        return render_template("report-history.html", reports=reports)
+        response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+        data = response.data
+        if not data:
+            return redirect("/error")
+        return render_template("report-history.html", reports=reports,data=data)
     except Exception as e:
         print("REPORT HISTORY ERROR:", repr(e))
         return f"Error loading report history: {str(e)}", 500
@@ -2374,8 +2410,12 @@ def checkscam_history():
                     .get_public_url(scan["screenshot"])
             else:
                 scan["screenshot_url"] = None
+        response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+        data = response.data
+        if not data:
+            return redirect("/error")
 
-        return render_template("checkscam-history.html", scans=scans)
+        return render_template("checkscam-history.html", scans=scans,data=data)
 
     except Exception as e:
         print("HISTORY FETCH ERROR:", repr(e))
@@ -2403,7 +2443,11 @@ def scam_report():
     user_email = session.get("email")
 
     if request.method == "GET":
-        return render_template("report-scam.html")
+        response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+        data = response.data
+        if not data:
+            return redirect("/error")
+        return render_template("report-scam.html",data=data)
 
     try:
         phone_number = request.form.get("phone_number", "").strip()
