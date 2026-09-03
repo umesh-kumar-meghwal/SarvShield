@@ -2358,164 +2358,35 @@ def checkscam_history():
 # REPORT SCAM (AUTO-INCREMENT IN spam_numbers & spam_links)
 # =========================================================
 
-@app.route("/scam-report", methods=["GET", "POST"])
-def scam_report():
-    # Login & User Type Check
-    if "email" not in session or session.get("usertype") != "user":
-        if request.method == "GET":
-            return redirect("/login")
-        return jsonify({"success": False, "message": "Please login as user to report a scam"}), 401
-
-    user_email = session.get("email")
-
-    if request.method == "GET":
-        response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
-        data = response.data
-        if not data:
-            return redirect("/error")
-        return render_template("report-scam.html",data=data)
-
-    try:
-        phone_number = request.form.get("phone_number", "").strip()
-        link = request.form.get("link", "").strip()
-        reason = request.form.get("reason", "").strip()
-
-        # 1. Validation: Phone ya Link dono me se kam se kam ek hona chahiye
-        if not phone_number and not link:
-            return jsonify({
-                "success": False,
-                "message": "Please provide at least a Phone Number OR a Link to report."
-            }), 400
-
-        # 2. Reason required
-        if not reason:
-            return jsonify({
-                "success": False,
-                "message": "Reason is required."
-            }), 400
-
-        # =========================================================
-        # 3. DUPLICATE CHECK: Kya is user ne pehle report kiya hai?
-        # =========================================================
-        if phone_number:
-            check_phone = (
-                supabase
-                .table("scam_reports")
-                .select("id")
-                .eq("user_email", user_email)
-                .eq("phone", phone_number)
-                .execute()
-            )
-            if check_phone.data and len(check_phone.data) > 0:
-                return jsonify({
-                    "success": False,
-                    "message": "You have already reported this phone number previously."
-                }), 409
-
-        if link:
-            check_link = (
-                supabase
-                .table("scam_reports")
-                .select("id")
-                .eq("user_email", user_email)
-                .eq("link", link)
-                .execute()
-            )
-            if check_link.data and len(check_link.data) > 0:
-                return jsonify({
-                    "success": False,
-                    "message": "You have already reported this link previously."
-                }), 409
-
-        # =========================================================
-        # 4. INSERT INTO scam_reports (User Audit Log)
-        # =========================================================
-        supabase.table("scam_reports").insert({
-            "user_email": user_email,
-            "phone": phone_number if phone_number else None,
-            "link": link if link else None,
-            "reason": reason
-        }).execute()
-
-        # =========================================================
-        # 5. SYNC WITH spam_numbers TABLE (Auto-Increment / Create)
-        # =========================================================
-        if phone_number:
-            exist_num = (
-                supabase
-                .table("spam_numbers")
-                .select("id, report_count")
-                .eq("phone", phone_number)
-                .execute()
-            )
-            if exist_num.data and len(exist_num.data) > 0:
-                current_count = exist_num.data[0].get("report_count") or 0
-                new_count = current_count + 1
-                supabase.table("spam_numbers").update({
-                    "report_count": new_count
-                }).eq("phone", phone_number).execute()
-                print(f"✓ Phone '{phone_number}' report_count updated to {new_count}")
-            else:
-                supabase.table("spam_numbers").insert({
-                    "phone": phone_number,
-                    "report_count": 1,
-                    "reputation": "SPAM",
-                    "score": 90
-                }).execute()
-                print(f"✓ New Phone '{phone_number}' added with report_count = 1")
-
-        # =========================================================
-        # 6. SYNC WITH spam_links TABLE (Auto-Increment / Create)
-        # =========================================================
-        if link:
-            exist_lnk = (
-                supabase
-                .table("spam_links")
-                .select("id, report_count")
-                .eq("link", link)
-                .execute()
-            )
-            if exist_lnk.data and len(exist_lnk.data) > 0:
-                current_count = exist_lnk.data[0].get("report_count") or 0
-                new_count = current_count + 1
-                supabase.table("spam_links").update({
-                    "report_count": new_count
-                }).eq("link", link).execute()
-                print(f"✓ Link '{link}' report_count updated to {new_count}")
-            else:
-                supabase.table("spam_links").insert({
-                    "link": link,
-                    "report_count": 1,
-                    "reputation": "SPAM",
-                    "score": 90
-                }).execute()
-                print(f"✓ New Link '{link}' added with report_count = 1")
-
-        return jsonify({
-            "success": True,
-            "message": "Scam reported successfully and spam database updated!"
-        }), 200
-
-    except Exception as e:
-        print("SCAM REPORT ERROR:", repr(e))
-        return jsonify({"success": False, "message": str(e)}), 500
-
-# =========================================================
-# CORE SCAMCHECK DETECTION ROUTE
-# =========================================================
-
-
-
-
-import traceback
+import os
 import uuid
+import traceback
+import requests
+from concurrent.futures import ThreadPoolExecutor
+from flask import Flask, request, jsonify, session, redirect, render_template
 
+# =========================================================
+# 1. PHONE DETECTION HELPER (DATABASE + ABSTRACT API)
 
+# =========================================================
+# 2. CORE SCAMCHECK DETECTION ROUTE
+# =========================================================
 @app.route("/scamcheck", methods=["GET", "POST"])
 def scamcheck_check():
+    # GET Request: Render Dashboard / ScamCheck Page
     if request.method == "GET":
-        return redirect("user-dashboard")
+        user_email = session.get("email")
+        user_data = {}
+        if user_email:
+            try:
+                res = supabase.table("user").select("name, profile_picture").eq("email", user_email).limit(1).execute()
+                if res.data:
+                    user_data = res.data[0]
+            except Exception:
+                user_data = {}
+        return render_template("user-dashboard.html", data=user_data)
 
+    # POST Request: Process Scam Analysis
     try:
         message = request.form.get("message", "").strip()
         phone = request.form.get("phone", "").strip()
@@ -2527,10 +2398,16 @@ def scamcheck_check():
         has_link = bool(link)
         has_screenshot = bool(screenshot_file and screenshot_file.filename)
 
+        if not (has_message or has_phone or has_link or has_screenshot):
+            return jsonify({
+                "success": False,
+                "message": "Please provide at least one input (Message, Phone, Link, or Screenshot)."
+            }), 400
+
         screenshot_bytes = None
         screenshot_db_record = None
 
-        # 1. In-Memory Screenshot Handling (No Disk Lock Errors)
+        # 1. In-Memory Screenshot Upload to Supabase Storage
         if has_screenshot:
             try:
                 suffix = os.path.splitext(screenshot_file.filename)[1].lower() or ".png"
@@ -2540,7 +2417,6 @@ def scamcheck_check():
 
                 screenshot_bytes = screenshot_file.read()
 
-                # Upload to Supabase Storage (Safe)
                 try:
                     supabase.storage.from_("scam-screenshots").upload(
                         storage_path,
@@ -2552,12 +2428,13 @@ def scamcheck_check():
             except Exception as ss_err:
                 print("SCREENSHOT PROCESS ERROR:", repr(ss_err))
 
+        # Default Results
         message_result = {"score": 0, "verdict": "UNKNOWN", "language": "unknown", "reasons": []}
         phone_result = {"found": False, "score": None, "reputation": "UNKNOWN", "report_count": 0, "reasons": []}
         link_result = {"score": 0, "domain": "", "final_domain": "", "verdict": "UNKNOWN", "reasons": []}
         screenshot_result = {"score": 0, "verdict": "UNKNOWN", "category": "Unknown", "detected_text": "", "reasons": []}
 
-        # 2. Parallel AI Execution (In-Memory)
+        # 2. Multi-Threaded Parallel AI Processing
         with ThreadPoolExecutor(max_workers=4) as executor:
             fut_msg = executor.submit(message_detect, message) if has_message else None
             fut_phone = executor.submit(phone_detect, supabase, phone) if has_phone else None
@@ -2592,7 +2469,7 @@ def scamcheck_check():
             "screenshot": screenshot_score if has_screenshot else 0
         }
 
-        # 3. Risk Engine
+        # 3. Risk Calculation Engine
         try:
             risk_result = calculate_risk(scores)
         except Exception:
@@ -2604,10 +2481,10 @@ def scamcheck_check():
             contribution_data = risk_result.get("contribution", {})
         else:
             final_score = int(risk_result or 0)
-            final_verdict = "VERY HIGH RISK" if final_score >= 80 else "HIGH RISK" if final_score >= 60 else "SUSPICIOUS" if final_score >= 30 else "LOW RISK"
+            final_verdict = "HIGH RISK" if final_score >= 60 else "SUSPICIOUS" if final_score >= 30 else "LOW RISK"
             contribution_data = {}
 
-        # 4. Fingerprint & Evidence
+        # 4. Fingerprint & Evidence Construction
         try:
             fingerprint_data = build_scam_fingerprint(
                 message=message,
@@ -2621,17 +2498,18 @@ def scamcheck_check():
 
         fingerprint = fingerprint_data.get("scam_fingerprint", [])
         attack_chain = fingerprint_data.get("attack_chain", [])
-        why_text = fingerprint_data.get("why", "Analysis completed.")
+        why_text = fingerprint_data.get("why", "Security analysis completed based on submitted attributes.")
 
         evidence = list(dict.fromkeys([
             str(r) for r in (
                 message_result.get("reasons", []) +
                 link_result.get("reasons", []) +
-                screenshot_result.get("reasons", [])
+                screenshot_result.get("reasons", []) +
+                phone_result.get("reasons", [])
             ) if r
         ]))
 
-        # 5. SafeNext Coach
+        # 5. SafeNext AI Coach Advice
         try:
             coach_advice = generate_safe_next(
                 final_score=final_score,
@@ -2647,7 +2525,7 @@ def scamcheck_check():
         except Exception:
             coach_advice = {}
 
-        # 6. What-If
+        # 6. What-If Signal Impact
         try:
             wi = what_if_analysis(
                 message_score=scores["message"],
@@ -2660,9 +2538,9 @@ def scamcheck_check():
             wi = {}
 
         signal_impact = wi.get("impact", {}) if isinstance(wi.get("impact"), dict) else {}
-        urgency_detected = [w for w in ["immediately", "verify", "suspended", "urgent", "24 hours", "blocked", "warning"] if w in (message + " " + link).lower()]
+        urgency_detected = [w for w in ["immediately", "verify", "suspended", "urgent", "24 hours", "blocked", "warning", "kyc"] if w in (message + " " + link).lower()]
 
-        # 7. Safe Supabase Save
+        # 7. Save Scan Record in Supabase DB
         try:
             current_user = session.get("email", "anonymous_user")
             supabase.table("scam_checks").insert({
@@ -2684,9 +2562,10 @@ def scamcheck_check():
                 "why_summary": why_text
             }).execute()
         except Exception as db_err:
-            print("DB NOTICE (Non-Fatal):", repr(db_err))
+            print("DB SAVE NOTICE:", repr(db_err))
 
-        # 8. Success JSON Return
+        # 8. Return Complete JSON Suite to Frontend
+        # 8. Return Complete JSON Suite to Frontend
         return jsonify({
             "success": True,
             "final_score": final_score,
@@ -2701,10 +2580,18 @@ def scamcheck_check():
             "message_verdict": message_result.get("verdict", "UNKNOWN"),
             "message_language": message_result.get("language", "unknown"),
             "message_reasons": [str(r) for r in message_result.get("reasons", [])],
+            
+            # --- PHONE FIELDS (Inhe add karein) ---
             "phone_score": phone_score,
             "phone_reputation": phone_result.get("reputation", "UNKNOWN"),
             "phone_report_count": phone_result.get("report_count", 0),
             "phone_reasons": [str(r) for r in phone_result.get("reasons", [])],
+            "phone_carrier": phone_result.get("carrier", "Unknown"),
+            "phone_line_type": phone_result.get("line_type", "Unknown"),
+            "phone_valid": phone_result.get("valid"),
+            "phone_country": phone_result.get("country", "India"),
+            # -------------------------------------
+
             "link_score": link_score,
             "link_verdict": link_result.get("verdict", "UNKNOWN"),
             "link_domain": link_result.get("domain", ""),
@@ -2729,11 +2616,13 @@ def scamcheck_check():
             "helplines": coach_advice.get("helplines", []),
             "safe_next": coach_advice.get("safe_next", []),
             "what_if": wi
-        })
-
+        }), 200
+        
     except Exception as e:
         print("\n❌ CRITICAL ROUTE CRASH ERROR:")
         traceback.print_exc()
         return jsonify({"success": False, "message": f"Server Error: {str(e)}", "error": str(e)}), 500
+
+
 if __name__ == '__main__':
     app.run(debug=True)
