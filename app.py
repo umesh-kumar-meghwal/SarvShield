@@ -618,7 +618,7 @@ def login():
             "email" in session
             and session.get("usertype") == "user"
         ):
-            return redirect("/user-dashboard")
+            return redirect("/home")
 
         elif (
             "email" in session
@@ -724,7 +724,7 @@ def login():
 
         else:
 
-            redirect_url = "/user-dashboard"
+            redirect_url = "/home"
 
 
         return jsonify({
