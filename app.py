@@ -53,12 +53,12 @@ def send_otp_email(to_email, otp):
     print("PASSWORD LENGTH:", len(SMTP_PASSWORD or ""))
 
     msg = EmailMessage()
-    msg["Subject"] = "ScamShield OTP"
+    msg["Subject"] = "SarvShield OTP"
     msg["From"] = SMTP_EMAIL
     msg["To"] = to_email
 
     msg.set_content(
-        f"Your ScamShield OTP is: {otp}"
+        f"Your SarvShield OTP is: {otp}"
     )
 
     with smtplib.SMTP("smtp.gmail.com", 587) as server:

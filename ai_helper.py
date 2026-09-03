@@ -15,7 +15,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
 OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-2.0-flash:free").strip()
 OPENROUTER_MAX_TOKENS = int(os.getenv("OPENROUTER_MAX_TOKENS", "1000"))
 OPENROUTER_SITE_URL = os.getenv("OPENROUTER_SITE_URL", "http://localhost:5000").strip()
-OPENROUTER_APP_NAME = os.getenv("OPENROUTER_APP_NAME", "ScamShield").strip()
+OPENROUTER_APP_NAME = os.getenv("OPENROUTER_APP_NAME", "SarvShield").strip()
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 REQUEST_TIMEOUT = 30
 
@@ -221,7 +221,7 @@ def call_openrouter(prompt: str, image_data: Any = None, system_prompt: Optional
         image_url = _image_to_data_url(image_data)
         if not image_url: return result
 
-        combined_instruction = f"""You are ScamShield Cybersecurity Threat Analyzer.
+        combined_instruction = f"""You are SarvShield Cybersecurity Threat Analyzer.
 {prompt}
 
 CRITICAL: Return ONLY a valid JSON object matching the requested schema. No conversational comments."""
@@ -237,7 +237,7 @@ CRITICAL: Return ONLY a valid JSON object matching the requested schema. No conv
         ]
         models_to_try = FREE_VISION_MODELS
     else:
-        sys_msg = system_prompt or "You are ScamShield threat analyzer. Output ONLY valid JSON."
+        sys_msg = system_prompt or "You are SarvShield threat analyzer. Output ONLY valid JSON."
         messages = [
             {"role": "system", "content": sys_msg},
             {"role": "user", "content": prompt}
