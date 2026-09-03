@@ -1,221 +1,386 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Learn More | ScamShield</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='learn-more.css') }}">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef6ff',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        },
+                        dark: {
+                            base: '#060B13',
+                            sidebar: '#080E1A',
+                            card: '#0D1728',
+                            cardLight: '#121F36',
+                            border: '#1E293B',
+                            hover: '#182744'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #060B13; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
 </head>
 
-<body>
+<body class="bg-dark-base text-slate-100 flex min-h-screen overflow-x-hidden antialiased relative">
 
-    <main class="learn-page">
+    <!-- =====================================================
+         MOBILE BACKDROP OVERLAY
+    ===================================================== -->
+    <div id="sidebarBackdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
 
-        <!-- Top -->
-        <div class="top-row">
+    <!-- =====================================================
+         SIDEBAR NAVIGATION
+    ===================================================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 md:w-64 bg-dark-sidebar border-r border-dark-border flex flex-col justify-between shrink-0 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300 ease-in-out">
+        <div>
+            <!-- Brand Logo & Close Button -->
+            <div class="h-20 flex items-center justify-between px-6 border-b border-dark-border/60">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 text-lg shadow-inner">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-extrabold text-base tracking-tight text-white leading-none">ScamShield</h2>
+                        <span class="text-[10px] tracking-widest uppercase font-bold text-blue-400">Digital Safety</span>
+                    </div>
+                </div>
 
-            <a href="{{ url_for('home_page') }}" class="back-link">
-                Back to Home
-            </a>
-
-            <div class="brand">
-                <div class="brand-name">ScamShield</div>
-                <div class="brand-subtitle">Digital Safety</div>
+                <button id="closeSidebarBtn" class="md:hidden text-slate-400 hover:text-white p-1 rounded-lg focus:outline-none" aria-label="Close Sidebar">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
             </div>
 
+            <!-- Navigation Links -->
+            <nav class="p-4 space-y-1.5 text-sm font-medium sidebar-nav">
+                <a href="{{ url_for('home_page') }}" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <svg class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path d="M3 10.5L12 3l9 7.5"></path>
+                        <path d="M5 9.5V21h14V9.5"></path>
+                        <path d="M9 21v-6h6v6"></path>
+                    </svg>
+                    <span>Home</span>
+                </a>
+
+                <a href="/scamcheck" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <svg class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path d="M12 3l8 3v5c0 5.2-3.4 8.8-8 10-4.6-1.2-8-4.8-8-10V6l8-3z"></path>
+                        <path d="M9 12l2 2 4-4"></path>
+                    </svg>
+                    <span>Scam Check</span>
+                </a>
+
+                <a href="/scam-report" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <svg class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path d="M12 3L3 7v5c0 4.8 3.8 8.4 9 9 5.2-.6 9-4.2 9-9V7l-9-4z"></path>
+                        <path d="M12 8v5"></path>
+                        <path d="M12 16h.01"></path>
+                    </svg>
+                    <span>Report Scam</span>
+                </a>
+
+                <a href="{{ url_for('history') }}" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <svg class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path d="M3 12a9 9 0 1 0 3-6.7"></path>
+                        <path d="M3 4v5h5"></path>
+                        <path d="M12 7v5l3 2"></path>
+                    </svg>
+                    <span>History</span>
+                </a>
+            </nav>
         </div>
 
-
-        <!-- Hero -->
-        <section class="hero">
-
-            <p class="eyebrow">DIGITAL SAFETY GUIDE</p>
-
-            <h1>
-                Learn how to
-                <span>spot deception.</span>
-            </h1>
-
-            <p class="hero-text">
-                Scams are designed to make you react before you think.
-                Learn the warning signs, understand common scam techniques,
-                and protect yourself from digital fraud.
-            </p>
-
-        </section>
-
-
-        <!-- Learning Cards -->
-        <section class="topics">
-
-            <article class="topic-card">
-
-                <div class="topic-number">01</div>
-
-                <div class="topic-content">
-
-                    <h2>Phishing</h2>
-
-                    <p>
-                        Phishing messages pretend to come from banks,
-                        companies or trusted people. They often contain
-                        suspicious links designed to steal your information.
-                    </p>
-
-                    <div class="signs">
-                        <span>Urgent requests</span>
-                        <span>Fake links</span>
-                        <span>Credential theft</span>
-                    </div>
-
+        <!-- Sidebar Bottom -->
+        <div class="p-4 border-t border-dark-border/60 space-y-2">
+            <a href="{{ url_for('my_profile') }}" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-dark-hover transition">
+                <div class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 font-semibold border border-slate-700 shrink-0">
+                    <i class="fa-regular fa-user text-sm"></i>
                 </div>
-
-            </article>
-
-
-            <article class="topic-card">
-
-                <div class="topic-number">02</div>
-
-                <div class="topic-content">
-
-                    <h2>Fake Authority</h2>
-
-                    <p>
-                        Scammers may pretend to be police officers, bank
-                        employees, government officials or customer support
-                        agents to create fear and pressure.
-                    </p>
-
-                    <div class="signs">
-                        <span>Impersonation</span>
-                        <span>Threats</span>
-                        <span>Pressure</span>
-                    </div>
-
+                <div class="overflow-hidden">
+                    <p class="text-xs font-semibold text-white truncate">My Profile</p>
+                    <p class="text-[10px] text-slate-400 truncate">Manage Account</p>
                 </div>
-
-            </article>
-
-
-            <article class="topic-card">
-
-                <div class="topic-number">03</div>
-
-                <div class="topic-content">
-
-                    <h2>Too Good To Be True</h2>
-
-                    <p>
-                        Fake rewards, lottery wins, investment opportunities
-                        and unbelievable discounts are common ways scammers
-                        attract victims.
-                    </p>
-
-                    <div class="signs">
-                        <span>Unexpected rewards</span>
-                        <span>Money requests</span>
-                        <span>Fake offers</span>
-                    </div>
-
-                </div>
-
-            </article>
-
-
-            <article class="topic-card">
-
-                <div class="topic-number">04</div>
-
-                <div class="topic-content">
-
-                    <h2>Social Engineering</h2>
-
-                    <p>
-                        Instead of attacking a device, scammers often attack
-                        human emotions. Fear, urgency, curiosity and trust
-                        can be used to manipulate decisions.
-                    </p>
-
-                    <div class="signs">
-                        <span>Fear</span>
-                        <span>Urgency</span>
-                        <span>Manipulation</span>
-                    </div>
-
-                </div>
-
-            </article>
-
-        </section>
-
-
-        <!-- Safety Rules -->
-        <section class="golden-rules">
-
-            <p class="section-label">REMEMBER</p>
-
-            <h2>The four rules of digital safety.</h2>
-
-            <div class="rules">
-
-                <div class="rule">
-                    <strong>Pause.</strong>
-                    <p>
-                        Don't react immediately to urgent messages.
-                    </p>
-                </div>
-
-                <div class="rule">
-                    <strong>Verify.</strong>
-                    <p>
-                        Check who is actually contacting you.
-                    </p>
-                </div>
-
-                <div class="rule">
-                    <strong>Protect.</strong>
-                    <p>
-                        Never share OTPs, passwords or PINs.
-                    </p>
-                </div>
-
-                <div class="rule">
-                    <strong>Report.</strong>
-                    <p>
-                        Report suspicious activity instead of ignoring it.
-                    </p>
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- CTA -->
-        <section class="cta">
-
-            <p>Not sure about a message, number or link?</p>
-
-            <h2>
-                Let ScamShield check it before you act.
-            </h2>
-
-            <a href="{{ url_for('scamcheck_api') }}" class="cta-button">
-                Check for Scam
             </a>
 
-        </section>
+            <a href="{{ url_for('login') }}" class="flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-rose-400 hover:bg-rose-500/10 text-xs font-semibold transition">
+                <svg class="w-4 h-4 stroke-current fill-none" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path d="M10 17l5-5-5-5"></path>
+                    <path d="M15 12H3"></path>
+                    <path d="M21 19V5a2 2 0 0 0-2-2h-7"></path>
+                </svg>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
 
+    <!-- =====================================================
+         PAGE WRAPPER
+    ===================================================== -->
+    <div class="flex-1 flex flex-col min-w-0 w-full" id="pageWrapper">
+
+        <!-- Responsive Top Bar Header -->
+        <header class="h-20 border-b border-dark-border flex items-center justify-between px-4 sm:px-6 lg:px-10 bg-dark-base/90 backdrop-blur sticky top-0 z-30">
+            <div class="flex items-center gap-3">
+                <button id="mobileMenuBtn" class="md:hidden w-10 h-10 rounded-xl bg-dark-card border border-dark-border text-slate-300 hover:text-white flex items-center justify-center focus:outline-none active:scale-95 transition" aria-label="Open Navigation">
+                    <i class="fa-solid fa-bars-staggered text-base"></i>
+                </button>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-xs uppercase font-bold tracking-widest text-slate-400">SCAMSHIELD</span>
+                    <span class="text-slate-600 hidden xs:inline">/</span>
+                    <span class="text-sm font-semibold text-white truncate">Digital Safety Guide</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium">
+                <a href="{{ url_for('home_page') }}" class="text-slate-400 hover:text-white transition hidden sm:inline">Back to Home</a>
+                
+                <a href="{{ url_for('alerts') }}" class="text-slate-400 hover:text-white transition flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-dark-card/60 sm:bg-transparent border border-dark-border sm:border-0">
+                    <i class="fa-regular fa-bell sm:hidden text-sm"></i>
+                    <span class="hidden sm:inline">Alerts</span>
+                    <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                </a>
+
+                <a href="{{ url_for('my_profile') }}" class="w-9 h-9 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 hover:bg-blue-600 hover:text-white transition" aria-label="Profile">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <circle cx="12" cy="8" r="3.5" />
+                        <path d="M5 20C5.8 16.7 8.3 14.8 12 14.8C15.7 14.8 18.2 16.7 19 20" stroke-linecap="round"/>
+                    </svg>
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-10 sm:space-y-12">
+
+            <!-- Hero Section -->
+            <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#12274d] via-[#0b1b36] to-[#0a1324] border border-blue-900/40 p-6 sm:p-8 lg:p-12 shadow-2xl">
+                <div class="absolute -right-16 -top-16 w-80 sm:w-96 h-80 sm:h-96 rounded-full bg-blue-500/15 blur-3xl pointer-events-none"></div>
+
+                <div class="relative z-10 max-w-2xl space-y-3">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-widest uppercase bg-blue-500/20 text-blue-400 border border-blue-400/30">
+                        <i class="fa-solid fa-graduation-cap text-xs"></i> DIGITAL SAFETY GUIDE
+                    </span>
+
+                    <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                        Learn how to <br>
+                        <span class="text-blue-400">spot deception.</span>
+                    </h1>
+
+                    <p class="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed">
+                        Scams are engineered to trigger emotional reactions before you have time to think. Learn the warning signs, recognize social engineering techniques, and protect yourself against fraud.
+                    </p>
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 TOPIC CARDS (4 FRAUD CATEGORIES)
+            ===================================================== -->
+            <section class="space-y-6">
+                <div>
+                    <span class="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-blue-400">COMMON THREAT PATTERNS</span>
+                    <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight mt-0.5">Four Common Scam Vectors</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+                    
+                    <!-- Topic 01: Phishing -->
+                    <article class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 space-y-4 hover:border-blue-500/40 transition shadow-xl flex flex-col justify-between">
+                        <div class="space-y-3">
+                            <span class="text-3xl font-extrabold text-blue-500 font-mono">01</span>
+                            <h3 class="text-xl font-bold text-white">Phishing</h3>
+                            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                Phishing messages pretend to originate from banks, trusted delivery companies, or coworkers. They contain deceptive links engineered to steal login credentials and financial details.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 pt-2 border-t border-dark-border/60">
+                            <span class="px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[11px] font-semibold">Urgent requests</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[11px] font-semibold">Fake domains</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[11px] font-semibold">Credential theft</span>
+                        </div>
+                    </article>
+
+                    <!-- Topic 02: Fake Authority -->
+                    <article class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 space-y-4 hover:border-rose-500/40 transition shadow-xl flex flex-col justify-between">
+                        <div class="space-y-3">
+                            <span class="text-3xl font-extrabold text-rose-500 font-mono">02</span>
+                            <h3 class="text-xl font-bold text-white">Fake Authority</h3>
+                            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                Scammers impersonate police officers, bank fraud executives, tax officials, or customer care agents using spoofed caller IDs to create acute fear and legal panic.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 pt-2 border-t border-dark-border/60">
+                            <span class="px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[11px] font-semibold">Impersonation</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[11px] font-semibold">Legal threats</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[11px] font-semibold">Immediate pressure</span>
+                        </div>
+                    </article>
+
+                    <!-- Topic 03: Too Good To Be True -->
+                    <article class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 space-y-4 hover:border-amber-500/40 transition shadow-xl flex flex-col justify-between">
+                        <div class="space-y-3">
+                            <span class="text-3xl font-extrabold text-amber-500 font-mono">03</span>
+                            <h3 class="text-xl font-bold text-white">Too Good To Be True</h3>
+                            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                Guaranteed high-return investments, fake lottery prizes, unrequested cashback, and unbelievable shopping discounts are classic traps designed to elicit advance fee deposits.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 pt-2 border-t border-dark-border/60">
+                            <span class="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[11px] font-semibold">Unexpected rewards</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[11px] font-semibold">Advance fees</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[11px] font-semibold">Fake offers</span>
+                        </div>
+                    </article>
+
+                    <!-- Topic 04: Social Engineering -->
+                    <article class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 space-y-4 hover:border-teal-500/40 transition shadow-xl flex flex-col justify-between">
+                        <div class="space-y-3">
+                            <span class="text-3xl font-extrabold text-teal-500 font-mono">04</span>
+                            <h3 class="text-xl font-bold text-white">Social Engineering</h3>
+                            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                Rather than technical hacking, fraudsters manipulate psychology: cultivating false intimacy, urgency, curiosity, or sympathy to convince targets into bypassing security safeguards.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 pt-2 border-t border-dark-border/60">
+                            <span class="px-2.5 py-1 rounded-lg bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[11px] font-semibold">Psychological fear</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[11px] font-semibold">Artificial urgency</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[11px] font-semibold">Trust manipulation</span>
+                        </div>
+                    </article>
+
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 SAFETY RULES (THE FOUR GOLDEN RULES)
+            ===================================================== -->
+            <section class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 lg:p-10 space-y-6 shadow-xl">
+                <div>
+                    <span class="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-emerald-400">DEFENSIVE PLAYBOOK</span>
+                    <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight mt-0.5">The Four Golden Rules of Digital Safety</h2>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                    
+                    <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-2">
+                        <span class="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center text-xs">01</span>
+                        <h4 class="font-bold text-white text-base">Pause.</h4>
+                        <p class="text-xs text-slate-400">Never react immediately to alarming or urgent messages. Take a breath and evaluate.</p>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-2">
+                        <span class="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center text-xs">02</span>
+                        <h4 class="font-bold text-white text-base">Verify.</h4>
+                        <p class="text-xs text-slate-400">Independently check the sender's identity through official phone numbers or websites.</p>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-2">
+                        <span class="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center text-xs">03</span>
+                        <h4 class="font-bold text-white text-base">Protect.</h4>
+                        <p class="text-xs text-slate-400">Never share One-Time Passwords (OTPs), card PINs, or confidential login details with anyone.</p>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-2">
+                        <span class="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center text-xs">04</span>
+                        <h4 class="font-bold text-white text-base">Report.</h4>
+                        <p class="text-xs text-slate-400">Submit suspicious activity on ScamShield to protect the global community from repeated attacks.</p>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 FINAL CTA
+            ===================================================== -->
+            <section class="rounded-3xl bg-gradient-to-r from-blue-900/30 via-dark-card to-dark-card border border-blue-800/40 p-6 sm:p-10 text-center space-y-4 shadow-xl">
+                <span class="text-[10px] sm:text-xs uppercase font-bold tracking-widest text-blue-400">STAY PROTECTED</span>
+                <h2 class="text-xl sm:text-3xl font-extrabold text-white">Not sure about a message, number, or link?</h2>
+                <p class="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">Let ScamShield's deep analysis engine evaluate the threat before you make any decisions.</p>
+                <div class="pt-2">
+                    <a href="/scamcheck" class="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-600/30 transition">
+                        <span>Check for Scam</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+            </section>
+
+        </main>
 
         <!-- Footer -->
-        <footer>
-            <p>ScamShield — Decode deception. Stay protected.</p>
+        <footer class="border-t border-dark-border/60 py-6 px-4 sm:px-6 lg:px-10 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+            <span>© 2026 ScamShield. Decode deception. Stay protected.</span>
+            <span>Digital Safety Platform.</span>
         </footer>
 
-    </main>
+    </div>
 
+    <!-- =====================================================
+         RESPONSIVE SIDEBAR JAVASCRIPT
+    ===================================================== -->
+    <script>
+        $(document).ready(function () {
+            function openMobileSidebar() {
+                $('#sidebar').removeClass('-translate-x-full');
+                $('#sidebarBackdrop').removeClass('hidden');
+                $('body').addClass('overflow-hidden');
+            }
+
+            function closeMobileSidebar() {
+                $('#sidebar').addClass('-translate-x-full');
+                $('#sidebarBackdrop').addClass('hidden');
+                $('body').removeClass('overflow-hidden');
+            }
+
+            $('#mobileMenuBtn').on('click', function(e) {
+                e.stopPropagation();
+                openMobileSidebar();
+            });
+
+            $('#closeSidebarBtn, #sidebarBackdrop').on('click', function() {
+                closeMobileSidebar();
+            });
+
+            $('.sidebar-nav a').on('click', function() {
+                if ($(window).width() < 768) {
+                    closeMobileSidebar();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

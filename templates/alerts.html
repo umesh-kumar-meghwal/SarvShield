@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Feedback | ScamShield</title>
+    <title>Alerts | ScamShield</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -163,19 +163,17 @@
                 <div class="flex items-center gap-2">
                     <span class="text-xs uppercase font-bold tracking-widest text-slate-400">SCAMSHIELD</span>
                     <span class="text-slate-600 hidden xs:inline">/</span>
-                    <a href="/feedback" class="text-slate-400 hover:text-white text-xs uppercase font-bold hidden sm:inline">Feedback</a>
-                    <span class="text-slate-600 hidden sm:inline">/</span>
-                    <span class="text-sm font-semibold text-white truncate">My Feedback</span>
+                    <span class="text-sm font-semibold text-white truncate">Security Alerts</span>
                 </div>
             </div>
 
             <div class="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium">
-                <a href="/feedback" class="text-slate-400 hover:text-white transition hidden sm:inline">Give Feedback</a>
+                <a href="{{ url_for('home_page') }}" class="text-slate-400 hover:text-white transition hidden sm:inline">Back to Home</a>
                 
-                <a href="{{ url_for('alerts') }}" class="text-slate-400 hover:text-white transition flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-dark-card/60 sm:bg-transparent border border-dark-border sm:border-0">
-                    <i class="fa-regular fa-bell sm:hidden text-sm"></i>
-                    <span class="hidden sm:inline">Alerts</span>
-                    <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                <a href="{{ url_for('alerts') }}" class="text-blue-400 hover:text-white transition flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600/15 border border-blue-500/20 font-semibold">
+                    <i class="fa-solid fa-bell text-sm"></i>
+                    <span>Alerts</span>
+                    <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                 </a>
 
                 <a href="{{ url_for('my_profile') }}" class="w-9 h-9 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 hover:bg-blue-600 hover:text-white transition" aria-label="Profile">
@@ -188,150 +186,141 @@
         </header>
 
         <!-- Main Content Area -->
-        <main class="flex-1 p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-8 sm:space-y-10">
+        <main class="flex-1 p-4 sm:p-6 lg:p-10 max-w-5xl mx-auto w-full space-y-8 sm:space-y-10">
 
             <!-- Hero Section -->
-            <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#12274d] via-[#0b1b36] to-[#0a1324] border border-blue-900/40 p-6 sm:p-8 lg:p-12 shadow-2xl">
+            <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#12274d] via-[#0b1b36] to-[#0a1324] border border-blue-900/40 p-6 sm:p-8 lg:p-12 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div class="absolute -right-16 -top-16 w-80 sm:w-96 h-80 sm:h-96 rounded-full bg-blue-500/15 blur-3xl pointer-events-none"></div>
 
                 <div class="relative z-10 max-w-2xl space-y-3">
                     <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-widest uppercase bg-blue-500/20 text-blue-400 border border-blue-400/30">
-                        <i class="fa-solid fa-clock-rotate-left text-xs"></i> YOUR SUBMISSIONS
+                        <i class="fa-solid fa-triangle-exclamation text-xs"></i> SECURITY CENTER
                     </span>
 
                     <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
-                        My Feedback History
+                        Security Alerts
                     </h1>
 
                     <p class="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed">
-                        Review your previous platform feedback, rating scores, and submit new user suggestions.
+                        Stay informed about important security notifications, high-risk detection findings, and safety recommendations.
                     </p>
+                </div>
+
+                <!-- Alert Counter Pill -->
+                <div class="relative z-10 rounded-2xl bg-dark-cardLight border border-dark-border p-4 sm:p-6 text-center space-y-1 shrink-0">
+                    <span class="text-3xl sm:text-4xl font-extrabold text-blue-400 font-mono block">3</span>
+                    <span class="text-[11px] uppercase font-bold text-slate-400 tracking-wider">New Alerts</span>
                 </div>
             </section>
 
-            <!-- Form & History Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+            <!-- =====================================================
+                 ALERTS FEED LIST
+            ===================================================== -->
+            <section class="space-y-4 sm:space-y-5">
                 
-                <!-- Feedback Form (Left / 5 Cols) -->
-                <div class="lg:col-span-5 rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 shadow-xl space-y-5">
-                    <div>
-                        <span class="text-[10px] uppercase font-bold tracking-wider text-blue-400">NEW ENTRY</span>
-                        <h2 class="text-lg sm:text-xl font-bold text-white tracking-tight mt-0.5">Submit Feedback</h2>
+                <!-- Alert 01: Critical Security Alert (Unread) -->
+                <article class="rounded-3xl border border-rose-500/30 bg-dark-card p-6 sm:p-8 shadow-xl space-y-4 hover:border-rose-500/50 transition relative overflow-hidden group">
+                    <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-rose-500"></div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-dark-border/60 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-1 rounded-lg bg-rose-500/15 text-rose-400 border border-rose-500/20 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span> Security Alert
+                            </span>
+                            <span class="text-[11px] font-bold text-rose-400">UNREAD</span>
+                        </div>
+                        <span class="text-xs text-slate-400 font-mono">Today</span>
                     </div>
 
-                    <form id="feedbackForm" class="space-y-4 sm:space-y-5">
-                        
-                        <!-- Rating Dropdown -->
-                        <div class="space-y-1.5">
-                            <label class="block text-xs uppercase tracking-wider font-bold text-slate-300">
-                                <i class="fa-solid fa-star text-amber-400 mr-1"></i> Rating <span class="text-rose-400">*</span>
-                            </label>
-                            <select name="rating" required class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition cursor-pointer">
-                                <option value="" class="bg-dark-card text-slate-400">Select Rating</option>
-                                <option value="5" class="bg-dark-card text-slate-200">⭐⭐⭐⭐⭐ 5 - Excellent</option>
-                                <option value="4" class="bg-dark-card text-slate-200">⭐⭐⭐⭐ 4 - Very Good</option>
-                                <option value="3" class="bg-dark-card text-slate-200">⭐⭐⭐ 3 - Good</option>
-                                <option value="2" class="bg-dark-card text-slate-200">⭐⭐ 2 - Average</option>
-                                <option value="1" class="bg-dark-card text-slate-200">⭐ 1 - Poor</option>
-                            </select>
-                        </div>
-
-                        <!-- Feedback Message -->
-                        <div class="space-y-1.5">
-                            <label class="block text-xs uppercase tracking-wider font-bold text-slate-300">
-                                <i class="fa-regular fa-message text-blue-400 mr-1"></i> Your Feedback <span class="text-rose-400">*</span>
-                            </label>
-                            <textarea
-                                name="message"
-                                rows="4"
-                                placeholder="Write your feedback and improvement ideas..."
-                                required
-                                class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition resize-none"
-                            ></textarea>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <button
-                            type="submit"
-                            id="submitBtn"
-                            class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-600/30 transition transform active:scale-95 flex items-center justify-center gap-2"
-                        >
-                            <i class="fa-solid fa-paper-plane"></i> Submit Feedback
-                        </button>
-
-                    </form>
-
-                    <!-- AJAX Response Container -->
-                    <div id="feedbackResponse" class="transition-all duration-300"></div>
-                </div>
-
-                <!-- Feedback History List (Right / 7 Cols) -->
-                <div class="lg:col-span-7 rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 shadow-xl space-y-6">
-                    <div class="flex items-center justify-between border-b border-dark-border pb-4">
-                        <div>
-                            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">PAST REVIEWS</span>
-                            <h2 class="text-lg sm:text-xl font-bold text-white tracking-tight mt-0.5">My Submitted Feedback</h2>
-                        </div>
-                        <span class="px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold font-mono">
-                            {{ feedbacks|length if feedbacks else 0 }} Total
-                        </span>
-                    </div>
-
-                    {% if feedbacks and feedbacks|length > 0 %}
-                    <div class="space-y-3.5 max-h-[500px] overflow-y-auto pr-1">
-                        {% for feedback in feedbacks %}
-                        <div class="p-4 sm:p-5 rounded-2xl bg-dark-cardLight border border-dark-border space-y-2.5 hover:border-blue-500/30 transition">
-                            <div class="flex items-center justify-between gap-3">
-                                <span class="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold font-mono">
-                                    ⭐ {{ feedback.rating }}/5 Rating
-                                </span>
-                                <span class="text-[11px] text-slate-400 font-mono">
-                                    <i class="fa-regular fa-calendar mr-1"></i> {{ feedback.created_at[:16] if feedback.created_at else '-' }}
-                                </span>
-                            </div>
-
-                            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed break-words font-medium">
-                                "{{ feedback.message }}"
-                            </p>
-                        </div>
-                        {% endfor %}
-                    </div>
-
-                    {% else %}
-
-                    <!-- Empty State -->
-                    <div class="p-8 text-center space-y-3">
-                        <div class="w-14 h-14 mx-auto rounded-2xl bg-slate-800 flex items-center justify-center text-slate-400 text-xl border border-slate-700">
-                            <i class="fa-regular fa-comment-dots"></i>
-                        </div>
-                        <h4 class="text-sm font-bold text-white">No feedback submitted yet</h4>
-                        <p class="text-xs text-slate-400 max-w-xs mx-auto">
-                            Submit your first rating and message using the form to help improve ScamShield.
+                    <div class="space-y-1.5">
+                        <h2 class="text-lg sm:text-xl font-bold text-white group-hover:text-rose-300 transition">Suspicious activity detected</h2>
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            ScamShield detected a high-risk pattern in one of your recent Scam Checks. Review the forensic result before taking any action or clicking associated links.
                         </p>
                     </div>
 
-                    {% endif %}
-                </div>
+                    <div class="pt-2 flex items-center justify-between">
+                        <a href="{{ url_for('checkscam_history') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500 text-rose-300 hover:text-white border border-rose-500/20 text-xs font-bold transition">
+                            <span>View Scam Check</span>
+                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </a>
+                    </div>
+                </article>
 
-            </div>
+                <!-- Alert 02: Safety Reminder (Warning) -->
+                <article class="rounded-3xl border border-amber-500/30 bg-dark-card p-6 sm:p-8 shadow-xl space-y-4 hover:border-amber-500/50 transition relative overflow-hidden group">
+                    <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-amber-500"></div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-dark-border/60 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-400 border border-amber-500/20 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> Safety Reminder
+                            </span>
+                            <span class="text-[11px] font-bold text-amber-400">UNREAD</span>
+                        </div>
+                        <span class="text-xs text-slate-400 font-mono">Yesterday</span>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <h2 class="text-lg sm:text-xl font-bold text-white group-hover:text-amber-300 transition">Never share your OTP or PIN</h2>
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            Legitimate banks, logistics couriers, and government agencies will never ask you to share your OTP, PIN, or confidential passwords over phone calls or SMS chats.
+                        </p>
+                    </div>
+
+                    <div class="pt-2 flex items-center justify-between">
+                        <a href="{{ url_for('feedback') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500 text-amber-300 hover:text-white border border-amber-500/20 text-xs font-bold transition">
+                            <span>Security Feedback</span>
+                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Alert 03: Platform Intelligence Update -->
+                <article class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 shadow-xl space-y-4 hover:border-blue-500/40 transition relative overflow-hidden group">
+                    <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-dark-border/60 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-1 rounded-lg bg-blue-500/15 text-blue-400 border border-blue-500/20 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle-info text-[10px]"></i> ScamShield Update
+                            </span>
+                        </div>
+                        <span class="text-xs text-slate-400 font-mono">28 Aug 2026</span>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <h2 class="text-lg sm:text-xl font-bold text-white group-hover:text-blue-300 transition">Your digital safety matters</h2>
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            Keep verifying suspicious phone numbers, links, and transaction receipts before taking action. ScamShield AI threat models are continuously updated.
+                        </p>
+                    </div>
+
+                    <div class="pt-2 flex items-center justify-between">
+                        <a href="/scamcheck" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-dark-cardLight hover:bg-blue-600 text-slate-300 hover:text-white border border-dark-border text-xs font-bold transition">
+                            <span>Go to Scam Check</span>
+                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </a>
+                    </div>
+                </article>
+
+            </section>
 
         </main>
 
         <!-- Footer -->
         <footer class="border-t border-dark-border/60 py-6 px-4 sm:px-6 lg:px-10 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-            <span>© 2026 ScamShield. Digital Safety Platform.</span>
-            <span>Stay aware. Stay protected.</span>
+            <span>© 2026 ScamShield. Decode deception. Stay protected.</span>
+            <span>Digital Safety Platform.</span>
         </footer>
 
     </div>
 
     <!-- =====================================================
-         JAVASCRIPT / AJAX & MOBILE DRAWER
+         RESPONSIVE SIDEBAR JAVASCRIPT
     ===================================================== -->
     <script>
         $(document).ready(function () {
-            
-            // --- Mobile Drawer Toggle Logic ---
             function openMobileSidebar() {
                 $('#sidebar').removeClass('-translate-x-full');
                 $('#sidebarBackdrop').removeClass('hidden');
@@ -358,62 +347,6 @@
                     closeMobileSidebar();
                 }
             });
-
-            // --- Form Submit AJAX Handler ---
-            $("#feedbackForm").on("submit", function(e) {
-                e.preventDefault();
-
-                $("#submitBtn")
-                    .prop("disabled", true)
-                    .html(`<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Submitting...`);
-
-                $("#feedbackResponse").html(`
-                    <div class="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs flex items-center gap-2">
-                        <i class="fa-solid fa-spinner fa-spin text-blue-400"></i>
-                        <span>Submitting feedback...</span>
-                    </div>
-                `);
-
-                $.ajax({
-                    url: "/my-feedback",
-                    type: "POST",
-                    data: $(this).serialize(),
-                    success: function(response) {
-                        const msg = response.message || "Feedback submitted successfully!";
-                        $("#feedbackResponse").html(`
-                            <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2">
-                                <i class="fa-solid fa-circle-check text-emerald-400"></i>
-                                <span>${msg}</span>
-                            </div>
-                        `);
-
-                        if (response.success !== false) {
-                            $("#feedbackForm")[0].reset();
-                            setTimeout(function() {
-                                location.reload();
-                            }, 900);
-                        }
-                    },
-                    error: function(xhr) {
-                        let message = "Something went wrong. Please try again.";
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            message = xhr.responseJSON.message;
-                        }
-                        $("#feedbackResponse").html(`
-                            <div class="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2">
-                                <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
-                                <span>${message}</span>
-                            </div>
-                        `);
-                    },
-                    complete: function() {
-                        $("#submitBtn")
-                            .prop("disabled", false)
-                            .html(`<i class="fa-solid fa-paper-plane mr-1.5"></i> Submit Feedback`);
-                    }
-                });
-            });
-
         });
     </script>
 </body>
