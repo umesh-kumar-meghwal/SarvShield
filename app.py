@@ -1500,6 +1500,27 @@ def report_userhistory_delete(id):
             "message": str(e)
         }), 500
 
+
+
+@app.route("/feedbacks")
+def feedbacks():
+    try:
+        response = supabase.table("feedback").select("email, message, rating, created_at").order("created_at", desc=True).execute()
+
+        feedback_data = response.data or []
+
+        return render_template(
+            "feedbacks.html",
+            feedbacks=feedback_data
+        )
+
+    except Exception as e:
+        print("Feedback Error:", e)
+        return "Unable to fetch feedbacks", 500
+
+
+
+
 @app.route("/my-feedback", methods=["GET", "POST"])
 def my_feedback():
 
@@ -1584,6 +1605,9 @@ def my_feedback():
             "success": False,
             "message": str(e)
         }), 500
+
+
+
 
 
 

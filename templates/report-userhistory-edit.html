@@ -1,319 +1,350 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Edit Report · SarvShield</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Report · ScamShield Admin</title>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js">
-    </script>
-
-    <!-- Tailwind + custom config -->
-    <script src="https://cdn.tailwindcss.com">
-    </script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        night: "#0b1220",
-                        panel: "#121a2b",
-                        line: "#263349",
-                        mute: "#93a0b8",
-                        mint: "#3dd6c6"
+                        brand: {
+                            50: '#eef6ff',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        },
+                        dark: {
+                            base: '#060B13',
+                            sidebar: '#080E1A',
+                            card: '#0D1728',
+                            cardLight: '#121F36',
+                            border: '#1E293B',
+                            hover: '#182744'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
                     }
                 }
             }
         }
     </script>
 
-    <!-- optional: subtle custom style for textarea / inputs -->
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
     <style>
-        body {
-            background: #0b1220;
-        }
-
-        input,
-        textarea {
-            background: #121a2b;
-            border: 1px solid #263349;
-            color: #f1f5f9;
-            padding: 0.6rem 0.9rem;
-            border-radius: 0.75rem;
-            width: 100%;
-            max-width: 480px;
-            transition: border 0.2s;
-            font-size: 0.95rem;
-        }
-
-        input:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #3dd6c6;
-            box-shadow: 0 0 0 3px rgba(61, 214, 198, 0.15);
-        }
-
-        textarea {
-            min-height: 110px;
-            resize: vertical;
-        }
-
-        label {
-            color: #c8d0dc;
-            font-weight: 500;
-            font-size: 0.9rem;
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .btn-primary {
-            background: #3dd6c6;
-            color: #0b1220;
-            font-weight: 600;
-            padding: 0.6rem 1.8rem;
-            border-radius: 9999px;
-            border: none;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-        }
-
-        .btn-primary:hover {
-            background: #2ebfb0;
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: #93a0b8;
-            border: 1px solid #263349;
-            padding: 0.6rem 1.8rem;
-            border-radius: 9999px;
-            cursor: pointer;
-            transition: background 0.2s, color 0.2s;
-        }
-
-        .btn-secondary:hover {
-            background: #1e293b;
-            color: #f1f5f9;
-        }
-
-        .response-box {
-            margin-top: 1.5rem;
-            padding: 0.75rem 1.25rem;
-            border-radius: 0.75rem;
-            background: #121a2b;
-            border-left: 4px solid #3dd6c6;
-            max-width: 480px;
-            color: #e2e8f0;
-        }
-
-        .response-box.error {
-            border-left-color: #f87171;
-        }
-
-        .form-row {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-row .field-hint {
-            color: #64748b;
-            font-size: 0.8rem;
-            margin-top: 2px;
-        }
-
-        /* sidebar nav active state helper */
-        .nav-link {
-            display: block;
-            border-radius: 0.75rem;
-            padding: 0.6rem 1rem;
-            color: #93a0b8;
-            transition: background 0.15s, color 0.15s;
-        }
-
-        .nav-link:hover {
-            background: rgba(30, 41, 59, 0.6);
-            color: #f1f5f9;
-        }
-
-        .nav-link.active {
-            background: rgba(30, 41, 59, 0.7);
-            color: #ffffff;
-        }
-
-        /* layout */
-        .app-layout {
-            display: flex;
-            min-height: 100vh;
-            background: #0b1220;
-            color: #f1f5f9;
-        }
-
-        .sidebar {
-            background: rgba(0, 0, 0, 0.4);
-            border-bottom: 1px solid #263349;
-            padding: 1.5rem;
-            width: 100%;
-        }
-
-        @media (min-width: 1024px) {
-            .sidebar {
-                border-bottom: none;
-                border-right: 1px solid #263349;
-                width: 260px;
-                min-height: 100vh;
-                position: sticky;
-                top: 0;
-                height: 100vh;
-            }
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 2rem 1.5rem;
-        }
-
-        @media (min-width: 640px) {
-            .main-content {
-                padding: 2.5rem 3rem;
-            }
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #060B13; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
     </style>
 </head>
 
-<body>
+<body class="bg-dark-base text-slate-100 flex min-h-screen overflow-x-hidden antialiased relative">
 
-    <div class="app-layout">
+    <!-- =====================================================
+         MOBILE BACKDROP OVERLAY
+    ===================================================== -->
+    <div id="sidebarBackdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
 
-        <!-- ========== SIDEBAR ========== -->
-        <aside class="sidebar">
-            <div class="text-xl font-bold tracking-wide">
-                Scam<span class="text-mint">Shield</span>
+    <!-- =====================================================
+         ADMIN SIDEBAR NAVIGATION
+    ===================================================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 md:w-64 bg-dark-sidebar border-r border-dark-border flex flex-col justify-between shrink-0 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300 ease-in-out">
+        <div>
+            <!-- Brand Logo & Close Button -->
+            <div class="h-20 flex items-center justify-between px-6 border-b border-dark-border/60">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 text-lg shadow-inner">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-extrabold text-base tracking-tight text-white leading-none">ScamShield</h2>
+                        <span class="text-[10px] tracking-widest uppercase font-bold text-amber-400">Admin Control</span>
+                    </div>
+                </div>
+
+                <button id="closeSidebarBtn" class="md:hidden text-slate-400 hover:text-white p-1 rounded-lg focus:outline-none" aria-label="Close Sidebar">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
             </div>
-            <p class="text-mute text-xs mt-1 mb-7">Admin control panel</p>
 
-            <nav class="space-y-1">
-                <a class="nav-link" href="/admin-dashboard">Dashboard</a>
-                <a class="nav-link" href="/user-show">Manage Users</a>
-                <a class="nav-link" href="/admin-show">Show Admins</a>
-                <a class="nav-link" href="/admin-register">Add Admin</a>
+            <!-- Navigation Links -->
+            <nav class="p-4 space-y-1.5 text-sm font-medium sidebar-nav">
+                <a href="/admin-dashboard" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <i class="fa-solid fa-gauge-high w-5 text-slate-400"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="/user-show" class="flex items-center gap-3.5 px-4 py-3 rounded-xl bg-blue-600/15 text-blue-400 border border-blue-500/20 font-semibold shadow-sm transition">
+                    <i class="fa-solid fa-users w-5 text-blue-400"></i>
+                    <span>Manage Users</span>
+                </a>
+
+                <a href="/admin-show" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <i class="fa-solid fa-user-shield w-5 text-slate-400"></i>
+                    <span>Show Admins</span>
+                </a>
+
+                <a href="/admin-register" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <i class="fa-solid fa-user-plus w-5 text-slate-400"></i>
+                    <span>Add Admin</span>
+                </a>
+
+                <a href="/feedback" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <i class="fa-regular fa-comments w-5 text-slate-400"></i>
+                    <span>User Feedback</span>
+                </a>
             </nav>
+        </div>
 
-            <a class="mt-6 block rounded-xl border border-line px-3 py-2.5 text-center text-rose-400 hover:bg-rose-500/10 transition"
-            href="/logout">
-            Logout
-        </a>
+        <!-- Sidebar Bottom Logout -->
+        <div class="p-4 border-t border-dark-border/60 space-y-2">
+            <a href="/logout" class="flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-rose-400 hover:bg-rose-500/10 text-xs font-semibold transition">
+                <i class="fa-solid fa-arrow-right-from-bracket w-4"></i>
+                <span>Logout</span>
+            </a>
+        </div>
     </aside>
 
-    <!-- ========== MAIN CONTENT ========== -->
-    <main class="main-content">
+    <!-- =====================================================
+         PAGE WRAPPER
+    ===================================================== -->
+    <div class="flex-1 flex flex-col min-w-0 w-full" id="pageWrapper">
 
-        <h2 class="text-2xl font-semibold tracking-tight mb-6">Edit Report</h2>
-
-        <!-- ===== FORM ===== -->
-        <form id="editReportForm" class="max-w-xl">
-
-            <!-- PHONE -->
-            <div class="form-row">
-                <label for="phoneInput">Phone</label>
-                <input type="text" id="phoneInput" name="phone"
-                value="{{ report.phone }}"
-                required />
-            </div>
-
-            <!-- LINK -->
-            <div class="form-row">
-                <label for="linkInput">Link</label>
-                <input type="text" id="linkInput" name="link"
-                value="{{ report.link }}"
-                required />
-            </div>
-
-            <!-- REASON -->
-            <div class="form-row">
-                <label for="reasonInput">Reason</label>
-                <textarea id="reasonInput" name="reason" required>{{ report.reason }}</textarea>
-            </div>
-
-            <!-- BUTTONS -->
-            <div class="flex flex-wrap items-center gap-3 mt-2">
-                <button type="submit" id="updateBtn" class="btn-primary">
-                    Update Report
+        <!-- Responsive Top Bar Header -->
+        <header class="h-20 border-b border-dark-border flex items-center justify-between px-4 sm:px-6 lg:px-10 bg-dark-base/90 backdrop-blur sticky top-0 z-30">
+            <div class="flex items-center gap-3">
+                <button id="mobileMenuBtn" class="md:hidden w-10 h-10 rounded-xl bg-dark-card border border-dark-border text-slate-300 hover:text-white flex items-center justify-center focus:outline-none active:scale-95 transition" aria-label="Open Navigation">
+                    <i class="fa-solid fa-bars-staggered text-base"></i>
                 </button>
 
-                <a href="javascript:history.back()">
-                    <button type="button" class="btn-secondary">
-                        Back
-                    </button>
-                </a>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs uppercase font-bold tracking-widest text-slate-400">SCAMSHIELD</span>
+                    <span class="text-slate-600 hidden xs:inline">/</span>
+                    <a href="/user-show" class="text-slate-400 hover:text-white text-xs uppercase font-bold hidden sm:inline">Users</a>
+                    <span class="text-slate-600 hidden sm:inline">/</span>
+                    <span class="text-sm font-semibold text-white truncate">Edit Report</span>
+                </div>
             </div>
 
-        </form>
+            <div class="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium">
+                <a href="javascript:history.back()" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-dark-card border border-dark-border hover:bg-dark-hover text-slate-300 hover:text-white text-xs font-bold transition">
+                    <i class="fa-solid fa-arrow-left text-[10px]"></i> Back
+                </a>
+            </div>
+        </header>
 
-        <!-- ===== RESPONSE ===== -->
-        <div id="updateResponse"></div>
+        <!-- Main Content Area -->
+        <main class="flex-1 p-4 sm:p-6 lg:p-10 max-w-4xl mx-auto w-full space-y-8 sm:space-y-10">
 
-    </main>
+            <!-- Hero Banner -->
+            <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1b1c3a] via-[#14182e] to-[#0a1324] border border-amber-500/20 p-6 sm:p-8 lg:p-12 shadow-2xl">
+                <div class="absolute -right-16 -top-16 w-80 sm:w-96 h-80 sm:h-96 rounded-full bg-amber-500/10 blur-3xl pointer-events-none"></div>
 
-</div>
+                <div class="relative z-10 max-w-2xl space-y-3">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-widest uppercase bg-amber-500/20 text-amber-400 border border-amber-400/30">
+                        <i class="fa-solid fa-pen-to-square text-xs"></i> REPORT EDITOR
+                    </span>
 
-<!-- ========== SCRIPT ========== -->
-<script>
-    $(function() {
+                    <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                        Edit Scam Report
+                    </h1>
 
-        $("#editReportForm").on("submit", function(e) {
-            e.preventDefault();
+                    <p class="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed">
+                        Modify community-reported scam phone numbers, phishing URLs, and fraud details.
+                    </p>
+                </div>
+            </section>
 
-            const $btn = $("#updateBtn");
-            $btn.prop("disabled", true).text("Updating...");
+            <!-- =====================================================
+                 EDIT REPORT FORM CARD
+            ===================================================== -->
+            <div class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 lg:p-10 shadow-xl space-y-6">
+                <div class="border-b border-dark-border pb-4">
+                    <h2 class="text-xl font-bold text-white tracking-tight">Report Submission Parameters</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Edit the suspicious vectors recorded in this submission.</p>
+                </div>
 
-            $.ajax({
-                url: window.location.pathname,
-                type: "POST",
-                data: $(this).serialize(),
+                <form id="editReportForm" class="space-y-6">
+                    
+                    <!-- Phone Input -->
+                    <div class="space-y-2">
+                        <label for="phoneInput" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
+                            <i class="fa-solid fa-phone text-amber-400 mr-1.5"></i> Phone Number <span class="text-rose-400">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="phoneInput"
+                            name="phone"
+                            value="{{ report.phone }}"
+                            required
+                            placeholder="+91 98765 43210"
+                            class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition font-mono"
+                        >
+                    </div>
 
-                success: function(response) {
-                    const $box = $("#updateResponse");
-                    $box.html(
-                        '<div class="response-box">' +
-                        response.message +
-                        '</div>'
-                    );
+                    <!-- Link Input -->
+                    <div class="space-y-2">
+                        <label for="linkInput" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
+                            <i class="fa-solid fa-link text-amber-400 mr-1.5"></i> Scam Link / URL <span class="text-rose-400">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="linkInput"
+                            name="link"
+                            value="{{ report.link }}"
+                            required
+                            placeholder="https://fake-login-portal.com"
+                            class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"
+                        >
+                    </div>
 
-                    if (response.success) {
-                        setTimeout(function() {
-                            history.back();
-                        }, 1000);
-                    }
-                },
+                    <!-- Reason Textarea -->
+                    <div class="space-y-2">
+                        <label for="reasonInput" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
+                            <i class="fa-regular fa-file-lines text-amber-400 mr-1.5"></i> Reason / Fraud Details <span class="text-rose-400">*</span>
+                        </label>
+                        <textarea
+                            id="reasonInput"
+                            name="reason"
+                            rows="4"
+                            required
+                            placeholder="Describe the fraud pattern or scam context..."
+                            class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition resize-none"
+                        >{{ report.reason }}</textarea>
+                    </div>
 
-                error: function(xhr) {
-                    let msg = "Something went wrong.";
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        msg = xhr.responseJSON.message;
-                    }
+                    <!-- Actions -->
+                    <div class="pt-2 flex flex-col sm:flex-row items-center gap-3">
+                        <button
+                            type="submit"
+                            id="updateBtn"
+                            class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-amber-600/20 transition transform active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60"
+                        >
+                            <i class="fa-solid fa-floppy-disk"></i> Update Report
+                        </button>
 
-                    $("#updateResponse").html(
-                        '<div class="response-box error">' +
-                        msg +
-                        '</div>'
-                    );
-                },
+                        <a
+                            href="javascript:history.back()"
+                            class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-dark-cardLight border border-dark-border hover:bg-dark-hover text-slate-300 hover:text-white font-semibold text-xs sm:text-sm text-center transition"
+                        >
+                            Cancel
+                        </a>
+                    </div>
 
-                complete: function() {
-                    $btn.prop("disabled", false).text("Update Report");
+                    <!-- Response Box -->
+                    <div id="updateResponse" class="transition-all duration-300"></div>
+
+                </form>
+
+            </div>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-dark-border/60 py-6 px-4 sm:px-6 lg:px-10 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+            <span>© 2026 ScamShield. Administrator Control Center.</span>
+            <span>Stay aware. Stay protected.</span>
+        </footer>
+
+    </div>
+
+    <!-- =====================================================
+         JAVASCRIPT & AJAX LOGIC
+    ===================================================== -->
+    <script>
+        $(document).ready(function () {
+            
+            // --- Mobile Drawer Toggle Logic ---
+            function openMobileSidebar() {
+                $('#sidebar').removeClass('-translate-x-full');
+                $('#sidebarBackdrop').removeClass('hidden');
+                $('body').addClass('overflow-hidden');
+            }
+
+            function closeMobileSidebar() {
+                $('#sidebar').addClass('-translate-x-full');
+                $('#sidebarBackdrop').addClass('hidden');
+                $('body').removeClass('overflow-hidden');
+            }
+
+            $('#mobileMenuBtn').on('click', function(e) {
+                e.stopPropagation();
+                openMobileSidebar();
+            });
+
+            $('#closeSidebarBtn, #sidebarBackdrop').on('click', function() {
+                closeMobileSidebar();
+            });
+
+            $('.sidebar-nav a').on('click', function() {
+                if ($(window).width() < 768) {
+                    closeMobileSidebar();
                 }
             });
+
+            // --- Form Submit AJAX ---
+            $("#editReportForm").on("submit", function(e) {
+                e.preventDefault();
+
+                const $btn = $("#updateBtn");
+                $btn.prop("disabled", true).html(`<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Updating...`);
+
+                $.ajax({
+                    url: window.location.pathname,
+                    type: "POST",
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        $("#updateResponse").html(`
+                            <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs sm:text-sm flex items-center gap-2.5">
+                                <i class="fa-solid fa-circle-check text-base shrink-0"></i>
+                                <span>${response.message || "Report updated successfully!"}</span>
+                            </div>
+                        `);
+
+                        if (response.success) {
+                            setTimeout(function() {
+                                history.back();
+                            }, 900);
+                        }
+                    },
+                    error: function(xhr) {
+                        let msg = "Something went wrong.";
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            msg = xhr.responseJSON.message;
+                        }
+                        $("#updateResponse").html(`
+                            <div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs sm:text-sm flex items-center gap-2.5">
+                                <i class="fa-solid fa-triangle-exclamation text-base shrink-0"></i>
+                                <span>${msg}</span>
+                            </div>
+                        `);
+                    },
+                    complete: function() {
+                        $btn.prop("disabled", false).html(`<i class="fa-solid fa-floppy-disk mr-1.5"></i> Update Report`);
+                    }
+                });
+            });
+
         });
-
-    });
-</script>
-
+    </script>
 </body>
-
 </html>
