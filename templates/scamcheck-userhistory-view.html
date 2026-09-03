@@ -1,165 +1,494 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scam Analysis #{{ scan.id }} - ScamShield</title>
-    {% include "includes/admin-head.html" %}
+    <title>ScamCheck Report #{{ scan.id }} | ScamShield Admin</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef6ff',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        },
+                        dark: {
+                            base: '#060B13',
+                            sidebar: '#080E1A',
+                            card: '#0D1728',
+                            cardLight: '#121F36',
+                            border: '#1E293B',
+                            hover: '#182744'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #060B13; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
 </head>
 
-<body class="min-h-screen bg-night text-slate-100">
-    <div class="lg:grid lg:grid-cols-[260px_1fr] min-h-screen">
-        {% set nav_active = "dashboard" %}
-        {% include "includes/admin-sidebar.html" %}
+<body class="bg-dark-base text-slate-100 flex min-h-screen overflow-x-hidden antialiased relative">
 
-        <main class="p-6 lg:p-8 space-y-6">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                    <h1 class="text-3xl font-semibold">ScamCheck Report #{{ scan.id }}</h1>
-                    <p class="text-mute mt-1">{{ scan.created_at or "-" }} · {{ scan.user_email or "Unknown user" }}</p>
-                </div>
-                <a class="rounded-xl border border-line px-4 py-2 text-sm text-mute hover:text-white" href="javascript:history.back()">
-                    ← Back
-                </a>
-            </div>
+    <!-- =====================================================
+         MOBILE BACKDROP OVERLAY
+    ===================================================== -->
+    <div id="sidebarBackdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
 
-            <section class="grid gap-3 md:grid-cols-2">
-                <div class="rounded-2xl border border-line bg-panel p-5">
-                    <div class="text-sm text-mute">Final Risk Score</div>
-                    <div class="mt-1 text-4xl font-bold">
-                        {{ scan.final_score if scan.final_score is not none else 0 }}/100
+    <!-- =====================================================
+         ADMIN SIDEBAR NAVIGATION
+    ===================================================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 md:w-64 bg-dark-sidebar border-r border-dark-border flex flex-col justify-between shrink-0 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300 ease-in-out">
+        <div>
+            <!-- Brand Logo & Close Button -->
+            <div class="h-20 flex items-center justify-between px-6 border-b border-dark-border/60">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 text-lg shadow-inner">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-extrabold text-base tracking-tight text-white leading-none">ScamShield</h2>
+                        <span class="text-[10px] tracking-widest uppercase font-bold text-amber-400">Admin Control</span>
                     </div>
                 </div>
-                <div class="rounded-2xl border border-line bg-panel p-5">
-                    <div class="text-sm text-mute">Threat Verdict</div>
-                    {% set score = scan.final_score or 0 %}
-                    <div class="mt-2">
-                        {% if score >= 60 %}
-                            <span class="inline-flex rounded-full bg-rose-500/15 px-3 py-1 text-sm font-bold text-rose-300">{{ scan.verdict or "HIGH" }}</span>
-                        {% elif score >= 30 %}
-                            <span class="inline-flex rounded-full bg-amber-500/15 px-3 py-1 text-sm font-bold text-amber-300">{{ scan.verdict or "SUSPICIOUS" }}</span>
+
+                <button id="closeSidebarBtn" class="md:hidden text-slate-400 hover:text-white p-1 rounded-lg focus:outline-none" aria-label="Close Sidebar">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="p-4 space-y-1.5 text-sm font-medium sidebar-nav">
+                <a href="/admin-dashboard" class="flex items-center gap-3.5 px-4 py-3 rounded-xl bg-blue-600/15 text-blue-400 border border-blue-500/20 font-semibold shadow-sm transition">
+                    <i class="fa-solid fa-gauge-high w-5 text-blue-400"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="/user-show" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <i class="fa-solid fa-users w-5 text-slate-400"></i>
+                    <span>Manage Users</span>
+                </a>
+
+                <a href="/admin-show" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <i class="fa-solid fa-user-shield w-5 text-slate-400"></i>
+                    <span>Show Admins</span>
+                </a>
+
+                <a href="/admin-register" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <i class="fa-solid fa-user-plus w-5 text-slate-400"></i>
+                    <span>Add Admin</span>
+                </a>
+
+                <a href="/feedback" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <i class="fa-regular fa-comments w-5 text-slate-400"></i>
+                    <span>User Feedback</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Sidebar Bottom Logout -->
+        <div class="p-4 border-t border-dark-border/60 space-y-2">
+            <a href="/logout" class="flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-rose-400 hover:bg-rose-500/10 text-xs font-semibold transition">
+                <i class="fa-solid fa-arrow-right-from-bracket w-4"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- =====================================================
+         PAGE WRAPPER
+    ===================================================== -->
+    <div class="flex-1 flex flex-col min-w-0 w-full" id="pageWrapper">
+
+        <!-- Responsive Top Bar Header -->
+        <header class="h-20 border-b border-dark-border flex items-center justify-between px-4 sm:px-6 lg:px-10 bg-dark-base/90 backdrop-blur sticky top-0 z-30">
+            <div class="flex items-center gap-3">
+                <button id="mobileMenuBtn" class="md:hidden w-10 h-10 rounded-xl bg-dark-card border border-dark-border text-slate-300 hover:text-white flex items-center justify-center focus:outline-none active:scale-95 transition" aria-label="Open Navigation">
+                    <i class="fa-solid fa-bars-staggered text-base"></i>
+                </button>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-xs uppercase font-bold tracking-widest text-slate-400">SCAMSHIELD</span>
+                    <span class="text-slate-600 hidden xs:inline">/</span>
+                    <a href="/admin-dashboard" class="text-slate-400 hover:text-white text-xs uppercase font-bold hidden sm:inline">Admin</a>
+                    <span class="text-slate-600 hidden sm:inline">/</span>
+                    <span class="text-sm font-semibold text-white truncate">Report #{{ scan.id }}</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium">
+                <a href="javascript:history.back()" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-dark-card border border-dark-border hover:bg-dark-hover text-slate-300 hover:text-white text-xs font-bold transition">
+                    <i class="fa-solid fa-arrow-left text-[10px]"></i> Back
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-8 sm:space-y-10">
+
+            {% set score = scan.final_score if scan.final_score is not none else 0 %}
+            {% set verdict = scan.verdict or ('HIGH RISK' if score >= 60 else ('MODERATE RISK' if score >= 30 else 'LOW RISK')) %}
+
+            <!-- Hero Section -->
+            <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#12274d] via-[#0b1b36] to-[#0a1324] border border-blue-900/40 p-6 sm:p-8 lg:p-12 shadow-2xl">
+                <div class="absolute -right-16 -top-16 w-80 sm:w-96 h-80 sm:h-96 rounded-full bg-blue-500/15 blur-3xl pointer-events-none"></div>
+
+                <div class="relative z-10 max-w-3xl space-y-3">
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-widest uppercase bg-blue-500/20 text-blue-400 border border-blue-400/30">
+                            <i class="fa-solid fa-shield-halved text-xs"></i> FORENSIC AUDIT
+                        </span>
+                        <span class="text-xs text-slate-400 font-mono">
+                            {{ scan.created_at or '-' }} · {{ scan.user_email or "Unknown user" }}
+                        </span>
+                    </div>
+
+                    <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                        ScamCheck Report #{{ scan.id }}
+                    </h1>
+
+                    <p class="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed">
+                        Administrator inspection report with complete forensic evidence, component scores, attack chain, and SafeNext AI recommendations.
+                    </p>
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 01: RISK SCORE GENERATOR & OVERALL VERDICT
+            ===================================================== -->
+            <section class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 lg:p-10 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-7 space-y-3">
+                    <span class="text-3xl font-extrabold text-blue-500 font-mono">01</span>
+                    <h3 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Risk Score Generator</h3>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        {{ scan.why_summary or "Converts multiple threat signals into a comprehensive 0–100 severity risk score." }}
+                    </p>
+                    <ul class="space-y-1.5 text-xs text-slate-400 pt-1">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-400 text-[10px]"></i> Calculated Risk Score: <strong class="text-white">{{ score }}/100</strong></li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-400 text-[10px]"></i> Threat Classification: <strong class="text-white">{{ verdict }}</strong></li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-400 text-[10px]"></i> Verified against global malicious threat vectors</li>
+                    </ul>
+                </div>
+
+                <div class="lg:col-span-5 rounded-2xl bg-dark-cardLight border border-dark-border p-6 text-center space-y-4 shadow-inner">
+                    <div class="w-28 h-28 mx-auto rounded-full border-4 {% if score >= 60 %}border-rose-500/30 border-t-rose-500 shadow-rose-500/20{% elif score >= 30 %}border-amber-500/30 border-t-amber-500 shadow-amber-500/20{% else %}border-emerald-500/30 border-t-emerald-500 shadow-emerald-500/20{% endif %} flex flex-col items-center justify-center shadow-lg">
+                        <strong class="text-3xl font-extrabold text-white">{{ score }}</strong>
+                        <span class="text-[10px] text-slate-400 font-bold">/ 100</span>
+                    </div>
+                    
+                    {% if score >= 60 %}
+                        <span class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">HIGH RISK</span>
+                    {% elif score >= 30 %}
+                        <span class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">MODERATE RISK</span>
+                    {% else %}
+                        <span class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">SAFE / LOW RISK</span>
+                    {% endif %}
+
+                    <p class="text-xs text-slate-400">Forensic evaluation based on submitted client inputs.</p>
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 02: ATTACK VECTOR SEQUENCE / CHAIN
+            ===================================================== -->
+            <section class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 lg:p-10 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-7 lg:order-2 space-y-3">
+                    <span class="text-3xl font-extrabold text-indigo-500 font-mono">02</span>
+                    <h3 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Attack Vector Sequence</h3>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Visual sequence showing how this deceptive attempt advances from initial message to compromise.
+                    </p>
+                    <ul class="space-y-1.5 text-xs text-slate-400 pt-1">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-indigo-400 text-[10px]"></i> Visual kill-chain sequence</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-indigo-400 text-[10px]"></i> Threat vector progression breakdown</li>
+                    </ul>
+                </div>
+
+                <div class="lg:col-span-5 lg:order-1 rounded-2xl bg-dark-cardLight border border-dark-border p-5 space-y-2.5 shadow-inner">
+                    {% if scan.attack_chain and scan.attack_chain|length > 0 %}
+                        {% for step in scan.attack_chain %}
+                            <div class="flex items-center gap-3 p-3 rounded-xl bg-dark-card border border-dark-border text-xs">
+                                <span class="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center text-[10px] shrink-0">0{{ loop.index }}</span>
+                                <strong class="text-white font-medium">{{ step }}</strong>
+                            </div>
+                            {% if not loop.last %}
+                                <div class="w-0.5 h-3 bg-indigo-500/40 mx-auto"></div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="p-4 text-center text-xs text-slate-500">
+                            <i class="fa-regular fa-circle-check text-base text-slate-400 mb-1 block"></i>
+                            No clear attack sequence identified.
+                        </div>
+                    {% endif %}
+
+                    {% if score >= 40 %}
+                    <div class="p-2.5 text-center rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[11px] font-bold mt-2">
+                        ⚠️ High Risk Vector Warning
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 03: SCAM FINGERPRINTING
+            ===================================================== -->
+            <section class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 lg:p-10 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-7 space-y-3">
+                    <span class="text-3xl font-extrabold text-amber-500 font-mono">03</span>
+                    <h3 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Scam Fingerprinting</h3>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Matches recurring characteristics against recognized fraud signatures and social engineering patterns.
+                    </p>
+                    <ul class="space-y-1.5 text-xs text-slate-400 pt-1">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-amber-400 text-[10px]"></i> Characteristic pattern matching</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-amber-400 text-[10px]"></i> Fraud category attribution</li>
+                    </ul>
+                </div>
+
+                <div class="lg:col-span-5 rounded-2xl bg-dark-cardLight border border-dark-border p-6 space-y-4 shadow-inner">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-400 uppercase">Pattern Match</span>
+                        <strong class="text-lg font-bold text-amber-400 font-mono">{{ score if score > 0 else 5 }}%</strong>
+                    </div>
+                    <div class="h-2 rounded-full bg-slate-800 overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-amber-500 to-rose-500 rounded-full" style="width: {{ score if score > 0 else 5 }}%"></div>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-2 pt-2">
+                        {% if scan.scam_fingerprint and scan.scam_fingerprint|length > 0 %}
+                            {% for tag in scan.scam_fingerprint %}
+                                <span class="px-3 py-1.5 rounded-xl bg-dark-card border border-amber-500/20 text-amber-400 text-xs font-semibold flex items-center gap-1.5">
+                                    <i class="fa-solid fa-fingerprint text-[10px]"></i> {{ tag }}
+                                </span>
+                            {% endfor %}
                         {% else %}
-                            <span class="inline-flex rounded-full bg-emerald-500/15 px-3 py-1 text-sm font-bold text-emerald-300">{{ scan.verdict or "LOW" }}</span>
+                            <p class="text-xs text-slate-500">No specific fraud fingerprint identified.</p>
                         {% endif %}
                     </div>
                 </div>
             </section>
 
-            <section class="rounded-2xl border border-line bg-panel p-5 space-y-4">
-                <h2 class="text-lg font-semibold">Submitted Inputs</h2>
+            <!-- =====================================================
+                 04: SUBMITTED INPUTS & COMPONENT SCORES
+            ===================================================== -->
+            <section class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 lg:p-10 shadow-xl space-y-6">
                 <div>
-                    <p class="text-sm text-mute">Message</p>
-                    <blockquote class="mt-1 rounded-xl bg-night p-3 text-sm whitespace-pre-wrap">{{ scan.message or "No message text provided." }}</blockquote>
+                    <span class="text-3xl font-extrabold text-teal-500 font-mono">04</span>
+                    <h3 class="text-xl sm:text-2xl font-bold text-white tracking-tight mt-1">Submitted Inputs & Component Scores</h3>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Submitted evidence content and detector component scores.</p>
                 </div>
-                <p><span class="text-mute">Phone:</span> {{ scan.phone or "None" }}</p>
-                <p>
-                    <span class="text-mute">Link:</span>
-                    {% if scan.link %}
-                        <a class="text-mint hover:underline break-all" href="{{ scan.link }}" target="_blank" rel="noopener">{{ scan.link }}</a>
-                    {% else %}
-                        None
-                    {% endif %}
-                </p>
-                <div>
-                    <p class="text-sm text-mute mb-2">Screenshot</p>
-                    {% if scan.screenshot_url %}
-                        <a href="{{ scan.screenshot_url }}" target="_blank" rel="noopener">
-                            <img src="{{ scan.screenshot_url }}" alt="Uploaded scam screenshot" class="max-w-xs rounded-xl border border-line">
-                        </a>
-                    {% else %}
-                        <p class="text-mute">None</p>
-                    {% endif %}
-                </div>
-            </section>
 
-            <section class="overflow-hidden rounded-2xl border border-line bg-panel">
-                <h2 class="border-b border-line px-5 py-4 text-lg font-semibold">Component Scores</h2>
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-white/5 text-mute">
-                        <tr>
-                            <th class="px-5 py-3 font-semibold">Component</th>
-                            <th class="px-5 py-3 font-semibold">Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-t border-line">
-                            <td class="px-5 py-3">Message Score</td>
-                            <td class="px-5 py-3">{{ scan.message_score if scan.message_score is not none else 0 }}/100</td>
-                        </tr>
-                        <tr class="border-t border-line">
-                            <td class="px-5 py-3">Link Score</td>
-                            <td class="px-5 py-3">{{ scan.link_score if scan.link_score is not none else 0 }}/100</td>
-                        </tr>
-                        <tr class="border-t border-line">
-                            <td class="px-5 py-3">Screenshot Score</td>
-                            <td class="px-5 py-3">{{ scan.screenshot_score if scan.screenshot_score is not none else 0 }}/100</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    
+                    <!-- Submitted Details (Left) -->
+                    <div class="lg:col-span-7 space-y-4 rounded-2xl bg-dark-cardLight border border-dark-border p-5 sm:p-6">
+                        <h4 class="text-xs uppercase font-bold tracking-wider text-slate-400">Evidence Content</h4>
+                        
+                        <!-- Message Text -->
+                        <div class="space-y-1">
+                            <span class="text-[11px] text-slate-400 font-semibold flex items-center gap-1.5"><i class="fa-regular fa-message text-blue-400"></i> Message:</span>
+                            <blockquote class="p-3 rounded-xl bg-dark-card border border-dark-border text-xs text-slate-300 whitespace-pre-wrap max-h-32 overflow-y-auto font-mono">
+                                {{ scan.message or "No message text provided." }}
+                            </blockquote>
+                        </div>
 
-            <section class="rounded-2xl border border-line bg-panel p-5">
-                <h2 class="mb-3 text-lg font-semibold">Scam Fingerprint</h2>
-                {% if scan.scam_fingerprint and scan.scam_fingerprint|length > 0 %}
-                    <div class="flex flex-wrap gap-2 ">
-                        {% for tag in scan.scam_fingerprint %}
-                            <span class="rounded-full bg-mint/15 px-3 py-1 text-xs font-semibold text-mint">{{ tag }}</span>
-                        {% endfor %}
+                        <!-- Phone & Link -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
+                            <div class="p-3 rounded-xl bg-dark-card border border-dark-border space-y-0.5">
+                                <span class="text-[10px] text-slate-400 block font-bold uppercase">Phone Number</span>
+                                <span class="text-slate-200 font-mono">{{ scan.phone or 'None' }}</span>
+                            </div>
+
+                            <div class="p-3 rounded-xl bg-dark-card border border-dark-border space-y-0.5 overflow-hidden">
+                                <span class="text-[10px] text-slate-400 block font-bold uppercase">Link / URL</span>
+                                {% if scan.link %}
+                                    <a href="{{ scan.link }}" target="_blank" rel="noopener" class="text-blue-400 hover:underline truncate block" title="{{ scan.link }}">
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-[9px] mr-1"></i> {{ scan.link }}
+                                    </a>
+                                {% else %}
+                                    <span class="text-slate-500">None</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Screenshot -->
+                        <div class="pt-1">
+                            <span class="text-[11px] text-slate-400 font-semibold block mb-2"><i class="fa-regular fa-image text-blue-400 mr-1"></i> Screenshot:</span>
+                            {% if scan.screenshot_url %}
+                                <a href="{{ scan.screenshot_url }}" target="_blank" rel="noopener" class="inline-block relative group">
+                                    <img src="{{ scan.screenshot_url }}" alt="Uploaded scam screenshot" class="max-w-xs h-32 object-cover rounded-xl border border-dark-border group-hover:border-blue-500 transition">
+                                    <span class="absolute inset-0 bg-blue-600/20 opacity-0 group-hover:opacity-100 rounded-xl flex items-center justify-center text-xs text-white transition"><i class="fa-solid fa-magnifying-glass mr-1"></i> View Full Image</span>
+                                </a>
+                            {% else %}
+                                <p class="text-xs text-slate-500">None</p>
+                            {% endif %}
+                        </div>
                     </div>
-                {% else %}
-                    <p class="text-mute">No specific scam fingerprint identified.</p>
-                {% endif %}
-            </section>
 
-            <section class="rounded-2xl border border-line bg-panel p-5 ">
-                <h2 class="mb-3 text-lg font-semibold">Attack Vector Sequence</h2>
-                {% if scan.attack_chain and scan.attack_chain|length > 0 %}
-                    <ol class="list-decimal space-y-2 pl-5 text-sm">
-                        {% for step in scan.attack_chain %}
-                            <li>{{ step }}</li>
-                        {% endfor %}
-                    </ol>
-                {% else %}
-                    <p class="text-mute">No clear attack sequence identified.</p>
-                {% endif %}
-            </section>
+                    <!-- Component Scores Table (Right) -->
+                    <div class="lg:col-span-5 rounded-2xl bg-dark-cardLight border border-dark-border p-5 sm:p-6 space-y-4">
+                        <h4 class="text-xs uppercase font-bold tracking-wider text-teal-400">Component Scores</h4>
+                        
+                        <div class="space-y-3 text-xs">
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-dark-card border border-dark-border">
+                                <span class="font-medium text-slate-300"><i class="fa-regular fa-message text-blue-400 mr-1.5"></i> Message Score</span>
+                                <strong class="text-white font-mono">{{ scan.message_score if scan.message_score is not none else 0 }}/100</strong>
+                            </div>
 
-            <section class="rounded-2xl border border-line bg-panel p-5 space-y-4">
-                <h2 class="text-lg font-semibold">Forensic Evidence</h2>
-                {% if scan.evidence and scan.evidence|length > 0 %}
-                    <ul class="list-disc space-y-1 pl-5 text-sm">
-                        {% for item in scan.evidence %}
-                            <li>{{ item }}</li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="text-mute">No specific evidence items recorded.</p>
-                {% endif %}
-                <div>
-                    <h3 class="text-sm font-semibold text-mute">Why Flagged</h3>
-                    <p class="mt-1">{{ scan.why_summary or "Analysis completed based on submitted threat attributes." }}</p>
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-dark-card border border-dark-border">
+                                <span class="font-medium text-slate-300"><i class="fa-solid fa-link text-blue-400 mr-1.5"></i> Link Score</span>
+                                <strong class="text-white font-mono">{{ scan.link_score if scan.link_score is not none else 0 }}/100</strong>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-dark-card border border-dark-border">
+                                <span class="font-medium text-slate-300"><i class="fa-regular fa-image text-blue-400 mr-1.5"></i> Screenshot Score</span>
+                                <strong class="text-white font-mono">{{ scan.screenshot_score if scan.screenshot_score is not none else 0 }}/100</strong>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-blue-600/10 border border-blue-500/20">
+                                <span class="font-bold text-blue-400">🎯 Final Composite Risk</span>
+                                <strong class="text-white font-mono text-sm">{{ score }}/100</strong>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </section>
 
-            <section class="rounded-2xl border border-line bg-panel p-5 space-y-3">
-                <h2 class="text-lg font-semibold">SafeNext Recovery Coach</h2>
-                <p>
-                    <span class="text-mute">Recommended Action:</span>
-                    <span class="font-semibold text-mint">{{ scan.recommended_action or "DO NOT INTERACT" }}</span>
-                </p>
-                {% if scan.safe_next and scan.safe_next|length > 0 %}
-                    <ul class="list-disc space-y-1 pl-5 text-sm">
-                        {% for step in scan.safe_next %}
-                            <li>{{ step }}</li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="text-mute">Do not open suspicious links or share sensitive information.</p>
-                {% endif %}
-            </section>
-        </main>
-    </div>
-</body>
+            <!-- =====================================================
+                 05: SAFENEXT RECOVERY COACH & FORENSIC EVIDENCE
+            ===================================================== -->
+            <section class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 lg:p-10 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- SafeNext Coach (Left) -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div>
+                        <span class="text-3xl font-extrabold text-emerald-500 font-mono">05</span>
+                        <h3 class="text-xl sm:text-2xl font-bold text-white tracking-tight mt-1">SafeNext Recovery Coach</h3>
+                        <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Actionable recommendations to stay protected and mitigate exploitation.</p>
+                    </div>
 
+                    <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">RECOMMENDED ACTION</span>
+                        <h4 class="font-bold text-base text-white">{{ scan.recommended_action or "DO NOT INTERACT" }}</h4>
+                    </div>
+
+                    <div class="space-y-2 pt-2">
+                        {% if scan.safe_next and scan.safe_next|length > 0 %}
+                            {% for step in scan.safe_next %}
+                                <div class="flex items-start gap-3 p-3 rounded-xl bg-dark-cardLight border border-dark-border text-xs text-slate-300">
+                                    <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">0{{ loop.index }}</span>
+                                    <span>{{ step }}</span>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="flex items-start gap-3 p-3 rounded-xl bg-dark-cardLight border border-dark-border text-xs text-slate-300">
+                                <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">01</span>
+                                <span>Do not open suspicious links or share sensitive information.</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Forensic Evidence & Why Flagged (Right) -->
+                <div class="lg:col-span-5 rounded-2xl bg-dark-cardLight border border-dark-border p-6 space-y-4">
+                    <h4 class="text-xs uppercase font-bold tracking-wider text-blue-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-magnifying-glass"></i> Forensic Evidence
+                    </h4>
+
+                    {% if scan.evidence and scan.evidence|length > 0 %}
+                        <ul class="space-y-2 text-xs text-slate-300">
+                            {% for item in scan.evidence %}
+                                <li class="flex items-start gap-2">
+                                    <i class="fa-solid fa-circle-notch text-blue-400 text-[10px] mt-1 shrink-0"></i>
+                                    <span>{{ item }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-xs text-slate-500">No specific evidence items recorded.</p>
+                    {% endif %}
+
+                    <div class="pt-3 border-t border-dark-border">
+                        <h4 class="text-xs uppercase font-bold tracking-wider text-slate-400 mb-1">❓ Why Flagged</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed">{{ scan.why_summary or "Analysis completed based on submitted threat attributes." }}</p>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-dark-border/60 py-6 px-4 sm:px-6 lg:px-10 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+            <span>© 2026 ScamShield. Administrator Control Center.</span>
+            <span>Stay aware. Stay protected.</span>
+        </footer>
+
+    </div>
+
+    <!-- =====================================================
+         RESPONSIVE SIDEBAR JAVASCRIPT
+    ===================================================== -->
+    <script>
+        $(document).ready(function () {
+            function openMobileSidebar() {
+                $('#sidebar').removeClass('-translate-x-full');
+                $('#sidebarBackdrop').removeClass('hidden');
+                $('body').addClass('overflow-hidden');
+            }
+
+            function closeMobileSidebar() {
+                $('#sidebar').addClass('-translate-x-full');
+                $('#sidebarBackdrop').addClass('hidden');
+                $('body').removeClass('overflow-hidden');
+            }
+
+            $('#mobileMenuBtn').on('click', function (e) {
+                e.stopPropagation();
+                openMobileSidebar();
+            });
+
+            $('#closeSidebarBtn, #sidebarBackdrop').on('click', function () {
+                closeMobileSidebar();
+            });
+
+            $('.sidebar-nav a').on('click', function () {
+                if ($(window).width() < 768) {
+                    closeMobileSidebar();
+                }
+            });
+        });
+    </script>
+</body>
 </html>

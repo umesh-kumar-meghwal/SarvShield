@@ -1,152 +1,408 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit User - SarvShield</title>
-    {% include "includes/admin-head.html" %}
+    <title>Edit User - {{ user.name or user.email }} | ScamShield Admin</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef6ff',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        },
+                        dark: {
+                            base: '#060B13',
+                            sidebar: '#080E1A',
+                            card: '#0D1728',
+                            cardLight: '#121F36',
+                            border: '#1E293B',
+                            hover: '#182744'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #060B13; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
 </head>
 
-<body class="min-h-screen bg-night text-slate-100">
-    <div class="lg:grid lg:grid-cols-[260px_1fr] min-h-screen">
-        {% set nav_active = "users" %}
-        {% include "includes/admin-sidebar.html" %}
+<body class="bg-dark-base text-slate-100 flex min-h-screen overflow-x-hidden antialiased relative">
 
-        <main class="p-6 lg:p-8">
-            <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                    <h1 class="text-3xl font-semibold">Edit User</h1>
-                    <p class="text-mute mt-1">{{ user.email }}</p>
+    <!-- =====================================================
+         MOBILE BACKDROP OVERLAY
+    ===================================================== -->
+    <div id="sidebarBackdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
+
+    <!-- =====================================================
+         ADMIN SIDEBAR NAVIGATION
+    ===================================================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 md:w-64 bg-dark-sidebar border-r border-dark-border flex flex-col justify-between shrink-0 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300 ease-in-out">
+        <div>
+            <!-- Brand Logo & Close Button -->
+            <div class="h-20 flex items-center justify-between px-6 border-b border-dark-border/60">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 text-lg shadow-inner">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-extrabold text-base tracking-tight text-white leading-none">ScamShield</h2>
+                        <span class="text-[10px] tracking-widest uppercase font-bold text-amber-400">Admin Control</span>
+                    </div>
                 </div>
-                <a class="rounded-xl border border-line px-4 py-2 text-sm text-mute hover:text-white" href="/user-show">
-                    ← Back to users
-                </a>
+
+                <button id="closeSidebarBtn" class="md:hidden text-slate-400 hover:text-white p-1 rounded-lg focus:outline-none" aria-label="Close Sidebar">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
             </div>
 
-            <form id="editUserForm" class="max-w-xl space-y-4 rounded-2xl border border-line bg-panel p-6">
-                <div>
-                    <label class="mb-2 block text-sm text-mute">Profile Picture</label>
-                    <img
-                        id="profilePreview"
-                        src="{{ user.profile_picture or '' }}"
-                        alt="Profile Picture"
-                        class="mb-3 h-28 w-28 rounded-2xl object-cover border border-line {% if not user.profile_picture %}hidden{% endif %}"
-                    >
-                    <input
-                        class="block w-full text-sm text-mute file:mr-3 file:rounded-lg file:border-0 file:bg-slate-800 file:px-3 file:py-2 file:text-slate-100"
-                        type="file"
-                        name="profile_picture"
-                        id="profilePicture"
-                        accept="image/png,image/jpeg,image/webp"
-                    >
-                </div>
+            <!-- Navigation Links -->
+            <nav class="p-4 space-y-1.5 text-sm font-medium sidebar-nav">
+                <a href="/admin-dashboard" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <i class="fa-solid fa-gauge-high w-5 text-slate-400"></i>
+                    <span>Dashboard</span>
+                </a>
 
-                <div>
-                    <label class="mb-1.5 block text-sm text-mute">Name</label>
-                    <input
-                        class="w-full rounded-xl border border-line bg-night px-3 py-2.5 outline-none focus:border-mint"
-                        type="text"
-                        name="name"
-                        value="{{ user.name }}"
-                        required
-                    >
-                </div>
+                <!-- Manage Users Active -->
+                <a href="/user-show" class="flex items-center gap-3.5 px-4 py-3 rounded-xl bg-blue-600/15 text-blue-400 border border-blue-500/20 font-semibold shadow-sm transition">
+                    <i class="fa-solid fa-users w-5 text-blue-400"></i>
+                    <span>Manage Users</span>
+                </a>
 
-                <div>
-                    <label class="mb-1.5 block text-sm text-mute">Email</label>
-                    <input
-                        class="w-full rounded-xl border border-line bg-night px-3 py-2.5 text-mute"
-                        type="email"
-                        value="{{ user.email }}"
-                        readonly
-                    >
-                </div>
+                <a href="/admin-show" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <i class="fa-solid fa-user-shield w-5 text-slate-400"></i>
+                    <span>Show Admins</span>
+                </a>
 
-                <div>
-                    <label class="mb-1.5 block text-sm text-mute">Phone</label>
-                    <input
-                        class="w-full rounded-xl border border-line bg-night px-3 py-2.5 outline-none focus:border-mint"
-                        type="text"
-                        name="phone"
-                        value="{{ user.phone }}"
-                        required
-                    >
-                </div>
+                <a href="/admin-register" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <i class="fa-solid fa-user-plus w-5 text-slate-400"></i>
+                    <span>Add Admin</span>
+                </a>
 
-                <div>
-                    <label class="mb-1.5 block text-sm text-mute">Address</label>
-                    <textarea
-                        class="w-full rounded-xl border border-line bg-night px-3 py-2.5 outline-none focus:border-mint"
-                        name="address"
-                        rows="4"
-                        required
-                    >{{ user.address }}</textarea>
-                </div>
+                <a href="/feedback" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-dark-hover transition">
+                    <i class="fa-regular fa-comments w-5 text-slate-400"></i>
+                    <span>User Feedback</span>
+                </a>
+            </nav>
+        </div>
 
-                <button
-                    type="submit"
-                    id="updateBtn"
-                    class="rounded-xl bg-mint px-4 py-2.5 text-sm font-semibold text-night hover:bg-teal-300 disabled:opacity-60"
-                >
-                    Update User
+        <!-- Sidebar Bottom Logout -->
+        <div class="p-4 border-t border-dark-border/60 space-y-2">
+            <a href="/logout" class="flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-rose-400 hover:bg-rose-500/10 text-xs font-semibold transition">
+                <i class="fa-solid fa-arrow-right-from-bracket w-4"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- =====================================================
+         PAGE WRAPPER
+    ===================================================== -->
+    <div class="flex-1 flex flex-col min-w-0 w-full" id="pageWrapper">
+
+        <!-- Responsive Top Bar Header -->
+        <header class="h-20 border-b border-dark-border flex items-center justify-between px-4 sm:px-6 lg:px-10 bg-dark-base/90 backdrop-blur sticky top-0 z-30">
+            <div class="flex items-center gap-3">
+                <button id="mobileMenuBtn" class="md:hidden w-10 h-10 rounded-xl bg-dark-card border border-dark-border text-slate-300 hover:text-white flex items-center justify-center focus:outline-none active:scale-95 transition" aria-label="Open Navigation">
+                    <i class="fa-solid fa-bars-staggered text-base"></i>
                 </button>
 
-                <div id="updateResponse" class="text-sm"></div>
-            </form>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs uppercase font-bold tracking-widest text-slate-400">SCAMSHIELD</span>
+                    <span class="text-slate-600 hidden xs:inline">/</span>
+                    <a href="/user-show" class="text-slate-400 hover:text-white text-xs uppercase font-bold hidden sm:inline">Users</a>
+                    <span class="text-slate-600 hidden sm:inline">/</span>
+                    <span class="text-sm font-semibold text-white truncate">Edit User</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium">
+                <a href="/user-show" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-dark-card border border-dark-border hover:bg-dark-hover text-slate-300 hover:text-white text-xs font-bold transition">
+                    <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Users
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-4 sm:p-6 lg:p-10 max-w-4xl mx-auto w-full space-y-8 sm:space-y-10">
+
+            <!-- Hero Banner -->
+            <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#12274d] via-[#0b1b36] to-[#0a1324] border border-blue-900/40 p-6 sm:p-8 lg:p-12 shadow-2xl">
+                <div class="absolute -right-16 -top-16 w-80 sm:w-96 h-80 sm:h-96 rounded-full bg-blue-500/15 blur-3xl pointer-events-none"></div>
+
+                <div class="relative z-10 max-w-2xl space-y-3">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-widest uppercase bg-blue-500/20 text-blue-400 border border-blue-400/30">
+                        <i class="fa-solid fa-user-pen text-xs"></i> ACCOUNT EDITOR
+                    </span>
+
+                    <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                        Edit User Account
+                    </h1>
+
+                    <p class="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed font-mono">
+                        {{ user.email }}
+                    </p>
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 EDIT USER FORM CARD
+            ===================================================== -->
+            <div class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 lg:p-10 shadow-xl space-y-6">
+                <div class="border-b border-dark-border pb-4">
+                    <h2 class="text-xl font-bold text-white tracking-tight">Modify Profile Details</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Update contact information, names, address, or user avatar.</p>
+                </div>
+
+                <form id="editUserForm" class="space-y-6">
+                    
+                    <!-- Profile Picture Upload & Live Preview -->
+                    <div class="space-y-3">
+                        <label class="block text-xs uppercase tracking-wider font-bold text-slate-300">
+                            <i class="fa-regular fa-image text-blue-400 mr-1.5"></i> Profile Picture
+                        </label>
+                        
+                        <div class="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl bg-dark-cardLight border border-dark-border">
+                            <img
+                                id="profilePreview"
+                                src="{{ user.profile_picture or '' }}"
+                                alt="Profile Preview"
+                                class="w-20 h-20 rounded-2xl object-cover border-2 border-blue-500/40 shadow-lg shrink-0 {% if not user.profile_picture %}hidden{% endif %}"
+                            >
+                            
+                            {% if not user.profile_picture %}
+                            <div id="noPhotoPlaceholder" class="w-20 h-20 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 text-2xl shrink-0">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            {% endif %}
+
+                            <div class="flex-1 w-full space-y-1.5">
+                                <input
+                                    class="block w-full text-xs text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600/20 file:text-blue-400 hover:file:bg-blue-600 hover:file:text-white file:transition cursor-pointer"
+                                    type="file"
+                                    name="profile_picture"
+                                    id="profilePicture"
+                                    accept="image/png,image/jpeg,image/webp"
+                                >
+                                <p class="text-[10px] text-slate-500">Supports PNG, JPEG, WEBP files.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Full Name -->
+                    <div class="space-y-2">
+                        <label for="name" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
+                            <i class="fa-regular fa-user text-blue-400 mr-1.5"></i> Full Name <span class="text-rose-400">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value="{{ user.name }}"
+                            required
+                            class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                        >
+                    </div>
+
+                    <!-- Email Address (Readonly) -->
+                    <div class="space-y-2">
+                        <label class="block text-xs uppercase tracking-wider font-bold text-slate-300">
+                            <i class="fa-regular fa-envelope text-slate-500 mr-1.5"></i> Email Address <span class="text-slate-500 font-normal lowercase">(read-only identifier)</span>
+                        </label>
+                        <input
+                            type="email"
+                            value="{{ user.email }}"
+                            readonly
+                            class="w-full rounded-xl bg-slate-900/60 border border-dark-border px-4 py-3 text-xs sm:text-sm text-slate-400 font-mono cursor-not-allowed focus:outline-none"
+                        >
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="space-y-2">
+                        <label for="phone" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
+                            <i class="fa-solid fa-phone text-blue-400 mr-1.5"></i> Phone Number <span class="text-rose-400">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="phone"
+                            name="phone"
+                            value="{{ user.phone }}"
+                            required
+                            class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-mono"
+                        >
+                    </div>
+
+                    <!-- Address -->
+                    <div class="space-y-2">
+                        <label for="address" class="block text-xs uppercase tracking-wider font-bold text-slate-300">
+                            <i class="fa-solid fa-location-dot text-blue-400 mr-1.5"></i> Registered Address <span class="text-rose-400">*</span>
+                        </label>
+                        <textarea
+                            id="address"
+                            name="address"
+                            rows="4"
+                            required
+                            class="w-full rounded-xl bg-dark-cardLight border border-dark-border px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition resize-none"
+                        >{{ user.address }}</textarea>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="pt-2 flex flex-col sm:flex-row items-center gap-3">
+                        <button
+                            type="submit"
+                            id="updateBtn"
+                            class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-600/30 transition transform active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60"
+                        >
+                            <i class="fa-solid fa-floppy-disk"></i> Update User
+                        </button>
+
+                        <a
+                            href="/user-show"
+                            class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-dark-cardLight border border-dark-border hover:bg-dark-hover text-slate-300 hover:text-white font-semibold text-xs sm:text-sm text-center transition"
+                        >
+                            Cancel
+                        </a>
+                    </div>
+
+                    <!-- Response Box -->
+                    <div id="updateResponse" class="transition-all duration-300"></div>
+
+                </form>
+
+            </div>
+
         </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-dark-border/60 py-6 px-4 sm:px-6 lg:px-10 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+            <span>© 2026 ScamShield. Administrator Control Center.</span>
+            <span>Stay aware. Stay protected.</span>
+        </footer>
+
     </div>
 
+    <!-- =====================================================
+         JAVASCRIPT & AJAX UPDATE HANDLER
+    ===================================================== -->
     <script>
-        $("#profilePicture").on("change", function () {
-            const file = this.files[0];
-            if (!file) {
-                return;
+        $(document).ready(function () {
+            
+            // --- Mobile Drawer Toggle Logic ---
+            function openMobileSidebar() {
+                $('#sidebar').removeClass('-translate-x-full');
+                $('#sidebarBackdrop').removeClass('hidden');
+                $('body').addClass('overflow-hidden');
             }
-            const imageURL = URL.createObjectURL(file);
-            $("#profilePreview")
-                .attr("src", imageURL)
-                .removeClass("hidden");
-        });
 
-        $("#editUserForm").on("submit", function(e) {
-            e.preventDefault();
+            function closeMobileSidebar() {
+                $('#sidebar').addClass('-translate-x-full');
+                $('#sidebarBackdrop').addClass('hidden');
+                $('body').removeClass('overflow-hidden');
+            }
 
-            $("#updateBtn")
-                .prop("disabled", true)
-                .text("Updating...");
+            $('#mobileMenuBtn').on('click', function(e) {
+                e.stopPropagation();
+                openMobileSidebar();
+            });
 
-            const formData = new FormData(this);
+            $('#closeSidebarBtn, #sidebarBackdrop').on('click', function() {
+                closeMobileSidebar();
+            });
 
-            $.ajax({
-                url: window.location.pathname,
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    $("#updateResponse").html(
-                        "<p class='text-emerald-400'>" + response.message + "</p>"
-                    );
-                },
-                error: function(xhr) {
-                    let message = "Something went wrong";
-                    if (xhr.responseJSON) {
-                        message = xhr.responseJSON.message || message;
-                    }
-                    $("#updateResponse").html(
-                        "<p class='text-rose-400'>" + message + "</p>"
-                    );
-                },
-                complete: function() {
-                    $("#updateBtn")
-                        .prop("disabled", false)
-                        .text("Update User");
+            $('.sidebar-nav a').on('click', function() {
+                if ($(window).width() < 768) {
+                    closeMobileSidebar();
                 }
             });
+
+            // --- Profile Picture Live Preview ---
+            $("#profilePicture").on("change", function () {
+                const file = this.files[0];
+                if (!file) return;
+
+                const imageURL = URL.createObjectURL(file);
+                $("#profilePreview")
+                    .attr("src", imageURL)
+                    .removeClass("hidden");
+                $("#noPhotoPlaceholder").addClass("hidden");
+            });
+
+            // --- Form Submit AJAX ---
+            $("#editUserForm").on("submit", function(e) {
+                e.preventDefault();
+
+                $("#updateBtn")
+                    .prop("disabled", true)
+                    .html(`<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Updating...`);
+
+                const formData = new FormData(this);
+
+                $.ajax({
+                    url: window.location.pathname,
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        const msg = response.message || "User profile updated successfully!";
+                        $("#updateResponse").html(`
+                            <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs sm:text-sm flex items-center gap-2.5">
+                                <i class="fa-solid fa-circle-check text-base shrink-0"></i>
+                                <span>${msg}</span>
+                            </div>
+                        `);
+                    },
+                    error: function(xhr) {
+                        let message = "Something went wrong. Please try again.";
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            message = xhr.responseJSON.message;
+                        }
+                        $("#updateResponse").html(`
+                            <div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs sm:text-sm flex items-center gap-2.5">
+                                <i class="fa-solid fa-triangle-exclamation text-base shrink-0"></i>
+                                <span>${message}</span>
+                            </div>
+                        `);
+                    },
+                    complete: function() {
+                        $("#updateBtn")
+                            .prop("disabled", false)
+                            .html(`<i class="fa-solid fa-floppy-disk mr-1.5"></i> Update User`);
+                    }
+                });
+            });
+
         });
     </script>
 </body>
-
 </html>

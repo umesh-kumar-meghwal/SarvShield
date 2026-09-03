@@ -253,7 +253,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
                     <div class="lg:col-span-2 rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-lg">
                         <div class="mb-4 sm:mb-5">
-                            <h4 class="font-bold text-white text-sm sm:text-base">📈 Trust Score Trend</h4>
+                            <h4 class="font-bold text-white text-sm sm:text-base"> Trust Score Trend</h4>
                             <p class="text-xs text-slate-400">Historical performance based on security activity</p>
                         </div>
                         <div class="relative h-60 sm:h-64 w-full">
@@ -264,7 +264,7 @@
 
                     <div class="rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-lg flex flex-col">
                         <div class="mb-4">
-                            <h4 class="font-bold text-white text-sm sm:text-base">🕒 Recent Activity</h4>
+                            <h4 class="font-bold text-white text-sm sm:text-base"> Recent Activity</h4>
                             <p class="text-xs text-slate-400">Latest threat scans</p>
                         </div>
                         <div id="trustActivity" class="space-y-3 overflow-y-auto max-h-60 sm:max-h-64 pr-1">
@@ -280,7 +280,7 @@
             <section id="scamCheckSection" class="pt-2 space-y-4 sm:space-y-6">
                 <div>
                     <span class="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-blue-400">Threat Detection</span>
-                    <h3 class="text-xl sm:text-2xl font-bold text-white tracking-tight mt-0.5">🎯 ScamCheck Engine</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold text-white tracking-tight mt-0.5"> ScamCheck Engine</h3>
                     <p class="text-xs sm:text-sm text-slate-400 mt-1">Submit single or multiple inputs to run an instant deep analysis.</p>
                 </div>
 
@@ -664,7 +664,7 @@
                                         ${inputs.phone ? `<div class="p-2 rounded-xl bg-dark-card border border-dark-border text-center text-slate-300">📞 Phone: ${res.phone_score !== null ? res.phone_score : 'N/A'}</div>` : ''}
                                         ${inputs.link ? `<div class="p-2 rounded-xl bg-dark-card border border-dark-border text-center text-slate-300">🔗 Link: ${Number(res.link_score || 0)}/100</div>` : ''}
                                         ${inputs.screenshot ? `<div class="p-2 rounded-xl bg-dark-card border border-dark-border text-center text-slate-300">🖼️ OCR: ${Number(res.screenshot_score || 0)}/100</div>` : ''}
-                                        <div class="p-2 rounded-xl bg-dark-card border border-dark-border text-center text-teal-400">🛡️ Score: ${finalScore}/100</div>
+                                        <div class="p-2 rounded-xl bg-dark-card border border-dark-border text-center text-teal-400"> Score: ${finalScore}/100</div>
                                     </div>
                                 </div>
                             </div>

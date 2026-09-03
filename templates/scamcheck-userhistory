@@ -1,41 +1,97 @@
-<h3 class="mb-4 text-base font-semibold">Scam Check History</h3>
+<div class="space-y-4">
+    <!-- Header -->
+    <div class="flex items-center justify-between pb-3 border-b border-dark-border/60">
+        <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-shield-virus text-blue-400"></i> Scam Check Records
+        </h3>
+        {% if history %}
+            <span class="px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold font-mono">
+                {{ history|length }} Scans Found
+            </span>
+        {% endif %}
+    </div>
 
-{% if history %}
+    {% if history and history|length > 0 %}
+    <div class="rounded-2xl border border-dark-border bg-dark-card overflow-hidden shadow-lg">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[620px]">
+                <thead>
+                    <tr class="border-b border-dark-border bg-dark-cardLight/60 text-[11px] uppercase tracking-wider font-bold text-slate-400">
+                        <th class="py-3 px-4">Message</th>
+                        <th class="py-3 px-4">Phone</th>
+                        <th class="py-3 px-4">Score</th>
+                        <th class="py-3 px-4">Verdict</th>
+                        <th class="py-3 px-4">Date</th>
+                        <th class="py-3 px-4 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-dark-border/60 text-xs">
+                    {% for item in history %}
+                    {% set score = item.final_score if item.final_score is not none else (item.score or 0) %}
+                    {% set verdict = (item.verdict or "UNKNOWN")|upper %}
 
+                    <tr class="hover:bg-dark-hover/40 transition">
+                        
+                        <!-- Message -->
+                        <td class="py-3.5 px-4 max-w-[200px] truncate text-slate-200 font-medium" title="{{ item.message }}">
+                            {{ item.message or "-" }}
+                        </td>
 
+                        <!-- Phone -->
+                        <td class="py-3.5 px-4 font-mono text-slate-300 text-[11px] whitespace-nowrap">
+                            {% if item.phone %}
+                                <span class="px-2 py-0.5 rounded bg-dark-cardLight border border-dark-border">{{ item.phone }}</span>
+                            {% else %}
+                                <span class="text-slate-600">-</span>
+                            {% endif %}
+                        </td>
 
+                        <!-- Score -->
+                        <td class="py-3.5 px-4 font-mono font-bold text-white whitespace-nowrap">
+                            {{ score }}<span class="text-slate-500 text-[10px]">/100</span>
+                        </td>
 
+                        <!-- Verdict Badge -->
+                        <td class="py-3.5 px-4 whitespace-nowrap">
+                            {% if verdict in ['SAFE', 'LOW', 'CLEAN'] or score < 30 %}
+                                <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold uppercase tracking-wider">
+                                    {{ verdict }}
+                                </span>
+                            {% elif verdict in ['SCAM', 'FRAUD', 'HIGH', 'MALICIOUS'] or score >= 60 %}
+                                <span class="px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] font-bold uppercase tracking-wider">
+                                    {{ verdict }}
+                                </span>
+                            {% else %}
+                                <span class="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-bold uppercase tracking-wider">
+                                    {{ verdict }}
+                                </span>
+                            {% endif %}
+                        </td>
 
-</table>
+                        <!-- Date -->
+                        <td class="py-3.5 px-4 text-slate-400 text-[11px] font-mono whitespace-nowrap">
+                            {{ item.created_at[:16] if item.created_at else "-" }}
+                        </td>
 
-<div class="overflow-x-auto">
-    <table class="w-full text-left text-sm">
-        <thead class="bg-white/5 text-mute">
-            <tr>
-                <th class="px-3 py-2 font-semibold">Message</th>
-                <th class="px-3 py-2 font-semibold">Phone</th>
-                <th class="px-3 py-2 font-semibold">Score</th>
-                <th class="px-3 py-2 font-semibold">Verdict</th>
-                <th class="px-3 py-2 font-semibold">Date</th>
-                <th class="px-3 py-2 font-semibold">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in history %}
-            <tr class="border-t border-line">
-                <td class="max-w-[220px] truncate px-3 py-2">{{ item.message or "-" }}</td>
-                <td class="px-3 py-2">{{ item.phone or "-" }}</td>
-                <td class="px-3 py-2">{{ item.final_score if item.final_score is not none else (item.score or 0) }}/100</td>
-                <td class="px-3 py-2">{{ item.verdict or "UNKNOWN" }}</td>
-                <td class="px-3 py-2">{{ item.created_at[:16] if item.created_at else "-" }}</td>
-                <td class="px-3 py-2">
-                    <a class="text-mint hover:underline" href="/scamcheck-userhistory-view/{{ item.id }}">View</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                        <!-- Action Link -->
+                        <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                            <a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-dark-cardLight border border-dark-border hover:border-blue-500/50 text-blue-400 hover:text-white text-xs font-semibold transition" href="/scamcheck-userhistory-view/{{ item.id }}">
+                                <span>Inspect</span>
+                                <i class="fa-solid fa-chevron-right text-[9px]"></i>
+                            </a>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="p-8 rounded-2xl bg-dark-cardLight/50 border border-dark-border text-center space-y-2">
+        <i class="fa-regular fa-folder-open text-2xl text-slate-500"></i>
+        <p class="text-xs text-slate-400 font-medium">No scam check records found for this user.</p>
+    </div>
+    {% endif %}
 </div>
-{% else %}
-<p class="text-mute">No scam check history found.</p>
-{% endif %}
