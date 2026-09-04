@@ -4,6 +4,7 @@ import uuid
 import tempfile
 import re
 import json
+import random
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
 from dotenv import load_dotenv
@@ -2494,6 +2495,85 @@ def checkscam_history():
     except Exception as e:
         print("HISTORY FETCH ERROR:", repr(e))
         return f"Error loading scan history: {str(e)}", 500
+    
+    
+OTP_STORE = {}
+
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    if request.method == "GET":
+        return render_template("forgot-password.html")
+    
+    data = request.json or request.form
+    step = data.get("step") # 'send_otp', 'verify_otp', 'reset_password'
+    email = data.get("email", "").strip().lower()
+
+    if step == "send_otp":
+        if not email:
+            return jsonify({"success": False, "message": "Please enter your email address."}), 400
+        
+        # Check if email exists in database (Supabase example)
+        try:
+            user_check = supabase.table("login").select("email").eq("email", email).execute()
+            if not user_check.data:
+                return jsonify({"success": False, "message": "Email address not found in our system."}), 404
+        except Exception:
+            pass
+
+        # Generate 6-digit OTP
+        otp = str(random.randint(100000, 999999))
+        OTP_STORE[email] = otp
+        session['reset_email'] = email
+
+        # TODO: Yahan email bhejne ka code likhein (Flask-Mail / SMTP)
+        print(f"🔥 DEBUG OTP for {email}: {otp}") # Terminal me OTP dikhega testing ke liye
+        send_otp_email(
+                    email,
+                    otp
+                )
+        
+
+        return jsonify({"success": True, "message": "OTP sent successfully to your email."}), 200
+
+    elif step == "verify_otp":
+        otp = data.get("otp", "").strip()
+        email = session.get('reset_email')
+
+        if not email or email not in OTP_STORE:
+            return jsonify({"success": False, "message": "Session expired. Please request a new OTP."}), 400
+
+        if OTP_STORE[email] != otp:
+            return jsonify({"success": False, "message": "Invalid OTP. Please try again."}), 400
+
+        session['otp_verified'] = True
+        return jsonify({"success": True, "message": "OTP verified successfully."}), 200
+
+    elif step == "reset_password":
+        new_password = data.get("password", "").strip()
+        email = session.get('reset_email')
+
+        if not session.get('otp_verified') or not email:
+            return jsonify({"success": False, "message": "Unauthorized request."}), 400
+
+        if len(new_password) < 6:
+            return jsonify({"success": False, "message": "Password must be at least 6 characters long."}), 400
+
+        try:
+            # Update password in Supabase DB (Hash password in production!)
+            supabase.table("login").update({"password": new_password}).eq("email", email).execute()
+            
+            # Clear session
+            session.pop('reset_email', None)
+            session.pop('otp_verified', None)
+            if email in OTP_STORE:
+                del OTP_STORE[email]
+
+            return jsonify({"success": True, "message": "Password reset successfully! Redirecting to login...", "redirect": url_for('login')}), 200
+        except Exception as e:
+            return jsonify({"success": False, "message": f"Database error: {str(e)}"}), 500    
+    
+    
+    
 # =========================================================
 # REPORT SCAM (PHONE AND/OR LINK)
 # =========================================================
