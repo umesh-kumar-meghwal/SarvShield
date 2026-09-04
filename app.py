@@ -2558,19 +2558,17 @@ def forgot_password():
         if len(new_password) < 6:
             return jsonify({"success": False, "message": "Password must be at least 6 characters long."}), 400
 
-        try:
-            # Update password in Supabase DB (Hash password in production!)
-            supabase.table("login").update({"password": new_password}).eq("email", email).execute()
-            
-            # Clear session
-            session.pop('reset_email', None)
-            session.pop('otp_verified', None)
-            if email in OTP_STORE:
-                del OTP_STORE[email]
-
-            return jsonify({"success": True, "message": "Password reset successfully! Redirecting to login...", "redirect": url_for('login')}), 200
-        except Exception as e:
-            return jsonify({"success": False, "message": f"Database error: {str(e)}"}), 500    
+        # Update password in Supabase DB (Hash password in production!)
+        supabase.table("login").update({"password": new_password}).eq("email", email).execute()
+                    
+        # Clear session
+        session.pop('reset_email', None)
+        session.pop('otp_verified', None)
+        if email in OTP_STORE:
+            del OTP_STORE[email]
+        
+        return jsonify({"success": True, "message": "Password reset successfully! Redirecting to login..."}), 200
+       
     
     
     
