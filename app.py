@@ -2772,5 +2772,19 @@ def scamcheck_check():
         return jsonify({"success": False, "message": f"Server Error: {str(e)}", "error": str(e)}), 500
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
