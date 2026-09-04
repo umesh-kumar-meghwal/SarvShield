@@ -2220,6 +2220,154 @@ def home_page():
         return redirect("/error")
     return render_template('home.html',data=data)
 
+
+
+
+
+
+@app.route("/scam-report", methods=["GET", "POST"])
+def scam_report():
+    # Login & User Type Check
+    if "email" not in session or session.get("usertype") != "user":
+        if request.method == "GET":
+            return redirect("/login")
+        return jsonify({"success": False, "message": "Please login as user to report a scam"}), 401
+
+    user_email = session.get("email")
+
+    if request.method == "GET":
+        response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+        data = response.data
+        if not data:
+            return redirect("/error")
+        return render_template("report-scam.html",data=data)
+
+    try:
+        phone_number = request.form.get("phone_number", "").strip()
+        link = request.form.get("link", "").strip()
+        reason = request.form.get("reason", "").strip()
+
+        # 1. Validation: Phone ya Link dono me se kam se kam ek hona chahiye
+        if not phone_number and not link:
+            return jsonify({
+                "success": False,
+                "message": "Please provide at least a Phone Number OR a Link to report."
+            }), 400
+
+        # 2. Reason required
+        if not reason:
+            return jsonify({
+                "success": False,
+                "message": "Reason is required."
+            }), 400
+
+        # =========================================================
+        # 3. DUPLICATE CHECK: Kya is user ne pehle report kiya hai?
+        # =========================================================
+        if phone_number:
+            check_phone = (
+                supabase
+                .table("scam_reports")
+                .select("id")
+                .eq("user_email", user_email)
+                .eq("phone", phone_number)
+                .execute()
+            )
+            if check_phone.data and len(check_phone.data) > 0:
+                return jsonify({
+                    "success": False,
+                    "message": "You have already reported this phone number previously."
+                }), 409
+
+        if link:
+            check_link = (
+                supabase
+                .table("scam_reports")
+                .select("id")
+                .eq("user_email", user_email)
+                .eq("link", link)
+                .execute()
+            )
+            if check_link.data and len(check_link.data) > 0:
+                return jsonify({
+                    "success": False,
+                    "message": "You have already reported this link previously."
+                }), 409
+
+        # =========================================================
+        # 4. INSERT INTO scam_reports (User Audit Log)
+        # =========================================================
+        supabase.table("scam_reports").insert({
+            "user_email": user_email,
+            "phone": phone_number if phone_number else None,
+            "link": link if link else None,
+            "reason": reason
+        }).execute()
+
+        # =========================================================
+        # 5. SYNC WITH spam_numbers TABLE (Auto-Increment / Create)
+        # =========================================================
+        if phone_number:
+            exist_num = (
+                supabase
+                .table("spam_numbers")
+                .select("id, report_count")
+                .eq("phone", phone_number)
+                .execute()
+            )
+            if exist_num.data and len(exist_num.data) > 0:
+                current_count = exist_num.data[0].get("report_count") or 0
+                new_count = current_count + 1
+                supabase.table("spam_numbers").update({
+                    "report_count": new_count
+                }).eq("phone", phone_number).execute()
+                print(f"✓ Phone '{phone_number}' report_count updated to {new_count}")
+            else:
+                supabase.table("spam_numbers").insert({
+                    "phone": phone_number,
+                    "report_count": 1,
+                    "reputation": "SPAM",
+                    "score": 90
+                }).execute()
+                print(f"✓ New Phone '{phone_number}' added with report_count = 1")
+
+        # =========================================================
+        # 6. SYNC WITH spam_links TABLE (Auto-Increment / Create)
+        # =========================================================
+        if link:
+            exist_lnk = (
+                supabase
+                .table("spam_links")
+                .select("id, report_count")
+                .eq("link", link)
+                .execute()
+            )
+            if exist_lnk.data and len(exist_lnk.data) > 0:
+                current_count = exist_lnk.data[0].get("report_count") or 0
+                new_count = current_count + 1
+                supabase.table("spam_links").update({
+                    "report_count": new_count
+                }).eq("link", link).execute()
+                print(f"✓ Link '{link}' report_count updated to {new_count}")
+            else:
+                supabase.table("spam_links").insert({
+                    "link": link,
+                    "report_count": 1,
+                    "reputation": "SPAM",
+                    "score": 90
+                }).execute()
+                print(f"✓ New Link '{link}' added with report_count = 1")
+
+        return jsonify({
+            "success": True,
+            "message": "Scam reported successfully and spam database updated!"
+        }), 200
+
+    except Exception as e:
+        print("SCAM REPORT ERROR:", repr(e))
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
 # =========================================================
 # SINGLE SCAM RESULT DETAIL ROUTE (BY ID)
 # =========================================================
