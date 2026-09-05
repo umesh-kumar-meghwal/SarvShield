@@ -10,7 +10,8 @@ def generate_safe_next(
     screenshot_result=None,
     phone_result=None,
     fingerprint=None,
-    attack_chain=None
+    attack_chain=None,
+    language="english"
 ):
     link_result = link_result or {}
     screenshot_result = screenshot_result or {}
@@ -33,38 +34,33 @@ Analyze the specific scam incident above and generate tailored, actionable guida
 
 {incident_report}
 
-CRITICAL RULES:
-1. Provide highly specific steps tailored strictly to this exact scam (e.g., if Instagram follower scam -> Instagram password/2FA steps; if fake ID -> Aadhaar biometric lock; if banking/KYC -> bank freezing & 1930).
-2. Separate into:
-   - 'immediate_steps': What the user should do right now to avoid getting trapped.
-   - 'recovery_steps': Exact steps to take if the user ALREADY clicked, submitted credentials, uploaded data, or paid money.
-   - 'why_dangerous': 2-sentence explanation of legal/financial/privacy consequences.
-   - 'helplines': Relevant official contact portals.
+CRITICAL REQUIREMENT - LANGUAGE:
+You MUST generate the entire output in the following language: {language.upper()}.
+- If language is 'hindi', write everything in Hindi (Devanagari script).
+- If language is 'hinglish', write in a casual mix of Hindi and English (Hinglish).
+- If language is 'english', write in professional English.
 
 Return ONLY valid JSON matching this exact structure:
 {{
-    "recommended_action": "Short powerful headline (e.g. NEVER PROVIDE CREDENTIALS FOR FOLLOWERS / DO NOT USE FAKE ID GENERATOR)",
-    "why_dangerous": "Detailed risk and consequence explanation.",
+    "recommended_action": "Short powerful headline in {language}",
+    "why_dangerous": "Detailed risk and consequence explanation in {language}.",
     "immediate_steps": [
-        "Immediate preventive step 1 tailored to this threat",
-        "Immediate preventive step 2",
-        "Immediate preventive step 3",
-        "Immediate preventive step 4"
+        "Immediate preventive step 1 in {language}",
+        "Immediate preventive step 2 in {language}",
+        "Immediate preventive step 3 in {language}"
     ],
     "recovery_steps": [
-        "Specific recovery step if user already entered data / clicked / sent money",
-        "Emergency recovery step 2",
-        "Emergency recovery step 3"
+        "Specific recovery step in {language}",
+        "Emergency recovery step 2 in {language}"
     ],
     "helplines": [
-        "National Cyber Crime Helpline: Dial 1930 (https://cybercrime.gov.in)",
-        "Relevant specific authority or portal for this case"
+        "National Cyber Crime Helpline: Dial 1930 (https://cybercrime.gov.in)"
     ]
 }}
 """
     data = call_openrouter(prompt)
 
-    if data:
+    if data and isinstance(data, dict):
         immediate = data.get("immediate_steps") or [
             "Do not open suspicious links or download unverified files.",
             "Never share passwords, OTPs, or government identity documents.",

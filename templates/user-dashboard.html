@@ -14,26 +14,10 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: {
-                            50: '#eef6ff',
-                            400: '#60a5fa',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            900: '#1e3a8a',
-                        },
-                        dark: {
-                            base: '#060B13',
-                            sidebar: '#080E1A',
-                            card: '#0D1728',
-                            cardLight: '#121F36',
-                            border: '#1E293B',
-                            hover: '#182744'
-                        }
+                        brand: { 50: '#eef6ff', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a8a' },
+                        dark: { base: '#060B13', sidebar: '#080E1A', card: '#0D1728', cardLight: '#121F36', border: '#1E293B', hover: '#182744' }
                     },
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
-                    }
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'] }
                 }
             }
         }
@@ -44,7 +28,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
+    
     <!-- Chart.js & jQuery -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -251,9 +235,7 @@
                     </form>
                 </div>
 
-                <!-- =====================================================
-                     DYNAMIC RESULT CONTAINER (SECTION 1 & SECTION 2 STRUCTURE)
-                ===================================================== -->
+                <!-- DYNAMIC RESULT CONTAINER -->
                 <div id="result" class="transition-all duration-300"></div>
 
             </section>
@@ -269,17 +251,16 @@
     </div>
 
     <!-- =====================================================
-         SCRIPTS & DYNAMIC RESULT RENDERING LOGIC
+         SCRIPTS & DYNAMIC LANGUAGE / EASY MODE TOGGLE
     ===================================================== -->
-    <script>
+<script>
     let currentLanguage = 'english';
     let isEasyMode = false;
     let cachedResponse = null;
 
-    // 1. File Upload Name Display
+    // File Upload Name Display
     const fileInput = document.getElementById('screenshot');
     const fileNameDisplay = document.getElementById('file-name');
-
     if (fileInput && fileNameDisplay) {
         fileInput.addEventListener('change', function() {
             if (fileInput.files.length > 0) {
@@ -290,50 +271,30 @@
         });
     }
 
-    // 2. Mobile Drawer Toggle
+    // Mobile Drawer Toggle
     $(document).ready(function () {
-        function openMobileSidebar() {
+        $('#mobileMenuBtn').on('click', () => {
             $('#sidebar').removeClass('-translate-x-full');
             $('#sidebarBackdrop').removeClass('hidden');
             $('body').addClass('overflow-hidden');
-        }
-
-        function closeMobileSidebar() {
+        });
+        $('#closeSidebarBtn, #sidebarBackdrop').on('click', () => {
             $('#sidebar').addClass('-translate-x-full');
             $('#sidebarBackdrop').addClass('hidden');
             $('body').removeClass('overflow-hidden');
-        }
-
-        $('#mobileMenuBtn').on('click', function (e) {
-            e.stopPropagation();
-            openMobileSidebar();
-        });
-
-        $('#closeSidebarBtn, #sidebarBackdrop').on('click', function () {
-            closeMobileSidebar();
-        });
-
-        $('.sidebar-nav a').on('click', function () {
-            if ($(window).width() < 768) {
-                closeMobileSidebar();
-            }
         });
     });
 
-    // 3. HTML Escaper
     function escapeHtml(value) {
         if (value === null || value === undefined) return "";
-        return String(value)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+        return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
     function setLanguage(lang) {
         currentLanguage = lang;
-        if (cachedResponse) renderResult();
+        if ($("#message").val().trim() || $("#phone").val().trim() || $("#link").val().trim()) {
+            $("#scamCheckForm").submit(); // Language change hote hi auto re-analyze karega
+        }
     }
 
     function toggleEasyMode() {
@@ -341,7 +302,7 @@
         if (cachedResponse) renderResult();
     }
 
-    // 4. FORM SUBMIT HANDLER -> BACKEND CALL
+    // Form Submit Handler
     $("#scamCheckForm").on("submit", function (e) {
         e.preventDefault();
 
@@ -353,29 +314,22 @@
 
         if (!message && !phone && !link && !hasScreenshot) {
             $("#result").html(`
-                <div class="p-4 sm:p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 flex items-center gap-3 text-xs sm:text-sm">
-                    <i class="fa-solid fa-circle-exclamation text-lg text-rose-400 shrink-0"></i>
-                    <span>Please provide at least one input (Message, Phone, Link, or Screenshot).</span>
+                <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 flex items-center gap-3 text-xs sm:text-sm">
+                    <i class="fa-solid fa-circle-exclamation text-lg text-rose-400"></i>
+                    <span>Please provide at least one input.</span>
                 </div>
             `);
             return;
         }
 
         const formData = new FormData(this);
+        formData.append("language", currentLanguage); // Language attach karke bheji
 
-        $("#checkBtn")
-            .prop("disabled", true)
-            .html(`<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> SarvShield AI Analyzing...`);
-
+        $("#checkBtn").prop("disabled", true).html(`<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Analyzing in ${currentLanguage.toUpperCase()}...`);
         $("#result").html(`
-            <div class="p-8 sm:p-12 rounded-3xl bg-dark-card border border-dark-border text-center space-y-4 animate-pulse shadow-2xl">
-                <div class="w-16 h-16 mx-auto rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center text-3xl">
-                    <i class="fa-solid fa-shield-halved fa-spin"></i>
-                </div>
-                <div class="space-y-1">
-                    <h4 class="text-base sm:text-lg font-bold text-white">Generating Threat Intelligence Suite...</h4>
-                    <p class="text-xs text-slate-400">Evaluating multi-signal risk, telecom metadata, attack chain & next steps.</p>
-                </div>
+            <div class="p-8 rounded-3xl bg-dark-card border border-dark-border text-center space-y-4 animate-pulse">
+                <i class="fa-solid fa-shield-halved fa-spin text-3xl text-blue-400"></i>
+                <h4 class="font-bold text-white text-sm">Generating Threat Intelligence in ${currentLanguage.toUpperCase()}...</h4>
             </div>
         `);
 
@@ -385,57 +339,30 @@
             data: formData,
             processData: false,
             contentType: false,
-            timeout: 120000,
             success: function (res) {
                 if (!res || !res.success) {
-                    $("#result").html(`
-                        <div class="p-5 sm:p-6 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300">
-                            <h3 class="font-bold text-sm sm:text-base flex items-center gap-2 mb-1">
-                                <i class="fa-solid fa-triangle-exclamation"></i> Analysis Failed
-                            </h3>
-                            <p class="text-xs text-rose-400">${escapeHtml(res?.message || "Unable to analyze the input.")}</p>
-                        </div>
-                    `);
+                    $("#result").html(`<div class="p-4 rounded-xl bg-rose-500/10 text-rose-300 text-xs">Analysis Failed.</div>`);
                     return;
                 }
-
                 cachedResponse = res;
                 renderResult();
             },
-            error: function (xhr, status, error) {
-                let message = "Something went wrong.";
-                if (status === "timeout") message = "Server took more than 120 seconds to respond.";
-                else if (xhr.responseJSON) message = xhr.responseJSON.message || xhr.responseJSON.error || message;
-                
-                $("#result").html(`
-                    <div class="p-4 sm:p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300">
-                        <h4 class="font-bold text-xs sm:text-sm"><i class="fa-solid fa-circle-xmark mr-1"></i> Request Error</h4>
-                        <p class="text-xs text-rose-400 mt-1">${escapeHtml(message)}</p>
-                    </div>
-                `);
+            error: function () {
+                $("#result").html(`<div class="p-4 rounded-xl bg-rose-500/10 text-rose-300 text-xs">Server Error occurred.</div>`);
             },
             complete: function () {
-                $("#checkBtn")
-                    .prop("disabled", false)
-                    .html(`<i class="fa-solid fa-shield-halved"></i> Run Scam Analysis`);
+                $("#checkBtn").prop("disabled", false).html(`<i class="fa-solid fa-shield-halved"></i> Run Scam Analysis`);
             }
         });
     });
 
-    // 5. RENDER RESULT SPLIT INTO SECTION 1 AND SECTION 2
+    // Render Result Function
     function renderResult() {
         if (!cachedResponse) return;
         const res = cachedResponse;
         const inputs = res.inputs || {};
         const finalScore = Number(res.final_score || 0);
         const verdict = (res.verdict || "UNKNOWN").toUpperCase();
-
-        let displayVerdict = verdict;
-        if (currentLanguage === 'hindi') {
-            displayVerdict = verdict === 'HIGH RISK' ? '⚠️ बहुत खतरनाक (High Risk)' : '✅ सुरक्षित (Safe)';
-        } else if (currentLanguage === 'hinglish') {
-            displayVerdict = verdict === 'HIGH RISK' ? '🚨 Bahat Khatarnaak Scam Hai!' : '👍 Safe Lag Raha Hai';
-        }
 
         let badgeBg = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
         let gaugeBorder = "border-emerald-500/30 border-t-emerald-500 shadow-emerald-500/10";
@@ -454,50 +381,10 @@
         let fontClass = isEasyMode ? "text-base sm:text-lg" : "text-xs sm:text-sm";
         let titleSize = isEasyMode ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl";
 
-        let allReasonTags = [];
-        if (res.message_reasons) allReasonTags.push(...res.message_reasons);
-        if (res.link_reasons) allReasonTags.push(...res.link_reasons);
-        if (res.phone_reasons) allReasonTags.push(...res.phone_reasons);
-        if (res.evidence) allReasonTags.push(...res.evidence);
-        if (allReasonTags.length === 0) allReasonTags = ["Multi-signal analysis complete", "Pattern analysis verified"];
-
-        // Attack Chain Nodes
-        const chainItems = Array.isArray(res.attack_chain) && res.attack_chain.length > 0
-            ? res.attack_chain
-            : ["Initial Contact", "Threat Vector", "Compromise"];
-
-        let chainHtml = "";
-        chainItems.forEach((node, i) => {
-            chainHtml += `
-                <div class="flex items-center gap-3 p-3 rounded-xl bg-dark-card border border-dark-border text-xs">
-                    <span class="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center text-[10px] shrink-0">0${i + 1}</span>
-                    <strong class="text-white font-medium">${escapeHtml(node)}</strong>
-                </div>
-            `;
-            if (i < chainItems.length - 1) {
-                chainHtml += `<div class="w-0.5 h-3 bg-indigo-500/40 mx-auto"></div>`;
-            }
-        });
-
-        // Fingerprint Triggers
-        const fingerprintItems = Array.isArray(res.scam_fingerprint) && res.scam_fingerprint.length > 0
-            ? res.scam_fingerprint
-            : ["Urgency Trigger", "Impersonation Vector"];
-
-        let fingerprintHtml = "";
-        fingerprintItems.forEach(fp => {
-            fingerprintHtml += `
-                <div class="p-2.5 rounded-xl bg-dark-card border border-dark-border">
-                    <span class="text-[10px] text-slate-400 block">${escapeHtml(fp)}</span>
-                    <strong class="text-amber-400 text-xs">Detected</strong>
-                </div>
-            `;
-        });
-
-        // SafeNext Steps
-        const stepItems = Array.isArray(res.immediate_steps) && res.immediate_steps.length > 0
-            ? res.immediate_steps
-            : ["Do not reply or click provided links", "Block sender and report"];
+        let allReasonTags = res.message_reasons || res.evidence || ["Urgency detected", "Brand mismatch"];
+        const chainItems = res.attack_chain || ["Initial Contact", "Threat Vector", "Compromise"];
+        const fingerprintItems = res.scam_fingerprint || ["Urgency Trigger", "Impersonation"];
+        const stepItems = res.immediate_steps || ["Do not reply", "Block sender"];
 
         // Trusted Helper Popup (Step 5)
         let trustedHelperHTML = isEasyMode ? `
@@ -507,7 +394,7 @@
             </div>
             <p class="text-xs text-slate-300">If this message seems confusing, share it with someone you trust:</p>
             <div class="flex flex-wrap gap-2">
-                <a href="https://api.whatsapp.com/send?text=Please%20check%20this%20suspicious%20message%20for%20me" target="_blank" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5">
+                <a href="https://api.whatsapp.com/send?text=Please%20check%20this%20suspicious%20message" target="_blank" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs">
                     <i class="fa-brands fa-whatsapp"></i> Share via WhatsApp
                 </a>
             </div>
@@ -546,14 +433,12 @@
 
             ${trustedHelperHTML}
 
-            <!-- ===================================================== -->
-            <!-- SECTION 1: QUICK VIEW (Top - Always Visible)          -->
-            <!-- ===================================================== -->
+            <!-- SECTION 1: QUICK VIEW -->
             <div class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 space-y-6 shadow-xl">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-dark-border pb-4">
                     <div>
                         <span class="text-[10px] uppercase font-bold tracking-widest text-blue-400">SECTION 1: QUICK VIEW</span>
-                        <h4 class="${titleSize} font-extrabold text-white mt-1">Verdict: ${displayVerdict}</h4>
+                        <h4 class="${titleSize} font-extrabold text-white mt-1">Verdict: ${verdict}</h4>
                     </div>
                     <div class="w-20 h-20 rounded-full border-4 ${gaugeBorder} flex flex-col items-center justify-center bg-dark-cardLight shadow-lg">
                         <strong class="text-2xl font-bold text-white">${finalScore}</strong>
@@ -561,17 +446,15 @@
                     </div>
                 </div>
 
-                <!-- 3 Simple Reasons -->
                 <div class="space-y-2">
-                    <h5 class="text-xs font-bold uppercase tracking-wider text-slate-400">3 Simple Reasons:</h5>
+                    <h5 class="text-xs font-bold uppercase tracking-wider text-slate-400">Reasons:</h5>
                     <div class="space-y-1.5">
                         ${allReasonTags.slice(0, 3).map(r => `<div class="p-2.5 rounded-xl bg-dark-cardLight border border-dark-border ${fontClass} text-slate-200">⚠️ ${escapeHtml(r)}</div>`).join('')}
                     </div>
                 </div>
 
-                <!-- 3 SafeNext Actions -->
                 <div class="space-y-2">
-                    <h5 class="text-xs font-bold uppercase tracking-wider text-emerald-400">3 SafeNext Actions:</h5>
+                    <h5 class="text-xs font-bold uppercase tracking-wider text-emerald-400">SafeNext Actions:</h5>
                     <div class="space-y-1.5">
                         ${stepItems.slice(0, 3).map(a => `<div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 ${fontClass} text-emerald-300 font-medium">✅ ${escapeHtml(a)}</div>`).join('')}
                     </div>
@@ -580,10 +463,7 @@
                 ${helplinesHTML}
             </div>
 
-
-            <!-- ===================================================== -->
-            <!-- SECTION 2: ADVANCED ANALYSIS (Bottom - Scroll/Accordion) -->
-            <!-- ===================================================== -->
+            <!-- SECTION 2: ADVANCED ANALYSIS -->
             <div class="rounded-3xl border border-dark-border bg-dark-card/60 p-6 sm:p-8 space-y-6 shadow-xl">
                 <div class="flex items-center justify-between border-b border-dark-border pb-3">
                     <span class="text-[10px] uppercase font-bold tracking-widest text-indigo-400">SECTION 2: ADVANCED ANALYSIS</span>
@@ -593,13 +473,11 @@
                 </div>
 
                 <div id="advancedDetailsContent" class="${isEasyMode ? 'hidden' : 'space-y-8 pt-2'}">
-                    
-                    <!-- 01: Risk Score Generator -->
                     <div class="rounded-3xl border border-dark-border bg-dark-card p-6 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                         <div class="lg:col-span-7 space-y-2">
                             <span class="text-3xl font-extrabold text-blue-500 font-mono">01</span>
                             <h4 class="text-lg font-bold text-white">Risk Score Generator</h4>
-                            <p class="text-xs text-slate-300">${escapeHtml(res.why || "Converts multiple threat signals into a comprehensive risk assessment.")}</p>
+                            <p class="text-xs text-slate-300">${escapeHtml(res.why)}</p>
                         </div>
                         <div class="lg:col-span-5 rounded-2xl bg-dark-cardLight border border-dark-border p-4 text-center">
                             <strong class="text-2xl text-white font-mono">${finalScore} / 100</strong>
@@ -607,77 +485,27 @@
                         </div>
                     </div>
 
-                    ${inputs.phone ? `
-                    <!-- Phone Analysis Card -->
-                    <div class="rounded-3xl border border-blue-500/40 bg-dark-card p-6 shadow-xl space-y-3">
-                        <span class="text-[10px] uppercase font-bold text-blue-400">Telecom & Risk Engine</span>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                            <div class="p-3 rounded-xl bg-dark-cardLight border border-dark-border">
-                                <span class="text-[10px] text-slate-400 block font-bold">CARRIER</span>
-                                <strong class="text-white">${escapeHtml(res.phone_carrier || 'Airtel/Jio')}</strong>
-                            </div>
-                            <div class="p-3 rounded-xl bg-dark-cardLight border border-dark-border">
-                                <span class="text-[10px] text-slate-400 block font-bold">LINE TYPE</span>
-                                <strong class="text-blue-400">${escapeHtml(res.phone_line_type || 'Mobile')}</strong>
-                            </div>
-                            <div class="p-3 rounded-xl bg-dark-cardLight border border-dark-border">
-                                <span class="text-[10px] text-slate-400 block font-bold">VALIDITY</span>
-                                <strong class="text-emerald-400">Valid Number</strong>
-                            </div>
-                            <div class="p-3 rounded-xl bg-dark-cardLight border border-dark-border">
-                                <span class="text-[10px] text-slate-400 block font-bold">COUNTRY</span>
-                                <strong class="text-slate-200">India</strong>
-                            </div>
-                        </div>
-                    </div>` : ''}
-
-                    <!-- 02: Attack Chain Visualizer -->
                     <div class="p-6 rounded-3xl bg-dark-card border border-dark-border space-y-3">
                         <span class="text-3xl font-extrabold text-indigo-500 font-mono">02</span>
                         <h4 class="text-lg font-bold text-white">Attack Chain Visualizer</h4>
                         <div class="space-y-2 pt-1">
-                            ${chainHtml}
+                            ${chainItems.map((node, i) => `<div class="p-2.5 rounded-xl bg-dark-cardLight text-xs text-slate-300 border border-dark-border">0${i+1}. ${escapeHtml(node)}</div>`).join('')}
                         </div>
                     </div>
 
-                    <!-- 03: Scam Fingerprinting -->
                     <div class="p-6 rounded-3xl bg-dark-card border border-dark-border space-y-3">
                         <span class="text-3xl font-extrabold text-amber-500 font-mono">03</span>
                         <h4 class="text-lg font-bold text-white">Scam Fingerprinting</h4>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                            ${fingerprintHtml}
+                            ${fingerprintItems.map(fp => `<div class="p-2.5 rounded-xl bg-dark-cardLight text-xs text-amber-300 border border-dark-border">🔍 ${escapeHtml(fp)}</div>`).join('')}
                         </div>
                     </div>
-
-                    <!-- 04: Trust Graph Lite -->
-                    <div class="p-6 rounded-3xl bg-dark-card border border-dark-border space-y-3">
-                        <span class="text-3xl font-extrabold text-teal-500 font-mono">04</span>
-                        <h4 class="text-lg font-bold text-white">Trust Graph Lite</h4>
-                        <div class="p-3 rounded-2xl bg-dark-cardLight border border-dark-border text-center text-teal-400 font-bold text-xs">
-                            🛡️ Final Confidence Score: ${finalScore}/100
-                        </div>
-                    </div>
-
-                    <!-- 05: SafeNext Coach -->
-                    <div class="p-6 rounded-3xl bg-dark-card border border-dark-border space-y-3">
-                        <span class="text-3xl font-extrabold text-emerald-500 font-mono">05</span>
-                        <h4 class="text-lg font-bold text-white">SafeNext Coach</h4>
-                        <div class="space-y-2 pt-1">
-                            ${stepItems.map(st => `<div class="p-2.5 rounded-xl bg-emerald-500/10 text-xs text-emerald-300 border border-emerald-500/20">✅ ${escapeHtml(st)}</div>`).join('')}
-                        </div>
-                    </div>
-
                 </div>
             </div>
 
         </div>`;
 
         $("#result").html(html);
-
-        $('html, body').animate({
-            scrollTop: $("#result").offset().top - 80
-        }, 500);
+        $('html, body').animate({ scrollTop: $("#result").offset().top - 80 }, 500);
     }
-    </script>
-</body>
-</html>
+</script>
