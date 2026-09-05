@@ -2596,7 +2596,6 @@ from flask import Flask, request, jsonify, session, redirect, render_template
 # =========================================================
 # 2. CORE SCAMCHECK DETECTION ROUTE
 # =========================================================
-# =========================================================
 @app.route("/scamcheck", methods=["GET", "POST"])
 def scamcheck_check():
     # GET Request: Render Dashboard / ScamCheck Page
@@ -2617,7 +2616,6 @@ def scamcheck_check():
         message = request.form.get("message", "").strip()
         phone = request.form.get("phone", "").strip()
         link = request.form.get("link", "").strip()
-        selected_language = request.form.get("language", "english").strip().lower()
         screenshot_file = request.files.get("screenshot")
 
         has_message = bool(message)
@@ -2634,24 +2632,34 @@ def scamcheck_check():
         screenshot_bytes = None
         screenshot_db_record = None
 
+        # 1. In-Memory Screenshot Upload to Supabase Storage
         if has_screenshot:
             try:
                 suffix = os.path.splitext(screenshot_file.filename)[1].lower() or ".png"
                 filename = f"{uuid.uuid4().hex}{suffix}"
                 storage_path = f"screenshots/{filename}"
                 screenshot_db_record = storage_path
-                screenshot_bytes = screenshot_file.read()
-                supabase.storage.from_("scam-screenshots").upload(
-                    storage_path, screenshot_bytes, {"content-type": screenshot_file.content_type or "image/png"}
-                )
-            except Exception as st_err:
-                print("STORAGE UPLOAD NOTICE:", repr(st_err))
 
+                screenshot_bytes = screenshot_file.read()
+
+                try:
+                    supabase.storage.from_("scam-screenshots").upload(
+                        storage_path,
+                        screenshot_bytes,
+                        {"content-type": screenshot_file.content_type or "image/png"}
+                    )
+                except Exception as st_err:
+                    print("STORAGE UPLOAD NOTICE:", repr(st_err))
+            except Exception as ss_err:
+                print("SCREENSHOT PROCESS ERROR:", repr(ss_err))
+
+        # Default Results
         message_result = {"score": 0, "verdict": "UNKNOWN", "language": "unknown", "reasons": []}
         phone_result = {"found": False, "score": None, "reputation": "UNKNOWN", "report_count": 0, "reasons": []}
         link_result = {"score": 0, "domain": "", "final_domain": "", "verdict": "UNKNOWN", "reasons": []}
         screenshot_result = {"score": 0, "verdict": "UNKNOWN", "category": "Unknown", "detected_text": "", "reasons": []}
 
+        # 2. Multi-Threaded Parallel AI Processing
         with ThreadPoolExecutor(max_workers=4) as executor:
             fut_msg = executor.submit(message_detect, message) if has_message else None
             fut_phone = executor.submit(phone_detect, supabase, phone) if has_phone else None
@@ -2686,6 +2694,7 @@ def scamcheck_check():
             "screenshot": screenshot_score if has_screenshot else 0
         }
 
+        # 3. Risk Calculation Engine
         try:
             risk_result = calculate_risk(scores)
         except Exception:
@@ -2700,9 +2709,13 @@ def scamcheck_check():
             final_verdict = "HIGH RISK" if final_score >= 60 else "SUSPICIOUS" if final_score >= 30 else "LOW RISK"
             contribution_data = {}
 
+        # 4. Fingerprint & Evidence Construction
         try:
             fingerprint_data = build_scam_fingerprint(
-                message=message, phone_result=phone_result, link_result=link_result, screenshot_result=screenshot_result
+                message=message,
+                phone_result=phone_result,
+                link_result=link_result,
+                screenshot_result=screenshot_result
             )
             if not isinstance(fingerprint_data, dict): fingerprint_data = {}
         except Exception:
@@ -2721,16 +2734,38 @@ def scamcheck_check():
             ) if r
         ]))
 
+        # 5. SafeNext AI Coach Advice
         try:
             coach_advice = generate_safe_next(
-                final_score=final_score, verdict=final_verdict, message=message,
-                link_result=link_result, screenshot_result=screenshot_result, phone_result=phone_result,
-                fingerprint=fingerprint, attack_chain=attack_chain, language=selected_language
+                final_score=final_score,
+                verdict=final_verdict,
+                message=message,
+                link_result=link_result,
+                screenshot_result=screenshot_result,
+                phone_result=phone_result,
+                fingerprint=fingerprint,
+                attack_chain=attack_chain
             )
             if not isinstance(coach_advice, dict): coach_advice = {}
         except Exception:
             coach_advice = {}
 
+        # 6. What-If Signal Impact
+        try:
+            wi = what_if_analysis(
+                message_score=scores["message"],
+                phone_score=scores["phone"],
+                link_score=scores["link"],
+                screenshot_score=scores["screenshot"]
+            )
+            if not isinstance(wi, dict): wi = {}
+        except Exception:
+            wi = {}
+
+        signal_impact = wi.get("impact", {}) if isinstance(wi.get("impact"), dict) else {}
+        urgency_detected = [w for w in ["immediately", "verify", "suspended", "urgent", "24 hours", "blocked", "warning", "kyc"] if w in (message + " " + link).lower()]
+
+        # 7. Save Scan Record in Supabase DB
         try:
             current_user = session.get("email", "anonymous_user")
             supabase.table("scam_checks").insert({
@@ -2754,11 +2789,12 @@ def scamcheck_check():
         except Exception as db_err:
             print("DB SAVE NOTICE:", repr(db_err))
 
+        # 8. Return Complete JSON Suite to Frontend
+        # 8. Return Complete JSON Suite to Frontend
         return jsonify({
             "success": True,
             "final_score": final_score,
             "verdict": final_verdict,
-            "language": selected_language,
             "inputs": {
                 "message": has_message,
                 "phone": has_phone,
@@ -2767,38 +2803,55 @@ def scamcheck_check():
             },
             "message_score": message_score,
             "message_verdict": message_result.get("verdict", "UNKNOWN"),
+            "message_language": message_result.get("language", "unknown"),
             "message_reasons": [str(r) for r in message_result.get("reasons", [])],
             
+            # --- PHONE FIELDS (Inhe add karein) ---
             "phone_score": phone_score,
             "phone_reputation": phone_result.get("reputation", "UNKNOWN"),
+            "phone_report_count": phone_result.get("report_count", 0),
+            "phone_reasons": [str(r) for r in phone_result.get("reasons", [])],
             "phone_carrier": phone_result.get("carrier", "Unknown"),
             "phone_line_type": phone_result.get("line_type", "Unknown"),
             "phone_valid": phone_result.get("valid"),
             "phone_country": phone_result.get("country", "India"),
+            # -------------------------------------
 
             "link_score": link_score,
             "link_verdict": link_result.get("verdict", "UNKNOWN"),
             "link_domain": link_result.get("domain", ""),
             "link_reasons": [str(r) for r in link_result.get("reasons", [])],
-
             "screenshot_score": screenshot_score,
             "screenshot_verdict": screenshot_result.get("verdict", "UNKNOWN"),
-
+            "screenshot_category": screenshot_result.get("category", "Unknown"),
+            "detected_text": screenshot_result.get("detected_text", ""),
+            "screenshot_reasons": [str(r) for r in screenshot_result.get("reasons", [])],
             "scam_fingerprint": fingerprint,
             "attack_chain": attack_chain,
             "evidence": evidence,
             "why": why_text,
+            "urgency_level": "HIGH" if len(urgency_detected) >= 2 else "MEDIUM" if len(urgency_detected) == 1 else "LOW",
+            "urgency_detected": ", ".join(urgency_detected) if urgency_detected else "none detected",
+            "signal_contribution": contribution_data,
+            "signal_impact": signal_impact,
             "recommended_action": coach_advice.get("recommended_action", "DO NOT INTERACT"),
+            "why_dangerous": coach_advice.get("why_dangerous", ""),
             "immediate_steps": coach_advice.get("immediate_steps", []),
             "recovery_steps": coach_advice.get("recovery_steps", []),
-            "helplines": coach_advice.get("helplines", ["National Cyber Crime Helpline: Dial 1930 (https://cybercrime.gov.in)"]),
-            "safe_next": coach_advice.get("safe_next", [])
+            "helplines": coach_advice.get("helplines", []),
+            "safe_next": coach_advice.get("safe_next", []),
+            "what_if": wi
         }), 200
         
     except Exception as e:
         print("\n❌ CRITICAL ROUTE CRASH ERROR:")
         traceback.print_exc()
         return jsonify({"success": False, "message": f"Server Error: {str(e)}", "error": str(e)}), 500
+
+
+
+
+
 
 
 

@@ -2,6 +2,39 @@ import json
 from ai_helper import call_openrouter
 
 
+# =========================================================
+# DEFAULT SAFE NEXT
+# AI fail / quota / invalid response hone par ye chalega
+# =========================================================
+
+DEFAULT_SAFE_NEXT = {
+    "recommended_action": "संदिग्ध संदेश या लिंक से इंटरैक्ट न करें",
+
+    "why_dangerous": (
+        "इस तरह की संदिग्ध गतिविधि से आपके अकाउंट, पैसे या निजी जानकारी "
+        "को नुकसान पहुंच सकता है। जब तक संदेश भेजने वाले और वेबसाइट की "
+        "स्वतंत्र रूप से पुष्टि न हो जाए, कोई संवेदनशील जानकारी साझा न करें।"
+    ),
+
+    "immediate_steps": [
+        "संदिग्ध लिंक न खोलें और अनजान फाइल डाउनलोड न करें।",
+        "OTP, पासवर्ड, PIN, बैंकिंग जानकारी या KYC जानकारी किसी के साथ साझा न करें।",
+        "संदेश भेजने वाले की पहचान आधिकारिक वेबसाइट या ऐप से स्वयं सत्यापित करें।",
+        "अगर आपसे तुरंत पैसे या संवेदनशील जानकारी देने के लिए कहा जा रहा है, तो बातचीत रोक दें।"
+    ],
+
+    "recovery_steps": [
+        "अगर आपने अपना पासवर्ड साझा कर दिया है, तो उसे तुरंत बदलें और 2FA चालू करें।",
+        "अगर बैंकिंग जानकारी साझा की है या पैसे का नुकसान हुआ है, तो तुरंत अपने बैंक के आधिकारिक चैनल से संपर्क करें।",
+        "अगर साइबर फ्रॉड हुआ है, तो भारत में 1930 पर संपर्क करें और cybercrime.gov.in पर शिकायत दर्ज करें।"
+    ],
+
+    "helplines": [
+        "National Cyber Crime Helpline: 1930",
+        "National Cyber Crime Reporting Portal: cybercrime.gov.in"
+    ]
+}
+
 def generate_safe_next(
     final_score=0,
     verdict="UNKNOWN",
@@ -10,87 +43,198 @@ def generate_safe_next(
     screenshot_result=None,
     phone_result=None,
     fingerprint=None,
-    attack_chain=None,
-    language="english"
+    attack_chain=None
 ):
+
+    # ---------------------------------------------------------
+    # Normalize inputs
+    # ---------------------------------------------------------
+
     link_result = link_result or {}
     screenshot_result = screenshot_result or {}
     phone_result = phone_result or {}
+    fingerprint = fingerprint or {}
+    attack_chain = attack_chain or {}
+
+    # ---------------------------------------------------------
+    # Incident Context
+    # ---------------------------------------------------------
 
     incident_report = f"""
 INCIDENT CONTEXT:
+
 - Overall Threat: {final_score}/100 ({verdict})
-- User Message: "{message}"
-- Target Link / Domain: "{link_result.get('final_domain') or link_result.get('domain') or 'N/A'}"
-- Scam Analysis on Site: "{link_result.get('scam_explanation', '')}"
-- Webpage Threat Findings: {json.dumps(link_result.get('reasons', []))}
-- Screenshot OCR: "{screenshot_result.get('detected_text', '')}"
-- Phone Status: "{phone_result.get('reputation', 'UNKNOWN')}"
+
+- User Message:
+{message}
+
+- Target Link / Domain:
+{link_result.get("final_domain") or link_result.get("domain") or "N/A"}
+
+- Scam Analysis on Site:
+{link_result.get("scam_explanation", "")}
+
+- Webpage Threat Findings:
+{json.dumps(link_result.get("reasons", []), ensure_ascii=False)}
+
+- Screenshot OCR:
+{screenshot_result.get("detected_text", "")}
+
+- Phone Status:
+{phone_result.get("reputation", "UNKNOWN")}
+
+- Scam Fingerprint:
+{json.dumps(fingerprint, ensure_ascii=False)}
+
+- Attack Chain:
+{json.dumps(attack_chain, ensure_ascii=False)}
 """
 
+    # ---------------------------------------------------------
+    # AI Prompt
+    # ---------------------------------------------------------
+
     prompt = f"""
-You are SafeNext AI, an expert Cyber Defense and Fraud Incident Recovery Coach.
-Analyze the specific scam incident above and generate tailored, actionable guidance.
+You are SafeNext AI, an expert Cyber Defense and Fraud Incident
+Recovery Coach.
+
+Analyze the exact scam incident below and provide practical,
+safe and actionable guidance.
 
 {incident_report}
 
-CRITICAL REQUIREMENT - LANGUAGE:
-You MUST generate the entire output in the following language: {language.upper()}.
-- If language is 'hindi', write everything in Hindi (Devanagari script).
-- If language is 'hinglish', write in a casual mix of Hindi and English (Hinglish).
-- If language is 'english', write in professional English.
+LANGUAGE RULE — VERY IMPORTANT:
 
-Return ONLY valid JSON matching this exact structure:
+- ALL user-facing explanations MUST be written in Hindi.
+- "why_dangerous" MUST be in Hindi.
+- "recommended_action" MUST be in Hindi.
+- "immediate_steps" MUST be in Hindi.
+- "recovery_steps" MUST be in Hindi.
+- "helplines" can contain official names, URLs, numbers and technical
+  terms in English where necessary.
+- Technical terms such as OTP, PIN, KYC, UPI, 2FA, URL, password,
+  bank and 1930 may remain in English.
+- Do NOT write the reason/explanation in English.
+
+IMPORTANT RULES:
+
+1. Advice must be tailored to the exact detected threat.
+
+2. If this is a banking/KYC/payment scam:
+   - Tell the user to contact their bank through official channels.
+   - If money was lost or fraud occurred, mention 1930 and
+     cybercrime.gov.in.
+
+3. If credentials may have been exposed:
+   - Recommend changing the affected password.
+   - Recommend enabling 2FA.
+   - Recommend reviewing active sessions/devices.
+
+4. If a suspicious link/site was involved:
+   - Tell the user not to revisit it.
+   - Explain what information may be at risk.
+
+5. If identity/KYC information was requested:
+   - Tell the user not to provide additional sensitive information.
+
+6. Do NOT invent helpline numbers or official portals.
+
+7. Keep the language simple enough for a normal user to understand.
+
+8. Return ONLY valid JSON.
+9. Do NOT return Markdown.
+10. Do NOT wrap the JSON inside ```json.
+
+Return exactly:
+
 {{
-    "recommended_action": "Short powerful headline in {language}",
-    "why_dangerous": "Detailed risk and consequence explanation in {language}.",
+    "recommended_action": "हिंदी में छोटा और स्पष्ट मुख्य सुझाव",
+
+    "why_dangerous": "हिंदी में 2-3 वाक्यों में बताएं कि यह खतरा क्यों है और उपयोगकर्ता को क्या नुकसान हो सकता है।",
+
     "immediate_steps": [
-        "Immediate preventive step 1 in {language}",
-        "Immediate preventive step 2 in {language}",
-        "Immediate preventive step 3 in {language}"
+        "अभी क्या करना है - हिंदी में",
+        "दूसरा तत्काल कदम - हिंदी में",
+        "तीसरा तत्काल कदम - हिंदी में",
+        "चौथा तत्काल कदम - हिंदी में"
     ],
+
     "recovery_steps": [
-        "Specific recovery step in {language}",
-        "Emergency recovery step 2 in {language}"
+        "अगर उपयोगकर्ता पहले ही जानकारी दे चुका है तो क्या करे - हिंदी में",
+        "दूसरा recovery कदम - हिंदी में",
+        "तीसरा recovery कदम - हिंदी में"
     ],
+
     "helplines": [
-        "National Cyber Crime Helpline: Dial 1930 (https://cybercrime.gov.in)"
+        "संबंधित आधिकारिक हेल्पलाइन या पोर्टल"
     ]
 }}
 """
-    data = call_openrouter(prompt)
 
-    if data and isinstance(data, dict):
-        immediate = data.get("immediate_steps") or [
-            "Do not open suspicious links or download unverified files.",
-            "Never share passwords, OTPs, or government identity documents.",
-            "Independently verify sender authenticity through official channels."
-        ]
-        recovery = data.get("recovery_steps") or [
-            "If you entered credentials, change your passwords immediately and enable 2-Factor Authentication (2FA).",
-            "If financial loss or data leak occurred, immediately report to the National Cyber Crime Helpline at 1930."
-        ]
+    # ---------------------------------------------------------
+    # Call AI safely
+    # ---------------------------------------------------------
+
+    try:
+        data = call_openrouter(prompt)
+
+    except Exception:
+        # AI error -> DEFAULT
         return {
-            "recommended_action": data.get("recommended_action", "DO NOT INTERACT"),
-            "why_dangerous": data.get("why_dangerous", "Interacting with this threat poses severe security, privacy, and financial risks."),
-            "immediate_steps": immediate,
-            "recovery_steps": recovery,
-            "helplines": data.get("helplines", ["National Cyber Crime Helpline: Dial 1930 (https://cybercrime.gov.in)"]),
-            "safe_next": immediate
+            **DEFAULT_SAFE_NEXT,
+            "safe_next": DEFAULT_SAFE_NEXT["immediate_steps"]
         }
 
+    # ---------------------------------------------------------
+    # Validate AI response
+    # ---------------------------------------------------------
+
+    if not isinstance(data, dict):
+        return {
+            **DEFAULT_SAFE_NEXT,
+            "safe_next": DEFAULT_SAFE_NEXT["immediate_steps"]
+        }
+
+    # ---------------------------------------------------------
+    # Get AI fields with safe fallbacks
+    # ---------------------------------------------------------
+
+    recommended_action = (
+        data.get("recommended_action")
+        or DEFAULT_SAFE_NEXT["recommended_action"]
+    )
+
+    why_dangerous = (
+        data.get("why_dangerous")
+        or DEFAULT_SAFE_NEXT["why_dangerous"]
+    )
+
+    immediate = data.get("immediate_steps")
+
+    if not isinstance(immediate, list) or not immediate:
+        immediate = DEFAULT_SAFE_NEXT["immediate_steps"]
+
+    recovery = data.get("recovery_steps")
+
+    if not isinstance(recovery, list) or not recovery:
+        recovery = DEFAULT_SAFE_NEXT["recovery_steps"]
+
+    helplines = data.get("helplines")
+
+    if not isinstance(helplines, list) or not helplines:
+        helplines = DEFAULT_SAFE_NEXT["helplines"]
+
+    # ---------------------------------------------------------
+    # FINAL RESPONSE
+    # ---------------------------------------------------------
+
     return {
-        "recommended_action": "DO NOT INTERACT",
-        "why_dangerous": "Interacting with unverified sources can lead to account compromise, identity theft, or financial loss.",
-        "immediate_steps": [
-            "Do not open suspicious links or download unverified files.",
-            "Never share passwords, OTPs, or government identity numbers.",
-            "Verify any official request directly through verified customer support."
-        ],
-        "recovery_steps": [
-            "If you entered credentials, change passwords immediately and enable 2FA.",
-            "If money was deducted, immediately call 1930 (National Cyber Crime Helpline) or report to cybercrime.gov.in."
-        ],
-        "helplines": ["National Cyber Crime Helpline: Dial 1930 (https://cybercrime.gov.in)"],
-        "safe_next": ["Do not open suspicious links.", "Never share OTPs or KYC details."]
+        "recommended_action": recommended_action,
+        "why_dangerous": why_dangerous,
+        "immediate_steps": immediate,
+        "recovery_steps": recovery,
+        "helplines": helplines,
+
+        # Frontend compatibility
+        "safe_next": immediate
     }

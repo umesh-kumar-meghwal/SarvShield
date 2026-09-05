@@ -260,87 +260,93 @@ def link_detect(url):
     # =====================================================
     # AI PROMPT
     # =====================================================
+    language = "hindi"
+
 
     prompt = f"""
-You are a Senior Cyber Threat Analyst.
+    You are a Senior Cyber Threat Analyst.
 
-Analyze the following website URL and available webpage text.
+    Analyze the following website URL and available webpage text.
 
-Target URL:
-{url}
+    Target URL:
+    {url}
 
-Domain:
-{domain}
+    Domain:
+    {domain}
 
-Path:
-{url_path}
+    Path:
+    {url_path}
 
-Final Domain:
-{result.get("final_domain", "")}
+    Final Domain:
+    {result.get("final_domain", "")}
 
-Page Title:
-{page_title}
+    Page Title:
+    {page_title}
 
-Webpage Content:
-\"\"\"
-{
-    website_text
-    if website_text
-    else
-    "Page text could not be fetched. Analyze the domain and URL path only."
-}
-\"\"\"
+    Webpage Content:
+    \"\"\"
+    {
+        website_text
+        if website_text
+        else
+        "Page text could not be fetched. Analyze the domain and URL path only."
+    }
+    \"\"\"
 
-Return ONLY valid JSON.
+    IMPORTANT LANGUAGE RULE:
+    The selected output language is: {language}
 
-Required JSON format:
+    If the selected language is "hindi":
 
-{{
-    "score": 0,
-    "verdict": "LOW RISK",
-    "scam_explanation": "Short explanation of the website risk.",
-    "reasons": [
-        "Reason 1",
-        "Reason 2"
-    ],
-    "exact_scam_lines": [
-        "Exact phrase from webpage if available"
-    ],
-    "data_harvested": [
-        "Email",
-        "Phone number"
-    ]
-}}
+    - ALL human-readable output must be written in Hindi.
+    - scam_explanation must be in Hindi.
+    - reasons must be in Hindi.
+    - data_harvested must be in Hindi.
+    - Any other explanation or descriptive text must be in Hindi.
+    - exact_scam_lines MUST remain exactly as they appear on the webpage.
+    - Do NOT translate exact_scam_lines.
+    - verdict must remain exactly one of the predefined English values below because the frontend uses these values internally.
+    - JSON keys must remain exactly as specified below.
 
-Rules:
+    Return ONLY valid JSON.
 
-1. Score must be between 0 and 100.
+    Required JSON format:
+    {{
+        "score": 0,
+        "verdict": "LOW RISK",
+        "scam_explanation": "वेबसाइट के जोखिम की संक्षिप्त व्याख्या।",
+        "reasons": [
+            "पहला सुरक्षा कारण",
+            "दूसरा सुरक्षा कारण"
+        ],
+        "exact_scam_lines": [
+            "वेबसाइट पर मौजूद वास्तविक वाक्य"
+        ],
+        "data_harvested": [
+            "ईमेल",
+            "फ़ोन नंबर"
+        ]
+    }}
 
-2. Verdict should be one of:
-   LOW RISK
-   SUSPICIOUS
-   HIGH RISK
-   VERY HIGH RISK
-   UNKNOWN
+    Rules:
+    1. Score must be between 0 and 100.
+    2. Verdict must be exactly one of:
+    LOW RISK
+    SUSPICIOUS
+    HIGH RISK
+    VERY HIGH RISK
+    UNKNOWN
 
-3. Do not invent webpage quotes.
-
-4. Only include exact_scam_lines when the text actually contains those phrases.
-
-5. If webpage content is unavailable, exact_scam_lines should be an empty list.
-
-6. data_harvested should contain only information that the webpage appears to request or collect.
-
-7. reasons should contain concise security reasons.
-
-8. Return valid JSON only.
-"""
-
-
-    # =====================================================
-    # OPENROUTER AI
-    # =====================================================
-
+    3. Do not invent webpage quotes.
+    4. Only include exact_scam_lines when the webpage actually contains those exact phrases.
+    5. If webpage content is unavailable, exact_scam_lines must be an empty list.
+    6. data_harvested must be written in Hindi.
+    7. reasons must be concise and written in Hindi.
+    8. scam_explanation must be written in Hindi.
+    9. Do not translate exact_scam_lines.
+    10. Return valid JSON only.
+    """
+    
     try:
 
         data = call_openrouter(prompt)
