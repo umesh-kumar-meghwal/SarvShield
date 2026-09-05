@@ -1,7 +1,81 @@
 import json
-
 from ai_helper import call_openrouter
 
+
+# =========================================================
+# DEFAULT FALLBACK
+# =========================================================
+
+DEFAULT_FINGERPRINT = {
+    "scam_fingerprint": [
+        "सुरक्षा संकेत"
+    ],
+
+    "attack_chain": [
+        "चरण 1: दिए गए incident data का विश्लेषण किया गया।",
+        "चरण 2: उपलब्ध संदिग्ध संकेतों की पहचान की गई।",
+        "चरण 3: पहचाने गए संकेतों के आधार पर संभावित खतरे का मूल्यांकन किया गया।"
+    ],
+
+    "evidence": [
+        "उपलब्ध incident data में सुरक्षा संबंधी संकेत पाए गए।"
+    ],
+
+    "why": (
+        "उपलब्ध जानकारी में कुछ सुरक्षा संकेत पाए गए हैं। "
+        "इन संकेतों के आधार पर incident का खतरा मूल्यांकित किया गया है।"
+    ),
+
+    "risk_score": 0,
+    "risk_level": "कम जोखिम"
+}
+
+
+# =========================================================
+# SAFE INTEGER
+# =========================================================
+
+def safe_int(value, default=0):
+
+    try:
+        value = int(float(value))
+
+        if value < 0:
+            return 0
+
+        if value > 100:
+            return 100
+
+        return value
+
+    except (TypeError, ValueError):
+        return default
+
+
+# =========================================================
+# RISK LEVEL
+# =========================================================
+
+def get_risk_level(score):
+
+    score = safe_int(score)
+
+    if score >= 80:
+        return "बहुत अधिक जोखिम"
+
+    elif score >= 60:
+        return "उच्च जोखिम"
+
+    elif score >= 30:
+        return "मध्यम जोखिम"
+
+    else:
+        return "कम जोखिम"
+
+
+# =========================================================
+# BUILD SCAM FINGERPRINT
+# =========================================================
 
 def build_scam_fingerprint(
     message="",
@@ -10,179 +84,321 @@ def build_scam_fingerprint(
     screenshot_result=None,
     language="hindi"
 ):
+
     phone_result = phone_result or {}
     link_result = link_result or {}
     screenshot_result = screenshot_result or {}
 
+    # ---------------------------------------------------------
+    # INPUT DATA
+    # ---------------------------------------------------------
+
+    domain = (
+        link_result.get("final_domain")
+        or link_result.get("domain")
+        or "N/A"
+    )
+
+    link_reasons = link_result.get("reasons", [])
+    exact_scam_lines = link_result.get("exact_scam_lines", [])
+
+    screenshot_text = screenshot_result.get(
+        "detected_text",
+        ""
+    )
+
+    screenshot_category = screenshot_result.get(
+        "category",
+        "N/A"
+    )
+
+    phone_reputation = phone_result.get(
+        "reputation",
+        "UNKNOWN"
+    )
+
+    phone_score = safe_int(
+        phone_result.get("score", 0)
+    )
+
+    link_score = safe_int(
+        link_result.get("score", 0)
+        or link_result.get("risk_score", 0)
+        or link_result.get("final_score", 0)
+    )
+
+    screenshot_score = safe_int(
+        screenshot_result.get("score", 0)
+        or screenshot_result.get("risk_score", 0)
+        or screenshot_result.get("final_score", 0)
+    )
+
+    # ---------------------------------------------------------
+    # INCIDENT DATA
+    # ---------------------------------------------------------
+
     incident_data = f"""
-INCIDENT INPUTS:
+INCIDENT INPUTS
 
-- Message Text:
-"{message}"
+MESSAGE:
+{message}
 
-- Link / Domain:
-"{link_result.get('final_domain') or link_result.get('domain') or 'N/A'}"
+LINK / DOMAIN:
+{domain}
 
-- Link Scam Analysis:
-"{link_result.get('scam_explanation', '')}"
+LINK SCAM ANALYSIS:
+{link_result.get("scam_explanation", "")}
 
-- Link Threat Reasons:
-{json.dumps(link_result.get('reasons', []), ensure_ascii=False)}
+LINK THREAT REASONS:
+{json.dumps(link_reasons, ensure_ascii=False)}
 
-- Link Quoted Lines:
-{json.dumps(link_result.get('exact_scam_lines', []), ensure_ascii=False)}
+EXACT SCAM LINES:
+{json.dumps(exact_scam_lines, ensure_ascii=False)}
 
-- Screenshot Text / Category:
-"{screenshot_result.get('detected_text', '')}" /
-"{screenshot_result.get('category', 'N/A')}"
+SCREENSHOT TEXT:
+{json.dumps(screenshot_text, ensure_ascii=False)}
 
-- Phone Reputation:
-"{phone_result.get('reputation', 'UNKNOWN')}"
+SCREENSHOT CATEGORY:
+{screenshot_category}
+
+PHONE REPUTATION:
+{phone_reputation}
+
+PHONE SCORE:
+{phone_score}
+
+LINK SCORE:
+{link_score}
+
+SCREENSHOT SCORE:
+{screenshot_score}
 """
 
-    prompt = f"""
-You are an expert Cyber Threat & Attack Pattern Analyst.
+    # ---------------------------------------------------------
+    # AI PROMPT
+    # ---------------------------------------------------------
 
-Review the incident data and generate a dynamic Scam Fingerprint
-and Attack Vector Sequence.
+    prompt = f"""
+तुम एक Cyber Threat और Scam Pattern Analyst हो।
+
+तुम्हें नीचे दिए गए वास्तविक incident data का विश्लेषण करना है।
 
 {incident_data}
 
+
 ==================================================
-OUTPUT LANGUAGE
+मुख्य उद्देश्य
 ==================================================
 
-Selected language: {language}
+इस incident के आधार पर:
 
-The selected language is HINDI.
+1. Scam Fingerprint बनाओ।
+2. Attack Chain बनाओ।
+3. महत्वपूर्ण Evidence निकालो।
+4. बताओ कि incident को suspicious क्यों माना गया।
+5. उपलब्ध signals के आधार पर 0-100 Risk Score दो।
 
-IMPORTANT:
-ALL AI-GENERATED HUMAN-READABLE CONTENT MUST BE IN HINDI.
 
-This includes:
+==================================================
+भाषा नियम
+==================================================
 
-1. scam_fingerprint
-2. attack_chain
-3. evidence
-4. why
+सभी AI-generated explanations हिंदी में होने चाहिए।
 
-Use natural and easy-to-understand Hindi.
+इन fields में English explanation नहीं होनी चाहिए:
 
-You may use commonly understood cybersecurity terms such as:
+- scam_fingerprint
+- attack_chain
+- evidence
+- why
+- risk_level
+
+Technical terms इस्तेमाल कर सकते हो:
+
+OTP
+UPI
+KYC
+URL
+PIN
+2FA
+password
+phishing
+malware
+domain
+browser
+
+लेकिन explanation हिंदी में होनी चाहिए।
+
+उदाहरण:
+
+गलत:
+"Urgency Trigger Detected"
+
+सही:
+"तुरंत कार्रवाई करने का दबाव पाया गया।"
+
+गलत:
+"Impersonation Detected"
+
+सही:
+"किसी विश्वसनीय व्यक्ति या संस्था की पहचान की नकल करने का संकेत पाया गया।"
+
+
+==================================================
+SCAM FINGERPRINT
+==================================================
+
+3 से 6 अलग-अलग threat tactics generate करो।
+
+केवल उन्हीं tactics को शामिल करो जिनका evidence incident data में मौजूद है।
+
+संभावित उदाहरण:
+
 - फ़िशिंग
-- मालवेयर
-- OTP
-- KYC
-- पासवर्ड
-- बैंक
-- लिंक
-- डोमेन
-- डेटा
-- अकाउंट
+- संदिग्ध वेबसाइट
+- पहचान की नकल
+- OTP प्राप्त करने का प्रयास
+- KYC धोखाधड़ी
+- भुगतान का दबाव
+- डेटा चोरी
+- संदिग्ध लिंक
+- अकाउंट takeover का प्रयास
 
-But the explanation around these terms must be Hindi.
+लेकिन बिना evidence के कोई tactic मत बनाना।
 
-==================================================
-IMPORTANT EVIDENCE RULE
-==================================================
-
-exact_scam_lines are original evidence.
-
-If exact webpage/message lines are provided:
-
-- DO NOT translate them.
-- DO NOT modify them.
-- DO NOT rewrite them.
-- Keep them exactly as provided.
-
-Do not invent any quote.
 
 ==================================================
-TASKS
+ATTACK CHAIN
 ==================================================
 
-1. scam_fingerprint
+इस specific incident के आधार पर 3 से 5 chronological stages बनाओ।
 
-Generate 3-6 distinct threat tactic badges based ONLY
-on the provided incident data.
-
-Examples:
-
-[
-    "फ़िशिंग",
-    "नकली वेबसाइट",
-    "डेटा चोरी",
-    "OTP चोरी",
-    "भुगतान का दबाव"
-]
-
-Do not generate a badge if there is no evidence for it.
-
---------------------------------------------------
-
-2. attack_chain
-
-Generate 3-5 chronological stages explaining how
-this specific attack works.
-
-Use this format:
+Format:
 
 "चरण 1: ..."
 "चरण 2: ..."
 "चरण 3: ..."
 
-Only describe steps supported by the provided evidence.
+सिर्फ उपलब्ध evidence के आधार पर attack sequence बताओ।
 
---------------------------------------------------
+अगर कोई stage evidence से साबित नहीं है तो उसे fact की तरह मत लिखो।
 
-3. evidence
+ऐसे शब्द इस्तेमाल करो:
 
-Extract 2-5 important threat evidence points.
+"संभावित रूप से"
+"उपलब्ध संकेतों के आधार पर"
 
-All evidence descriptions must be in Hindi.
+जहां certainty नहीं है।
 
-Do not invent evidence.
 
---------------------------------------------------
+==================================================
+EVIDENCE
+==================================================
 
-4. why
+2 से 5 महत्वपूर्ण evidence points निकालो।
 
-Provide exactly 2 concise Hindi sentences explaining
-why the incident was flagged.
+हर evidence हिंदी में होना चाहिए।
+
+Evidence केवल provided data से होना चाहिए।
+
+कुछ भी invent मत करो।
+
+
+==================================================
+WHY
+==================================================
+
+ठीक 2 हिंदी sentences लिखो।
+
+इनमें बताओ कि उपलब्ध signals के आधार पर incident suspicious क्यों है।
+
+==================================================
+RISK SCORE
+==================================================
+
+0 से 100 के बीच integer score दो।
+
+Score incident के उपलब्ध signals की गंभीरता के आधार पर होना चाहिए।
+
+Scoring guidance:
+
+0-19:
+बहुत कम संकेत
+
+20-39:
+कुछ सावधानी वाले संकेत
+
+40-59:
+मध्यम स्तर के संदिग्ध संकेत
+
+60-79:
+कई मजबूत संदिग्ध संकेत
+
+80-100:
+बहुत मजबूत fraud/scam संकेत
+
+महत्वपूर्ण:
+
+यदि evidence कम है तो score artificially high मत करो।
+
+यदि कोई strong signal नहीं है तो score कम रखो।
+
+==================================================
+RISK LEVEL
+==================================================
+
+Score के अनुसार:
+
+0-29:
+"कम जोखिम"
+
+30-59:
+"मध्यम जोखिम"
+
+60-79:
+"उच्च जोखिम"
+
+80-100:
+"बहुत अधिक जोखिम"
+
+
+==================================================
+IMPORTANT EVIDENCE RULE
+==================================================
+
+exact_scam_lines original evidence हैं।
+
+अगर exact_scam_lines उपलब्ध हैं:
+
+- उन्हें translate मत करो।
+- उन्हें modify मत करो।
+- उन्हें rewrite मत करो।
+- quote invent मत करो।
+
+उन्हें केवल evidence के रूप में exactly इस्तेमाल कर सकते हो।
+
 
 ==================================================
 STRICT RULES
 ==================================================
 
-1. Score is NOT required in this function.
+1. केवल provided incident data इस्तेमाल करो।
+2. कोई information invent मत करो।
+3. कोई fake quote मत बनाओ।
+4. सभी explanations हिंदी में हों।
+5. scam_fingerprint हिंदी में हो।
+6. attack_chain हिंदी में हो।
+7. evidence हिंदी में हो।
+8. why हिंदी में हो।
+9. risk_score integer होना चाहिए।
+10. risk_score 0-100 के बीच होना चाहिए।
+11. risk_level हिंदी में होना चाहिए।
+12. JSON keys English में exactly वही रहें।
+13. Markdown मत दो।
+14. ```json मत दो।
+15. JSON के बाहर कोई text मत दो।
+16. केवल valid JSON return करो।
 
-2. Do not invent information.
-
-3. Do not invent webpage quotes.
-
-4. Use ONLY the provided incident data.
-
-5. All generated explanations must be in Hindi.
-
-6. scam_fingerprint must be in Hindi.
-
-7. attack_chain must be in Hindi.
-
-8. evidence must be in Hindi.
-
-9. why must be in Hindi.
-
-10. Original quoted lines must NOT be translated.
-
-11. JSON keys MUST remain exactly as specified.
-
-12. Return ONLY valid JSON.
-
-13. Do not return Markdown.
-
-14. Do not return ```json.
-
-15. Do not add any text outside JSON.
 
 ==================================================
 RETURN FORMAT
@@ -192,92 +408,210 @@ RETURN FORMAT
     "scam_fingerprint": [
         "फ़िशिंग",
         "संदिग्ध वेबसाइट",
-        "डेटा संग्रह"
+        "डेटा चोरी"
     ],
 
     "attack_chain": [
-        "चरण 1: उपयोगकर्ता को संदिग्ध संदेश या लिंक भेजा जाता है।",
-        "चरण 2: उपयोगकर्ता को संदिग्ध वेबसाइट पर जाने के लिए प्रेरित किया जाता है।",
-        "चरण 3: वेबसाइट संवेदनशील जानकारी प्राप्त करने का प्रयास करती है।"
+        "चरण 1: उपयोगकर्ता को संदिग्ध संदेश या लिंक के माध्यम से संपर्क किया गया।",
+        "चरण 2: उपयोगकर्ता को संदिग्ध वेबसाइट पर जाने के लिए प्रेरित किया गया।",
+        "चरण 3: वेबसाइट के माध्यम से संवेदनशील जानकारी प्राप्त करने का प्रयास किया गया।"
     ],
 
     "evidence": [
-        "वेबसाइट संवेदनशील जानकारी मांगती है।",
-        "लिंक में संदिग्ध गतिविधि के संकेत पाए गए हैं।"
+        "संदेश में संदिग्ध गतिविधि के संकेत पाए गए।",
+        "वेबसाइट का व्यवहार जोखिमपूर्ण दिखाई देता है।"
     ],
 
-    "why": "इस घटना में कई संदिग्ध सुरक्षा संकेत पाए गए हैं। उपलब्ध जानकारी के आधार पर इसे संभावित साइबर धोखाधड़ी के रूप में चिह्नित किया गया है।"
+    "why": "इस incident में कई संदिग्ध सुरक्षा संकेत पाए गए हैं। उपलब्ध evidence के आधार पर इसमें साइबर धोखाधड़ी का संभावित जोखिम दिखाई देता है।",
+
+    "risk_score": 75,
+
+    "risk_level": "उच्च जोखिम"
 }}
 """
 
-    data = call_openrouter(prompt)
+    # ---------------------------------------------------------
+    # AI CALL
+    # ---------------------------------------------------------
 
-    if data:
+    try:
+
+        data = call_openrouter(prompt)
+
+    except Exception:
+
         return {
-            "scam_fingerprint": list(
-                dict.fromkeys(
-                    [
-                        str(item)
-                        for item in data.get("scam_fingerprint", [])
-                        if item
-                    ]
-                )
-            ),
-
-            "attack_chain": list(
-                dict.fromkeys(
-                    [
-                        str(item)
-                        for item in data.get("attack_chain", [])
-                        if item
-                    ]
-                )
-            ),
-
-            "evidence": list(
-                dict.fromkeys(
-                    [
-                        str(item)
-                        for item in data.get("evidence", [])
-                        if item
-                    ]
-                )
-            ),
-
-            "why": str(
-                data.get(
-                    "why",
-                    "AI द्वारा खतरे का विश्लेषण पूरा किया गया।"
-                )
-            )
+            **DEFAULT_FINGERPRINT
         }
 
-    # AI failure fallback
-    fallback_evidence = (
-        link_result.get("reasons", [])
-        + screenshot_result.get("reasons", [])
+    # ---------------------------------------------------------
+    # INVALID RESPONSE
+    # ---------------------------------------------------------
+
+    if not isinstance(data, dict):
+
+        return {
+            **DEFAULT_FINGERPRINT
+        }
+
+    # ---------------------------------------------------------
+    # FINGERPRINT
+    # ---------------------------------------------------------
+
+    fingerprint = data.get(
+        "scam_fingerprint",
+        []
     )
 
-    return {
-        "scam_fingerprint": [
-            "AI खतरा विश्लेषण"
-        ],
+    if not isinstance(fingerprint, list):
+        fingerprint = []
 
-        "attack_chain": [
-            "चरण 1: दिए गए इनपुट का विश्लेषण किया गया।",
-            "चरण 2: उपलब्ध खतरे के संकेतों की पहचान की गई।",
-            "चरण 3: संभावित जोखिम का मूल्यांकन किया गया।"
-        ],
-
-        "evidence": [
-            str(item)
-            for item in fallback_evidence
-            if item
-        ],
-
-        "why": (
-            "दिए गए इनपुट में मौजूद सुरक्षा संकेतों का "
-            "विश्लेषण किया गया। उपलब्ध जानकारी के आधार पर "
-            "खतरे का मूल्यांकन तैयार किया गया है।"
+    fingerprint = list(
+        dict.fromkeys(
+            [
+                str(item).strip()
+                for item in fingerprint
+                if item
+            ]
         )
+    )
+
+    # ---------------------------------------------------------
+    # ATTACK CHAIN
+    # ---------------------------------------------------------
+
+    attack_chain = data.get(
+        "attack_chain",
+        []
+    )
+
+    if not isinstance(attack_chain, list):
+        attack_chain = []
+
+    attack_chain = list(
+        dict.fromkeys(
+            [
+                str(item).strip()
+                for item in attack_chain
+                if item
+            ]
+        )
+    )
+
+    # ---------------------------------------------------------
+    # EVIDENCE
+    # ---------------------------------------------------------
+
+    evidence = data.get(
+        "evidence",
+        []
+    )
+
+    if not isinstance(evidence, list):
+        evidence = []
+
+    evidence = list(
+        dict.fromkeys(
+            [
+                str(item).strip()
+                for item in evidence
+                if item
+            ]
+        )
+    )
+
+    # ---------------------------------------------------------
+    # WHY
+    # ---------------------------------------------------------
+
+    why = data.get("why")
+
+    if not isinstance(why, str) or not why.strip():
+
+        why = DEFAULT_FINGERPRINT["why"]
+
+    else:
+
+        why = why.strip()
+
+    # ---------------------------------------------------------
+    # RISK SCORE
+    # ---------------------------------------------------------
+
+    risk_score = safe_int(
+        data.get("risk_score"),
+        0
+    )
+
+    # ---------------------------------------------------------
+    # RISK LEVEL
+    # ---------------------------------------------------------
+
+    risk_level = data.get("risk_level")
+
+    if not isinstance(risk_level, str) or not risk_level.strip():
+
+        risk_level = get_risk_level(risk_score)
+
+    else:
+
+        risk_level = risk_level.strip()
+
+    # ---------------------------------------------------------
+    # FALLBACK INDIVIDUAL FIELDS
+    # ---------------------------------------------------------
+
+    if not fingerprint:
+
+        fingerprint = DEFAULT_FINGERPRINT[
+            "scam_fingerprint"
+        ]
+
+    if not attack_chain:
+
+        attack_chain = DEFAULT_FINGERPRINT[
+            "attack_chain"
+        ]
+
+    if not evidence:
+
+        # Real evidence available हो तो उसे इस्तेमाल करो
+        fallback_evidence = (
+            link_reasons
+            + screenshot_result.get("reasons", [])
+        )
+
+        evidence = list(
+            dict.fromkeys(
+                [
+                    str(item).strip()
+                    for item in fallback_evidence
+                    if item
+                ]
+            )
+        )
+
+        if not evidence:
+
+            evidence = DEFAULT_FINGERPRINT[
+                "evidence"
+            ]
+
+    # ---------------------------------------------------------
+    # FINAL RESULT
+    # ---------------------------------------------------------
+
+    return {
+
+        "scam_fingerprint": fingerprint,
+
+        "attack_chain": attack_chain,
+
+        "evidence": evidence,
+
+        "why": why,
+
+        "risk_score": risk_score,
+
+        "risk_level": risk_level
     }
