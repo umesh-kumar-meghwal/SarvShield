@@ -182,7 +182,7 @@
                         Your Security Hub
                     </h2>
                     <p class="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed max-w-xl">
-                        Analyze suspicious messages, links, phone numbers (with 2-Layer Telecom & Risk Intelligence), and screenshots instantly.
+                        Analyze suspicious messages, links, phone numbers (with 2-Layer Telecom & Risk Intelligence), and screenshots in your preferred language instantly.
                     </p>
                 </div>
             </div>
@@ -197,6 +197,54 @@
 
                 <div class="rounded-3xl border border-dark-border bg-dark-card p-5 sm:p-8 shadow-xl">
                     <form id="scamCheckForm" enctype="multipart/form-data" class="space-y-5 sm:space-y-6">
+                        
+                        <!-- LANGUAGE SELECTION DROPDOWN -->
+                        <div class="p-4 rounded-2xl bg-dark-cardLight/70 border border-blue-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-inner">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 text-sm shrink-0">
+                                    <i class="fa-solid fa-language"></i>
+                                </div>
+                                <div>
+                                    <label for="language" class="block text-xs uppercase tracking-wider font-bold text-white">
+                                        Select Output Language
+                                    </label>
+                                    <p class="text-[11px] text-slate-400">Choose any language in the world for AI analysis & advice.</p>
+                                </div>
+                            </div>
+                            <div class="w-full sm:w-64">
+                                <select id="language" name="language" class="w-full rounded-xl bg-dark-card border border-dark-border px-3.5 py-2.5 text-xs sm:text-sm text-white font-medium focus:outline-none focus:border-blue-500 transition cursor-pointer">
+                                    <optgroup label="Popular Languages">
+                                        <option value="English" selected>English</option>
+                                        <option value="Hindi">हिंदी (Hindi)</option>
+                                        <option value="Hinglish">Hinglish</option>
+                                    </optgroup>
+                                    <optgroup label="Indian Regional Languages">
+                                        <option value="Marathi">मराठी (Marathi)</option>
+                                        <option value="Punjabi">ਪੰਜਾਬੀ (Punjabi)</option>
+                                        <option value="Gujarati">ગુજરાતી (Gujarati)</option>
+                                        <option value="Bengali">বাংলা (Bengali)</option>
+                                        <option value="Tamil">தமிழ் (Tamil)</option>
+                                        <option value="Telugu">తెలుగు (Telugu)</option>
+                                        <option value="Kannada">ಕನ್ನಡ (Kannada)</option>
+                                        <option value="Malayalam">മലയാളം (Malayalam)</option>
+                                        <option value="Urdu">اردو (Urdu)</option>
+                                        <option value="Odia">ଓଡ଼ିଆ (Odia)</option>
+                                        <option value="Assamese">অসমীয়া (Assamese)</option>
+                                    </optgroup>
+                                    <optgroup label="International Languages">
+                                        <option value="Spanish">Español (Spanish)</option>
+                                        <option value="French">Français (French)</option>
+                                        <option value="German">Deutsch (German)</option>
+                                        <option value="Russian">Русский (Russian)</option>
+                                        <option value="Arabic">العربية (Arabic)</option>
+                                        <option value="Chinese">中文 (Chinese)</option>
+                                        <option value="Japanese">日本語 (Japanese)</option>
+                                        <option value="Portuguese">Português (Portuguese)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             
                             <!-- Message Textarea -->
@@ -252,7 +300,7 @@
                 </div>
 
                 <!-- =====================================================
-                     DYNAMIC RESULT CONTAINER (SECTION 1 & SECTION 2 STRUCTURE)
+                     DYNAMIC RESULT CONTAINER
                 ===================================================== -->
                 <div id="result" class="transition-all duration-300"></div>
 
@@ -272,7 +320,6 @@
          SCRIPTS & DYNAMIC RESULT RENDERING LOGIC
     ===================================================== -->
 <script>
-    let currentLanguage = 'english';
     let isEasyMode = false;
     let cachedResponse = null;
 
@@ -331,11 +378,6 @@
             .replace(/'/g, "&#039;");
     }
 
-    function setLanguage(lang) {
-        currentLanguage = lang;
-        if (cachedResponse) renderResult();
-    }
-
     function toggleEasyMode() {
         isEasyMode = !isEasyMode;
         if (cachedResponse) renderResult();
@@ -374,7 +416,7 @@
                 </div>
                 <div class="space-y-1">
                     <h4 class="text-base sm:text-lg font-bold text-white">Generating Threat Intelligence Suite...</h4>
-                    <p class="text-xs text-slate-400">Evaluating multi-signal risk, telecom metadata, attack chain & next steps.</p>
+                    <p class="text-xs text-slate-400">Evaluating multi-signal risk, telecom metadata, attack chain & next steps in selected language.</p>
                 </div>
             </div>
         `);
@@ -422,7 +464,7 @@
         });
     });
 
-    // 5. RENDER RESULT SPLIT INTO SECTION 1 AND SECTION 2
+    // 5. RENDER RESULT IN SELECTED LANGUAGE (CLEANED UP - NO HARDCODED HINDI/ENGLISH TOGGLE)
     function renderResult() {
         if (!cachedResponse) return;
         const res = cachedResponse;
@@ -430,25 +472,18 @@
         const finalScore = Number(res.final_score || 0);
         const verdict = (res.verdict || "UNKNOWN").toUpperCase();
 
-        let displayVerdict = verdict;
-        if (currentLanguage === 'hindi') {
-            displayVerdict = verdict === 'HIGH RISK' ? '⚠️ बहुत खतरनाक (High Risk)' : '✅ सुरक्षित (Safe)';
-        } else if (currentLanguage === 'hinglish') {
-            displayVerdict = verdict === 'HIGH RISK' ? '🚨 Bahat Khatarnaak Scam Hai!' : '👍 Safe Lag Raha Hai';
-        }
-
         let badgeBg = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
         let gaugeBorder = "border-emerald-500/30 border-t-emerald-500 shadow-emerald-500/10";
         let statusLabel = "LOW RISK";
 
-        if (verdict === "SCAM" || verdict === "FRAUD" || finalScore >= 70) {
+        if (verdict === "SCAM" || verdict === "FRAUD" || verdict === "VERY HIGH RISK" || finalScore >= 70) {
             badgeBg = "bg-rose-500/10 text-rose-400 border-rose-500/20";
             gaugeBorder = "border-rose-500/30 border-t-rose-500 shadow-rose-500/10";
             statusLabel = "HIGH RISK";
-        } else if (verdict === "SPAM" || verdict === "SUSPICIOUS" || finalScore >= 40) {
+        } else if (verdict === "SPAM" || verdict === "SUSPICIOUS" || verdict === "MEDIUM RISK" || finalScore >= 30) {
             badgeBg = "bg-amber-500/10 text-amber-400 border-amber-500/20";
             gaugeBorder = "border-amber-500/30 border-t-amber-500 shadow-amber-500/10";
-            statusLabel = "MODERATE RISK";
+            statusLabel = "SUSPICIOUS";
         }
 
         let fontClass = isEasyMode ? "text-base sm:text-lg" : "text-xs sm:text-sm";
@@ -458,8 +493,11 @@
         if (res.message_reasons) allReasonTags.push(...res.message_reasons);
         if (res.link_reasons) allReasonTags.push(...res.link_reasons);
         if (res.phone_reasons) allReasonTags.push(...res.phone_reasons);
+        if (res.screenshot_reasons) allReasonTags.push(...res.screenshot_reasons);
         if (res.evidence) allReasonTags.push(...res.evidence);
-        if (allReasonTags.length === 0) allReasonTags = ["Multi-signal analysis complete", "Pattern analysis verified"];
+        allReasonTags = [...new Set(allReasonTags)];
+
+        if (allReasonTags.length === 0) allReasonTags = ["Analysis completed based on submitted attributes."];
 
         // Attack Chain Nodes
         const chainItems = Array.isArray(res.attack_chain) && res.attack_chain.length > 0
@@ -482,7 +520,7 @@
         // Fingerprint Triggers
         const fingerprintItems = Array.isArray(res.scam_fingerprint) && res.scam_fingerprint.length > 0
             ? res.scam_fingerprint
-            : ["Urgency Trigger", "Impersonation Vector"];
+            : ["Suspicious Indicator"];
 
         let fingerprintHtml = "";
         fingerprintItems.forEach(fp => {
@@ -497,9 +535,9 @@
         // SafeNext Steps
         const stepItems = Array.isArray(res.immediate_steps) && res.immediate_steps.length > 0
             ? res.immediate_steps
-            : ["Do not reply or click provided links", "Block sender and report"];
+            : (Array.isArray(res.safe_next) && res.safe_next.length > 0 ? res.safe_next : ["Do not interact with the suspicious sender or link."]);
 
-        // Trusted Helper Popup (Step 5)
+        // Trusted Helper Popup (Easy Mode)
         let trustedHelperHTML = isEasyMode ? `
         <div class="p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-3 shadow-lg animate-fade-in">
             <div class="flex items-center gap-2 text-amber-400 font-bold text-xs">
@@ -513,11 +551,11 @@
             </div>
         </div>` : "";
 
-        // Contextual Helplines (Step 6)
+        // Helplines Block
         let helplinesHTML = `
         <div class="p-4 rounded-2xl bg-blue-600/10 border border-blue-500/30 space-y-2">
             <h5 class="font-bold text-white text-xs sm:text-sm flex items-center gap-2">
-                <i class="fa-solid fa-phone-volume text-blue-400"></i> Get Help Now (Helplines)
+                <i class="fa-solid fa-phone-volume text-blue-400"></i> Get Help Now (Official Helplines)
             </h5>
             <div class="flex flex-wrap gap-2 text-xs">
                 <a href="tel:1930" class="px-3.5 py-1.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold">📞 Cyber Crime Helpline: 1930</a>
@@ -528,17 +566,17 @@
         let html = `
         <div class="space-y-8 pt-6 animate-fade-in">
 
-            <!-- TOGGLES BAR -->
+            <!-- TOP STATUS BAR: LANGUAGE BADGE & EASY MODE TOGGLE -->
             <div class="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-dark-card border border-dark-border">
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-slate-400 font-bold">Language:</span>
-                    <button onclick="setLanguage('english')" class="px-2.5 py-1 rounded-lg text-xs ${currentLanguage==='english'?'bg-blue-600 text-white font-bold':'bg-dark-cardLight text-slate-300'}">English</button>
-                    <button onclick="setLanguage('hindi')" class="px-2.5 py-1 rounded-lg text-xs ${currentLanguage==='hindi'?'bg-blue-600 text-white font-bold':'bg-dark-cardLight text-slate-300'}">हिंदी</button>
-                    <button onclick="setLanguage('hinglish')" class="px-2.5 py-1 rounded-lg text-xs ${currentLanguage==='hinglish'?'bg-blue-600 text-white font-bold':'bg-dark-cardLight text-slate-300'}">Hinglish</button>
+                <div class="flex items-center gap-2 text-xs">
+                    <span class="text-slate-400 font-semibold">Analyzed in:</span>
+                    <span class="px-3 py-1 rounded-lg bg-blue-600/20 text-blue-400 font-bold border border-blue-500/30">
+                        <i class="fa-solid fa-globe mr-1 text-[10px]"></i> ${escapeHtml(res.selected_language || res.message_language || 'English')}
+                    </span>
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="text-xs text-slate-400 font-bold">Easy Mode:</span>
-                    <button onclick="toggleEasyMode()" class="px-3 py-1 rounded-lg text-xs font-bold ${isEasyMode ? 'bg-emerald-600 text-white' : 'bg-dark-cardLight text-slate-400'}">
+                    <button onclick="toggleEasyMode()" class="px-3 py-1 rounded-lg text-xs font-bold transition ${isEasyMode ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'bg-dark-cardLight text-slate-400 border border-dark-border'}">
                         ${isEasyMode ? 'ON (Elderly Friendly)' : 'OFF'}
                     </button>
                 </div>
@@ -552,10 +590,11 @@
             <div class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 space-y-6 shadow-xl">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-dark-border pb-4">
                     <div>
-                        <span class="text-[10px] uppercase font-bold tracking-widest text-blue-400">SECTION 1: QUICK VIEW</span>
-                        <h4 class="${titleSize} font-extrabold text-white mt-1">Verdict: ${displayVerdict}</h4>
+                        <span class="text-[10px] uppercase font-bold tracking-widest text-blue-400">SECTION 1: QUICK OVERVIEW</span>
+                        <h4 class="${titleSize} font-extrabold text-white mt-1">Verdict: ${escapeHtml(verdict)}</h4>
+                        <p class="text-xs text-slate-400 mt-0.5">${escapeHtml(res.why || res.why_dangerous || 'Analysis completed.')}</p>
                     </div>
-                    <div class="w-20 h-20 rounded-full border-4 ${gaugeBorder} flex flex-col items-center justify-center bg-dark-cardLight shadow-lg">
+                    <div class="w-20 h-20 rounded-full border-4 ${gaugeBorder} flex flex-col items-center justify-center bg-dark-cardLight shadow-lg shrink-0">
                         <strong class="text-2xl font-bold text-white">${finalScore}</strong>
                         <span class="text-[9px] text-slate-400">/ 100</span>
                     </div>
@@ -563,15 +602,15 @@
 
                 <!-- 3 Simple Reasons -->
                 <div class="space-y-2">
-                    <h5 class="text-xs font-bold uppercase tracking-wider text-slate-400">3 Simple Reasons:</h5>
+                    <h5 class="text-xs font-bold uppercase tracking-wider text-slate-400">Key Risk Signals & Reasons:</h5>
                     <div class="space-y-1.5">
                         ${allReasonTags.slice(0, 3).map(r => `<div class="p-2.5 rounded-xl bg-dark-cardLight border border-dark-border ${fontClass} text-slate-200">⚠️ ${escapeHtml(r)}</div>`).join('')}
                     </div>
                 </div>
 
-                <!-- 3 SafeNext Actions -->
+                <!-- SafeNext Actions -->
                 <div class="space-y-2">
-                    <h5 class="text-xs font-bold uppercase tracking-wider text-emerald-400">3 SafeNext Actions:</h5>
+                    <h5 class="text-xs font-bold uppercase tracking-wider text-emerald-400">Recommended Actions:</h5>
                     <div class="space-y-1.5">
                         ${stepItems.slice(0, 3).map(a => `<div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 ${fontClass} text-emerald-300 font-medium">✅ ${escapeHtml(a)}</div>`).join('')}
                     </div>
@@ -580,13 +619,12 @@
                 ${helplinesHTML}
             </div>
 
-
             <!-- ===================================================== -->
-            <!-- SECTION 2: ADVANCED ANALYSIS (Bottom - Scroll/Accordion) -->
+            <!-- SECTION 2: ADVANCED ANALYSIS                          -->
             <!-- ===================================================== -->
             <div class="rounded-3xl border border-dark-border bg-dark-card/60 p-6 sm:p-8 space-y-6 shadow-xl">
                 <div class="flex items-center justify-between border-b border-dark-border pb-3">
-                    <span class="text-[10px] uppercase font-bold tracking-widest text-indigo-400">SECTION 2: ADVANCED ANALYSIS</span>
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-indigo-400">SECTION 2: DETAILED INTELLIGENCE</span>
                     <button onclick="$('#advancedDetailsContent').slideToggle()" class="text-xs text-blue-400 font-bold hover:underline">
                         [▼ Toggle Detailed Analysis]
                     </button>
@@ -598,7 +636,7 @@
                     <div class="rounded-3xl border border-dark-border bg-dark-card p-6 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                         <div class="lg:col-span-7 space-y-2">
                             <span class="text-3xl font-extrabold text-blue-500 font-mono">01</span>
-                            <h4 class="text-lg font-bold text-white">Risk Score Generator</h4>
+                            <h4 class="text-lg font-bold text-white">Risk Engine Assessment</h4>
                             <p class="text-xs text-slate-300">${escapeHtml(res.why || "Converts multiple threat signals into a comprehensive risk assessment.")}</p>
                         </div>
                         <div class="lg:col-span-5 rounded-2xl bg-dark-cardLight border border-dark-border p-4 text-center">
@@ -608,25 +646,25 @@
                     </div>
 
                     ${inputs.phone ? `
-                    <!-- Phone Analysis Card -->
+                    <!-- Phone Telecom Card -->
                     <div class="rounded-3xl border border-blue-500/40 bg-dark-card p-6 shadow-xl space-y-3">
                         <span class="text-[10px] uppercase font-bold text-blue-400">Telecom & Risk Engine</span>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                             <div class="p-3 rounded-xl bg-dark-cardLight border border-dark-border">
                                 <span class="text-[10px] text-slate-400 block font-bold">CARRIER</span>
-                                <strong class="text-white">${escapeHtml(res.phone_carrier || 'Airtel/Jio')}</strong>
+                                <strong class="text-white">${escapeHtml(res.phone_carrier || 'Cellular Network')}</strong>
                             </div>
                             <div class="p-3 rounded-xl bg-dark-cardLight border border-dark-border">
                                 <span class="text-[10px] text-slate-400 block font-bold">LINE TYPE</span>
                                 <strong class="text-blue-400">${escapeHtml(res.phone_line_type || 'Mobile')}</strong>
                             </div>
                             <div class="p-3 rounded-xl bg-dark-cardLight border border-dark-border">
-                                <span class="text-[10px] text-slate-400 block font-bold">VALIDITY</span>
-                                <strong class="text-emerald-400">Valid Number</strong>
+                                <span class="text-[10px] text-slate-400 block font-bold">COMMUNITY REPORTS</span>
+                                <strong class="text-amber-400">${res.phone_report_count || 0} Reports</strong>
                             </div>
                             <div class="p-3 rounded-xl bg-dark-cardLight border border-dark-border">
                                 <span class="text-[10px] text-slate-400 block font-bold">COUNTRY</span>
-                                <strong class="text-slate-200">India</strong>
+                                <strong class="text-slate-200">${escapeHtml(res.phone_country || 'India')}</strong>
                             </div>
                         </div>
                     </div>` : ''}
@@ -634,7 +672,7 @@
                     <!-- 02: Attack Chain Visualizer -->
                     <div class="p-6 rounded-3xl bg-dark-card border border-dark-border space-y-3">
                         <span class="text-3xl font-extrabold text-indigo-500 font-mono">02</span>
-                        <h4 class="text-lg font-bold text-white">Attack Chain Visualizer</h4>
+                        <h4 class="text-lg font-bold text-white">Attack Chain Sequence</h4>
                         <div class="space-y-2 pt-1">
                             ${chainHtml}
                         </div>
@@ -643,27 +681,18 @@
                     <!-- 03: Scam Fingerprinting -->
                     <div class="p-6 rounded-3xl bg-dark-card border border-dark-border space-y-3">
                         <span class="text-3xl font-extrabold text-amber-500 font-mono">03</span>
-                        <h4 class="text-lg font-bold text-white">Scam Fingerprinting</h4>
+                        <h4 class="text-lg font-bold text-white">Scam Fingerprinting Tactics</h4>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                             ${fingerprintHtml}
                         </div>
                     </div>
 
-                    <!-- 04: Trust Graph Lite -->
+                    <!-- 04: Full Recovery Steps -->
                     <div class="p-6 rounded-3xl bg-dark-card border border-dark-border space-y-3">
-                        <span class="text-3xl font-extrabold text-teal-500 font-mono">04</span>
-                        <h4 class="text-lg font-bold text-white">Trust Graph Lite</h4>
-                        <div class="p-3 rounded-2xl bg-dark-cardLight border border-dark-border text-center text-teal-400 font-bold text-xs">
-                            🛡️ Final Confidence Score: ${finalScore}/100
-                        </div>
-                    </div>
-
-                    <!-- 05: SafeNext Coach -->
-                    <div class="p-6 rounded-3xl bg-dark-card border border-dark-border space-y-3">
-                        <span class="text-3xl font-extrabold text-emerald-500 font-mono">05</span>
-                        <h4 class="text-lg font-bold text-white">SafeNext Coach</h4>
+                        <span class="text-3xl font-extrabold text-emerald-500 font-mono">04</span>
+                        <h4 class="text-lg font-bold text-white">SafeNext Recovery Checklist</h4>
                         <div class="space-y-2 pt-1">
-                            ${stepItems.map(st => `<div class="p-2.5 rounded-xl bg-emerald-500/10 text-xs text-emerald-300 border border-emerald-500/20">✅ ${escapeHtml(st)}</div>`).join('')}
+                            ${(res.recovery_steps || []).map(st => `<div class="p-2.5 rounded-xl bg-dark-cardLight border border-dark-border text-xs text-slate-200">🛡️ ${escapeHtml(st)}</div>`).join('') || '<p class="text-xs text-slate-400">No post-compromise recovery actions required.</p>'}
                         </div>
                     </div>
 

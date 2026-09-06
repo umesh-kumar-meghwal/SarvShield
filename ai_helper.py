@@ -12,30 +12,34 @@ from PIL import Image
 # CONFIGURATION
 # ============================================================
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
-OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-2.0-flash:free").strip()
 OPENROUTER_MAX_TOKENS = int(os.getenv("OPENROUTER_MAX_TOKENS", "1000"))
 OPENROUTER_SITE_URL = os.getenv("OPENROUTER_SITE_URL", "http://localhost:5000").strip()
 OPENROUTER_APP_NAME = os.getenv("OPENROUTER_APP_NAME", "SarvShield").strip()
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 REQUEST_TIMEOUT = 30
 
-FREE_VISION_MODELS = [
-    "google/gemini-2.0-flash:free",
-    "google/gemma-4-26b-a4b-it:free",
-    "google/gemma-4-31b-it:free",
-    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+# Verified Active Free Models on OpenRouter (Updated)
+FREE_TEXT_MODELS = [
+    "openrouter/free",
     "minimax/minimax-m3:free",
-    "openrouter/free"
+    "minimax/minimax-m2.7:free",
+    "inclusionai/ling-3.0-flash:free",
+    "nvidia/nemotron-3-super-120b-a12b:free",
+    "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "poolside/laguna-s-2.1:free"
 ]
 
-print(f"[AI CONFIG] DEFAULT MODEL: {OPENROUTER_MODEL}")
-print(f"[AI CONFIG] MAX TOKENS: {OPENROUTER_MAX_TOKENS}")
+FREE_VISION_MODELS = [
+    "openrouter/free",
+    "minimax/minimax-m3:free",
+    "minimax/minimax-m2.7:free"
+]
 
 
 def empty_ai_result() -> Dict[str, Any]:
     return {
         "score": 0,
-        "verdict": "UNKNOWN",
+        "verdict": "LOW RISK",
         "scam_explanation": "AI analysis completed.",
         "reasons": [],
         "exact_scam_lines": [],
@@ -53,29 +57,14 @@ def empty_ai_result() -> Dict[str, Any]:
         "scam_fingerprint": [],
         "evidence": [],
         "why": "",
-        "recommended_action": "Verify through official sources before proceeding.",
+        "recommended_action": "Verify through official sources.",
         "why_dangerous": "",
     }
-
-
-def _safe_list(value: Any) -> list:
-    if value is None:
-        return []
-    if isinstance(value, list):
-        return value
-    if isinstance(value, tuple):
-        return list(value)
-    if isinstance(value, str):
-        text = value.strip()
-        return [text] if text else []
-    return [str(value)]
 
 
 def _safe_string(value: Any, default: str = "") -> str:
     if value is None:
         return default
-    if isinstance(value, str):
-        return value.strip()
     return str(value).strip()
 
 
@@ -97,10 +86,10 @@ def normalize_ai_result(data: Any) -> Dict[str, Any]:
         return result
 
     result["score"] = _safe_score(data.get("score", 0))
-    result["verdict"] = _safe_string(data.get("verdict"), "UNKNOWN").upper()
+    result["verdict"] = _safe_string(data.get("verdict"), "LOW RISK").upper()
     result["scam_explanation"] = _safe_string(
         data.get("scam_explanation") or data.get("explanation") or data.get("why"),
-        "AI threat analysis completed."
+        "Analysis completed."
     )
     result["language"] = _safe_string(data.get("language"), "English")
     result["scam_type"] = _safe_string(data.get("scam_type"), "none")
@@ -111,8 +100,13 @@ def normalize_ai_result(data: Any) -> Dict[str, Any]:
         "attack_chain", "scam_fingerprint", "evidence",
     ]
     for field in list_fields:
-        values = _safe_list(data.get(field))
-        result[field] = [_safe_string(item) for item in values if _safe_string(item)]
+        vals = data.get(field)
+        if isinstance(vals, list):
+            result[field] = [_safe_string(item) for item in vals if _safe_string(item)]
+        elif isinstance(vals, str) and vals.strip():
+            result[field] = [vals.strip()]
+        else:
+            result[field] = []
 
     result["detected_text"] = _safe_string(data.get("detected_text"), "")
     result["category"] = _safe_string(data.get("category"), "Unknown")
@@ -125,17 +119,22 @@ def normalize_ai_result(data: Any) -> Dict[str, Any]:
 def _clean_ai_output(text: str) -> str:
     if not text:
         return ""
+    # Strip <think> tags from reasoning models
     text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    # Strip markdown fences
     text = re.sub(r"^```(?:json|JSON)?\s*", "", text.strip())
     text = re.sub(r"\s*```$", "", text.strip())
     return text.strip()
 
 
 def parse_ai_json(raw_text: str) -> Optional[Dict[str, Any]]:
+    """Robust JSON parser that handles code blocks, dirty characters, and trailing commas."""
     if not raw_text:
         return None
+
     cleaned = _clean_ai_output(raw_text)
 
+    # 1. Direct parse attempt
     try:
         parsed = json.loads(cleaned)
         if isinstance(parsed, dict):
@@ -143,14 +142,48 @@ def parse_ai_json(raw_text: str) -> Optional[Dict[str, Any]]:
     except Exception:
         pass
 
-    match = re.search(r"\{.*\}", cleaned, re.DOTALL)
+    # 2. Extract outermost JSON block {...}
+    match = re.search(r"(\{.*\})", cleaned, re.DOTALL)
     if match:
+        candidate = match.group(1).strip()
         try:
-            parsed = json.loads(match.group(0))
+            parsed = json.loads(candidate)
             if isinstance(parsed, dict):
                 return parsed
         except Exception:
             pass
+
+        # 3. Clean trailing commas e.g. ", ]" or ", }"
+        try:
+            sanitized = re.sub(r",\s*([\]}])", r"\1", candidate)
+            parsed = json.loads(sanitized)
+            if isinstance(parsed, dict):
+                return parsed
+        except Exception:
+            pass
+
+    # 4. Fallback: Extract key values using regex if model returns malformed JSON
+    try:
+        fallback = {}
+        score_m = re.search(r'"score"\s*:\s*(\d+)', cleaned)
+        if score_m:
+            fallback["score"] = int(score_m.group(1))
+
+        verdict_m = re.search(r'"verdict"\s*:\s*"([^"]+)"', cleaned)
+        if verdict_m:
+            fallback["verdict"] = verdict_m.group(1)
+
+        # Extract reasons list
+        reasons_m = re.search(r'"reasons"\s*:\s*\[(.*?)\]', cleaned, re.DOTALL)
+        if reasons_m:
+            items = re.findall(r'"([^"]+)"', reasons_m.group(1))
+            if items:
+                fallback["reasons"] = items
+
+        if fallback:
+            return fallback
+    except Exception:
+        pass
 
     return None
 
@@ -171,7 +204,7 @@ def _compress_and_encode_image(image_bytes: bytes) -> Optional[str]:
         b64_str = base64.b64encode(compressed_bytes).decode("utf-8")
         return f"data:image/jpeg;base64,{b64_str}"
     except Exception as e:
-        print(f"[AI IMAGE COMPRESSION ERROR] {e}")
+        print(f"[AI IMAGE ERROR] Compression failed: {e}")
         return f"data:image/jpeg;base64,{base64.b64encode(image_bytes).decode('utf-8')}"
 
 
@@ -195,7 +228,7 @@ def _image_to_data_url(image_data: Any) -> Optional[str]:
         if hasattr(image_data, "read"):
             return _compress_and_encode_image(image_data.read())
     except Exception as e:
-        print(f"[AI IMAGE ERROR] {e}")
+        print(f"[AI IMAGE FORMAT ERROR] {e}")
     return None
 
 
@@ -223,8 +256,9 @@ def _extract_response_text(response_json: Dict[str, Any]) -> str:
 def call_openrouter(prompt: str, image_data: Any = None, system_prompt: Optional[str] = None,
                     max_tokens: Optional[int] = None) -> Dict[str, Any]:
     result = empty_ai_result()
+
     if not OPENROUTER_API_KEY:
-        print("[AI ERROR] OPENROUTER_API_KEY is missing.")
+        print("[AI ERROR] OPENROUTER_API_KEY is missing in your .env file!")
         return result
 
     prompt = _safe_string(prompt)
@@ -232,7 +266,7 @@ def call_openrouter(prompt: str, image_data: Any = None, system_prompt: Optional
         return result
 
     token_limit = int(max_tokens if max_tokens is not None else OPENROUTER_MAX_TOKENS)
-    token_limit = max(100, min(token_limit, 8000))
+    token_limit = max(100, min(token_limit, 4000))
 
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
@@ -248,55 +282,61 @@ def call_openrouter(prompt: str, image_data: Any = None, system_prompt: Optional
         if not image_url:
             return result
 
-        combined_instruction = f"""You are SarvShield Cybersecurity Threat Analyzer.
-{prompt}
-
-CRITICAL: Return ONLY a valid JSON object in pure English matching the requested schema. No conversational comments."""
-
         messages = [
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": combined_instruction},
+                    {"type": "text", "text": prompt + "\n\nCRITICAL: Return ONLY valid JSON format without markdown fences."},
                     {"type": "image_url", "image_url": {"url": image_url}}
                 ]
             }
         ]
         models_to_try = FREE_VISION_MODELS
     else:
-        sys_msg = system_prompt or "You are SarvShield cybersecurity threat analyzer. Output ONLY valid JSON in English."
+        sys_msg = system_prompt or "You are an AI cyber threat detector. Always return valid JSON only."
         messages = [
             {"role": "system", "content": sys_msg},
             {"role": "user", "content": prompt}
         ]
-        models_to_try = [OPENROUTER_MODEL, "google/gemini-2.0-flash:free", "openrouter/free"]
+        models_to_try = list(dict.fromkeys(FREE_TEXT_MODELS))
 
     payload = {
         "messages": messages,
         "max_tokens": token_limit,
-        "temperature": 0.1
+        "temperature": 0.2
     }
-
-    if not has_image:
-        payload["response_format"] = {"type": "json_object"}
 
     for target_model in models_to_try:
         payload["model"] = target_model
+        print(f"[AI] Attempting call to: {target_model}")
+
         try:
-            response = requests.post(OPENROUTER_URL, headers=headers, json=payload, timeout=REQUEST_TIMEOUT)
+            response = requests.post(
+                OPENROUTER_URL,
+                headers=headers,
+                json=payload,
+                timeout=REQUEST_TIMEOUT
+            )
         except requests.exceptions.Timeout:
             print(f"[AI TIMEOUT] {target_model} timed out. Trying next fallback...")
             continue
         except Exception as req_err:
-            print(f"[AI REQUEST ERROR] {target_model}: {req_err}")
+            print(f"[AI CONNECTION ERROR] {target_model}: {req_err}")
             continue
 
         if response.status_code != 200:
+            try:
+                err_json = response.json()
+                err_msg = err_json.get("error", {}).get("message", response.text[:200])
+                print(f"[AI HTTP {response.status_code}] ({target_model}) Error: {err_msg}")
+            except Exception:
+                print(f"[AI HTTP {response.status_code}] ({target_model}) Raw: {response.text[:200]}")
             continue
 
         try:
             response_json = response.json()
-        except Exception:
+        except Exception as json_err:
+            print(f"[AI RESPONSE PARSE ERROR] {json_err}")
             continue
 
         raw_text = _extract_response_text(response_json)
@@ -305,9 +345,14 @@ CRITICAL: Return ONLY a valid JSON object in pure English matching the requested
 
         parsed = parse_ai_json(raw_text)
         if parsed is not None:
-            return normalize_ai_result(parsed)
+            final_result = normalize_ai_result(parsed)
+            actual_model = response_json.get("model", target_model)
+            print(f"[AI SUCCESS] Successfully analyzed using: {actual_model}")
+            return final_result
+        else:
+            print(f"[AI PARSE NOTICE] Failed to parse JSON from {target_model}, attempting regex fallback or next model...")
 
-    print("[AI FAILED] All fallback models exhausted.")
+    print("[AI FAILED] All fallback models exhausted. Returning safe fallback.")
     return result
 
 

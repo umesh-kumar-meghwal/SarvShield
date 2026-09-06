@@ -461,13 +461,623 @@ def scamcheck_check():
     except Exception as e:
         traceback.print_exc()
         return jsonify({"success": False, "message": f"Server Error: {str(e)}"}), 500
+    
+    
+    
+    
+@app.route('/history')
+def history():
+    if "email" not in session or session.get("usertype") != "user":
+        return redirect("/error")
+    user_email = session.get("email")
+    response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+    data = response.data
+    if not data:
+        return redirect("/error")
+    return render_template('history.html',data=data)
+    
+    
+@app.route("/scam-report", methods=["GET", "POST"])
+def scam_report():
+    # Login & User Type Check
+    if "email" not in session or session.get("usertype") != "user":
+        if request.method == "GET":
+            return redirect("/login")
+        return jsonify({"success": False, "message": "Please login as user to report a scam"}), 401
+
+    user_email = session.get("email")
+
+    if request.method == "GET":
+        response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+        data = response.data
+        if not data:
+            return redirect("/error")
+        return render_template("report-scam.html",data=data)
+
+    try:
+        phone_number = request.form.get("phone_number", "").strip()
+        link = request.form.get("link", "").strip()
+        reason = request.form.get("reason", "").strip()
+
+        # 1. Validation: Phone ya Link dono me se kam se kam ek hona chahiye
+        if not phone_number and not link:
+            return jsonify({
+                "success": False,
+                "message": "Please provide at least a Phone Number OR a Link to report."
+            }), 400
+
+        # 2. Reason required
+        if not reason:
+            return jsonify({
+                "success": False,
+                "message": "Reason is required."
+            }), 400
+
+        # =========================================================
+        # 3. DUPLICATE CHECK: Kya is user ne pehle report kiya hai?
+        # =========================================================
+        if phone_number:
+            check_phone = (
+                supabase
+                .table("scam_reports")
+                .select("id")
+                .eq("user_email", user_email)
+                .eq("phone", phone_number)
+                .execute()
+            )
+            if check_phone.data and len(check_phone.data) > 0:
+                return jsonify({
+                    "success": False,
+                    "message": "You have already reported this phone number previously."
+                }), 409
+
+        if link:
+            check_link = (
+                supabase
+                .table("scam_reports")
+                .select("id")
+                .eq("user_email", user_email)
+                .eq("link", link)
+                .execute()
+            )
+            if check_link.data and len(check_link.data) > 0:
+                return jsonify({
+                    "success": False,
+                    "message": "You have already reported this link previously."
+                }), 409
+
+        # =========================================================
+        # 4. INSERT INTO scam_reports (User Audit Log)
+        # =========================================================
+        supabase.table("scam_reports").insert({
+            "user_email": user_email,
+            "phone": phone_number if phone_number else None,
+            "link": link if link else None,
+            "reason": reason
+        }).execute()
+
+        # =========================================================
+        # 5. SYNC WITH spam_numbers TABLE (Auto-Increment / Create)
+        # =========================================================
+        if phone_number:
+            exist_num = (
+                supabase
+                .table("spam_numbers")
+                .select("id, report_count")
+                .eq("phone", phone_number)
+                .execute()
+            )
+            if exist_num.data and len(exist_num.data) > 0:
+                current_count = exist_num.data[0].get("report_count") or 0
+                new_count = current_count + 1
+                supabase.table("spam_numbers").update({
+                    "report_count": new_count
+                }).eq("phone", phone_number).execute()
+                print(f"✓ Phone '{phone_number}' report_count updated to {new_count}")
+            else:
+                supabase.table("spam_numbers").insert({
+                    "phone": phone_number,
+                    "report_count": 1,
+                    "reputation": "SPAM",
+                    "score": 90
+                }).execute()
+                print(f"✓ New Phone '{phone_number}' added with report_count = 1")
+
+        # =========================================================
+        # 6. SYNC WITH spam_links TABLE (Auto-Increment / Create)
+        # =========================================================
+        if link:
+            exist_lnk = (
+                supabase
+                .table("spam_links")
+                .select("id, report_count")
+                .eq("link", link)
+                .execute()
+            )
+            if exist_lnk.data and len(exist_lnk.data) > 0:
+                current_count = exist_lnk.data[0].get("report_count") or 0
+                new_count = current_count + 1
+                supabase.table("spam_links").update({
+                    "report_count": new_count
+                }).eq("link", link).execute()
+                print(f"✓ Link '{link}' report_count updated to {new_count}")
+            else:
+                supabase.table("spam_links").insert({
+                    "link": link,
+                    "report_count": 1,
+                    "reputation": "SPAM",
+                    "score": 90
+                }).execute()
+                print(f"✓ New Link '{link}' added with report_count = 1")
+
+        return jsonify({
+            "success": True,
+            "message": "Scam reported successfully and spam database updated!"
+        }), 200
+
+    except Exception as e:
+        print("SCAM REPORT ERROR:", repr(e))
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+
+@app.route("/my-profile", methods=["GET", "POST"])
+def my_profile():
+
+    if "email" not in session or session.get("usertype") != "user":
+        return redirect("/error")
+
+    user_email = session.get("email")
+
+    try:
+
+        # =========================
+        # SAVE PROFILE
+        # =========================
+        if request.method == "POST":
+
+            name = request.form.get("name", "").strip()
+            phone = request.form.get("phone", "").strip()
+            address = request.form.get("address", "").strip()
+
+            profile_picture = request.files.get("profile_picture")
+
+            update_data = {
+                "name": name,
+                "phone": phone,
+                "address": address
+            }
+
+            # =========================
+            # PROFILE PICTURE
+            # =========================
+            if profile_picture and profile_picture.filename:
+
+                filename = secure_filename(profile_picture.filename)
+
+                allowed_extensions = {
+                    "jpg",
+                    "jpeg",
+                    "png",
+                    "webp"
+                }
+
+                extension = filename.rsplit(".", 1)[-1].lower()
+
+                if extension not in allowed_extensions:
+                    return redirect("/my-profile")
+
+                file_path = f"{user_email}/profile.{extension}"
+
+                file_bytes = profile_picture.read()
+
+                # Supabase Storage upload
+                supabase.storage \
+                    .from_("profile-pictures") \
+                    .upload(
+                        file_path,
+                        file_bytes,
+                        {
+                            "content-type": profile_picture.content_type,
+                            "upsert": "true"
+                        }
+                    )
+
+                # Public URL
+                public_url = (
+                    supabase.storage
+                    .from_("profile-pictures")
+                    .get_public_url(file_path)
+                )
+
+                update_data["profile_picture"] = public_url
+
+            # =========================
+            # UPDATE USER
+            # =========================
+            supabase \
+                .table("user") \
+                .update(update_data) \
+                .eq("email", user_email) \
+                .execute()
+
+            return redirect("/my-profile")
+
+
+        # =========================
+        # GET PROFILE
+        # =========================
+
+        response = (
+            supabase
+            .table("user")
+            .select(
+                "email, name, phone, address, profile_picture"
+            )
+            .eq("email", user_email)
+            .single()
+            .execute()
+        )
+
+        data = response.data
+
+        if not data:
+            return redirect("/error")
+
+        return render_template(
+            "my-profile.html",
+            data=data
+        )
+
+    except Exception as e:
+
+        print("My Profile Error:", e)
+
+        return redirect("/error")
+
+
+
+
+
+@app.route("/feedbacks")
+def feedbacks():
+    try:
+        response = supabase.table("feedback").select("email, message, rating, created_at").order("created_at", desc=True).execute()
+
+        feedback_data = response.data or []
+
+        return render_template(
+            "feedbacks.html",
+            feedbacks=feedback_data
+        )
+
+    except Exception as e:
+        print("Feedback Error:", e)
+        return "Unable to fetch feedbacks", 500
+
+@app.route("/feedback", methods=["GET", "POST"])
+def feedback():
+    if "email" not in session or session.get("usertype") != "user":
+        return redirect("/error")
+
+    user_email = session.get("email")
+
+    try:
+        # User profile picture aur name fetch karein (table: 'user')
+        user_data = {}
+        try:
+            user_profile = (
+                supabase.table("user")  # <-- Yahan 'user' table aayega
+                .select("name, profile_picture")
+                .eq("email", user_email)
+                .limit(1)
+                .execute()
+            )
+            if user_profile.data:
+                user_data = user_profile.data[0]
+        except Exception:
+            user_data = {}
+
+        # 1. Check if user has used ScamCheck at least once
+        scam_result = (
+            supabase.table("scam_checks")
+            .select("id")
+            .eq("user_email", user_email)
+            .limit(1)
+            .execute()
+        )
+
+        if not scam_result.data:
+            return render_template(
+                "feedback.html",
+                can_feedback=False,
+                already_submitted=False,
+                data=user_data
+            )
+
+        # 2. Check if user has ALREADY submitted feedback
+        existing_feedback = (
+            supabase.table("feedback")
+            .select("*")
+            .eq("email", user_email)
+            .order("id", desc=True)
+            .limit(1)
+            .execute()
+        )
+
+        user_feedback = existing_feedback.data[0] if existing_feedback.data else None
+
+        # =========================================
+        # GET REQUEST
+        # =========================================
+        if request.method == "GET":
+            return render_template(
+                "feedback.html",
+                can_feedback=True,
+                already_submitted=(user_feedback is not None),
+                user_feedback=user_feedback,
+                data=user_data
+            )
+
+        # =========================================
+        # POST REQUEST (SUBMISSION)
+        # =========================================
+        if user_feedback:
+            return jsonify({
+                "success": False,
+                "message": "You have already submitted your feedback."
+            }), 400
+
+        rating = request.form.get("rating", "").strip()
+        message = request.form.get("message", "").strip()
+
+        if not rating:
+            return jsonify({
+                "success": False,
+                "message": "Please select a rating."
+            }), 400
+
+        if not message:
+            return jsonify({
+                "success": False,
+                "message": "Please enter your feedback message."
+            }), 400
+
+        # Save Feedback in Supabase
+        supabase.table("feedback").insert({
+            "email": user_email,
+            "rating": int(rating),
+            "message": message
+        }).execute()
+
+        return jsonify({
+            "success": True,
+            "message": "Thank you! Your feedback has been submitted successfully."
+        }), 200
+
+    except Exception as e:
+        print("Feedback Error:", e)
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
+
+
+
+
+@app.route('/alerts')
+def alerts():
+    if "email" not in session or session.get("usertype") != "user":
+        return redirect("/error")
+    user_email = session.get("email")
+    response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+    data = response.data
+    if not data:
+        return redirect("/error")
+    return render_template('alerts.html',data=data)
+
+@app.route('/learn-more')
+def learn_more():
+    if "email" not in session or session.get("usertype") != "user":
+            return redirect("/error")
+    user_email = session.get("email")
+    response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+    data = response.data
+    if not data:
+        return redirect("/error")
+    return render_template('learn-more.html',data=data)
+
+
+
+
+
+@app.route("/checkscam-history")
+def checkscam_history():
+    if "email" not in session or session.get("usertype") != "user":
+        return redirect("/error")
+    try:
+        user_email = session.get("email")
+        print(user_email)
+
+        # Fetch scan records for this logged-in user
+        result = (
+            supabase
+            .table("scam_checks")
+            .select("*")
+            .eq("user_email", user_email)
+            .execute()
+        )
+
+        scans = result.data or []
+
+        # Generate Public Image URL from 'scam-screenshots' bucket
+        for scan in scans:
+            if scan.get("screenshot"):
+                scan["screenshot_url"] = supabase.storage \
+                    .from_("scam-screenshots") \
+                    .get_public_url(scan["screenshot"])
+            else:
+                scan["screenshot_url"] = None
+        response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+        data = response.data
+        if not data:
+            return redirect("/error")
+
+        return render_template("checkscam-history.html", scans=scans,data=data)
+
+    except Exception as e:
+        print("HISTORY FETCH ERROR:", repr(e))
+        return f"Error loading scan history: {str(e)}", 500
+    
+    
+@app.route("/report-history")
+def report_history():
+    if "email" not in session or session.get("usertype") != "user":
+        return redirect("/error")
+    try:
+        # Fetch all reported scams (Phone/Link) from Supabase
+        user_email = session.get("email")
+
+        result = (
+            supabase
+            .table("scam_reports")
+            .select("*")
+            .eq("user_email", user_email)
+            .execute()
+        )
+        reports = result.data or []
+        response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+        data = response.data
+        if not data:
+            return redirect("/error")
+        return render_template("report-history.html", reports=reports,data=data)
+    except Exception as e:
+        print("REPORT HISTORY ERROR:", repr(e))
+        return f"Error loading report history: {str(e)}", 500
+       
+
+@app.route("/change-password", methods=["GET", "POST"])
+def change_password():
+    # User login check
+    if "email" not in session or session.get("usertype") != "user":
+        return redirect("/error")
+
+    user_email = session.get("email")
+
+    if request.method == "POST":
+
+        current_password = request.form.get("current_password", "").strip()
+        new_password = request.form.get("new_password", "").strip()
+        confirm_password = request.form.get("confirm_password", "").strip()
+
+        # Check empty fields
+        if not current_password or not new_password or not confirm_password:
+            return render_template(
+                "change-password.html",
+                error="All fields are required."
+            )
+
+        # Check new password confirmation
+        if new_password != confirm_password:
+            return render_template(
+                "change-password.html",
+                error="New password and confirm password do not match."
+            )
+
+        try:
+
+            # Get current user password
+            response = (
+                supabase
+                .table("login")
+                .select("password")
+                .eq("email", user_email)
+                .single()
+                .execute()
+            )
+
+            user_data = response.data
+
+            if not user_data:
+                return render_template(
+                    "change-password.html",
+                    error="User not found."
+                )
+
+            # Check old password
+            if current_password != user_data["password"]:
+                return render_template(
+                    "change-password.html",
+                    error="Current password is incorrect."
+                )
+
+            # Update password
+            supabase.table("login").update({
+                "password": new_password
+            }).eq("email", user_email).execute()
+
+            return render_template(
+                "change-password.html",
+                success="Password changed successfully."
+            )
+
+        except Exception as e:
+
+            print("Change Password Error:", e)
+
+            return render_template(
+                "change-password.html",
+                error="Something went wrong."
+            )
+
+    return render_template("change-password.html")
+
+@app.route("/scam-result/<int:scan_id>")
+def scam_result_detail(scan_id):
+    if "email" not in session or session.get("usertype") != "user":
+        return redirect("/error")
+
+    try:
+        user_email = session.get("email")
+
+        # Fetch single scan by ID and logged-in user email
+        result = (
+            supabase
+            .table("scam_checks")
+            .select("*")
+            .eq("id", scan_id)
+            .eq("user_email", user_email)
+            .execute()
+        )
+
+        if not result.data or len(result.data) == 0:
+            return redirect("/error")
+
+        scan = result.data[0]
+
+        # Generate Public Image URL for this single scan (No loop needed)
+        if scan.get("screenshot"):
+            scan["screenshot_url"] = supabase.storage \
+                .from_("scam-screenshots") \
+                .get_public_url(scan["screenshot"])
+        else:
+            scan["screenshot_url"] = None
+        response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+        data = response.data
+        if not data:
+            return redirect("/error")
+
+        return render_template("scam-result.html", scan=scan,data=data)
+
+    except Exception as e:
+        print("FETCH SCAM RESULT ERROR:", repr(e))
+        return f"Error loading scan result: {str(e)}", 500    
+    
+    
 # =========================================================
 # USER TRUST & STATS API
 # =========================================================
 @app.route("/api/user-trust", methods=["GET"])
-
-
-
 def user_trust():
     try:
         if "email" not in session:
