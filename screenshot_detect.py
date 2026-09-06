@@ -1,97 +1,68 @@
+# screenshot_detect.py
 from ai_helper import call_openrouter
 
 
-def screenshot_detect(image_data):
+def screenshot_detect(image_data) -> dict:
     if not image_data:
         return {
             "score": 0,
             "verdict": "UNKNOWN",
-            "reasons": ["No screenshot was provided."],
+            "reasons": ["No screenshot image provided."],
             "detected_text": "",
             "category": "Unknown"
         }
 
     prompt = """
-You are an expert screenshot scam detector.
+You are an expert cybersecurity visual forensic examiner.
+Analyze this uploaded screenshot carefully for scams, phishing, fake UPI/banking screenshots, fake payment confirmations, fraudulent login portals, fake lottery notifications, or impersonation.
 
-Analyze the uploaded screenshot carefully.
-
-Look for:
-- phishing/login pages
-- fake banking or payment interfaces
-- fake UPI/payment requests
-- fake government/KYC services
-- fake Aadhaar/document generators
-- fake social-media login pages
-- fake lottery/prize/cashback claims
-- suspicious advertisements
-- credential harvesting
-- impersonation of trusted brands
-- suspicious URLs/domains
-- requests for OTP, PIN, password or financial information
-
-Read visible text from the screenshot when possible.
-
-Return ONLY valid JSON.
-Do not use markdown fences.
-Do not add explanations outside JSON.
-
-Exact structure:
-
+INSTRUCTIONS:
+1. Transcribe any visible key text into 'detected_text'.
+2. Identify threat signals and explain them in clear ENGLISH.
+3. Compute an accurate threat score between 0 and 100.
+4. Output MUST be valid JSON matching this exact structure:
 {
   "score": 0,
-  "verdict": "UNKNOWN",
-  "reasons": [],
-  "detected_text": "",
-  "category": "Unknown"
+  "verdict": "LOW RISK",
+  "reasons": [
+    "Specific visual/textual evidence found in screenshot in English",
+    "Second reason in English"
+  ],
+  "detected_text": "Transcribed text from image",
+  "category": "Phishing / Fake UPI / Fake Bill / Safe / Unknown"
 }
 
-Score:
-0-19 = LOW RISK
-20-39 = SUSPICIOUS
-40-59 = MEDIUM RISK
-60-79 = HIGH RISK
-80-100 = VERY HIGH RISK
-
-If the screenshot contains no useful evidence, return score 0 and verdict UNKNOWN.
+Scoring Scale:
+0-19: LOW RISK
+20-39: SUSPICIOUS
+40-59: MEDIUM RISK
+60-79: HIGH RISK
+80-100: VERY HIGH RISK
 """
 
     try:
-        data = call_openrouter(
-            prompt,
-            image_data=image_data
-        )
-
+        data = call_openrouter(prompt, image_data=image_data)
         if not isinstance(data, dict):
             return {
                 "score": 0,
                 "verdict": "UNKNOWN",
-                "reasons": ["AI returned an invalid screenshot result."],
+                "reasons": ["AI visual analysis returned an invalid response."],
                 "detected_text": "",
                 "category": "Unknown"
             }
 
-        score = max(
-            0,
-            min(
-                int(data.get("score", 0) or 0),
-                100
-            )
-        )
-
+        score = max(0, min(int(data.get("score", 0) or 0), 100))
         reasons = data.get("reasons", [])
+        if not isinstance(reasons, list) or not reasons:
+            reasons = ["Visual scan completed with no obvious threat signatures detected."]
 
-        if not isinstance(reasons, list):
-            reasons = [str(reasons)]
-
-        verdict = str(
-            data.get("verdict") or
-            ("VERY HIGH RISK" if score >= 80 else
-             "HIGH RISK" if score >= 60 else
-             "MEDIUM RISK" if score >= 40 else
-             "SUSPICIOUS" if score >= 20 else
-             "LOW RISK")
-        )
+        verdict = str(data.get("verdict") or (
+            "VERY HIGH RISK" if score >= 80 else
+            "HIGH RISK" if score >= 60 else
+            "MEDIUM RISK" if score >= 40 else
+            "SUSPICIOUS" if score >= 20 else
+            "LOW RISK"
+        )).upper()
 
         return {
             "score": score,
@@ -102,12 +73,10 @@ If the screenshot contains no useful evidence, return score 0 and verdict UNKNOW
         }
 
     except Exception as e:
-        print("[SCREENSHOT ERROR]", repr(e))
-
         return {
             "score": 0,
             "verdict": "UNKNOWN",
-            "reasons": ["Screenshot AI analysis was unavailable."],
+            "reasons": [f"Screenshot AI analysis could not be completed: {str(e)}"],
             "detected_text": "",
             "category": "Unknown"
         }
