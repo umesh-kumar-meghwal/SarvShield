@@ -235,10 +235,18 @@ def scamcheck_check():
         return render_template("user-dashboard.html", data=user_data)
 
     try:
+        # 1. Extract inputs
         message = request.form.get("message", "").strip()
         phone = request.form.get("phone", "").strip()
         link = request.form.get("link", "").strip()
         screenshot_file = request.files.get("screenshot")
+
+        # 2. Extract selected language dynamically (POST form or GET query param)
+        selected_language = (
+            request.form.get("language") or 
+            request.args.get("lang") or 
+            "Marathi"
+        ).strip()
 
         has_message = bool(message)
         has_phone = bool(phone)
@@ -246,11 +254,15 @@ def scamcheck_check():
         has_screenshot = bool(screenshot_file and screenshot_file.filename)
 
         if not (has_message or has_phone or has_link or has_screenshot):
-            return jsonify({"success": False, "message": "Provide at least one input (Message, Phone, Link, or Screenshot)."}), 400
+            return jsonify({
+                "success": False, 
+                "message": "Provide at least one input (Message, Phone, Link, or Screenshot)."
+            }), 400
 
         screenshot_bytes = None
         screenshot_db_record = None
 
+        # 3. Process Screenshot
         if has_screenshot:
             try:
                 suffix = os.path.splitext(screenshot_file.filename)[1].lower() or ".png"
@@ -270,33 +282,42 @@ def scamcheck_check():
             except Exception as ss_err:
                 print("SCREENSHOT EXTRACTION ERROR:", repr(ss_err))
 
-        message_result = {"score": 0, "verdict": "UNKNOWN", "language": "English", "reasons": []}
+        # Default results
+        message_result = {"score": 0, "verdict": "UNKNOWN", "language": selected_language, "reasons": []}
         phone_result = {"found": False, "score": None, "reputation": "UNKNOWN", "report_count": 0, "reasons": []}
         link_result = {"score": 0, "domain": "", "final_domain": "", "verdict": "UNKNOWN", "reasons": []}
         screenshot_result = {"score": 0, "verdict": "UNKNOWN", "category": "Unknown", "detected_text": "", "reasons": []}
 
-        # Parallel Execution
+        # 4. Multi-Threaded Parallel Execution with Safe Exception Handling
         with ThreadPoolExecutor(max_workers=4) as executor:
-            fut_msg = executor.submit(message_detect, message) if has_message else None
-            fut_phone = executor.submit(phone_detect, supabase, phone, "english") if has_phone else None
-            fut_link = executor.submit(link_detect, link, "english") if has_link else None
-            fut_ss = executor.submit(screenshot_detect, screenshot_bytes) if (has_screenshot and screenshot_bytes) else None
+            fut_msg = executor.submit(message_detect, message, selected_language) if has_message else None
+            fut_phone = executor.submit(phone_detect, supabase, phone, selected_language) if has_phone else None
+            fut_link = executor.submit(link_detect, link, selected_language) if has_link else None
+            fut_ss = executor.submit(screenshot_detect, screenshot_bytes, selected_language) if (has_screenshot and screenshot_bytes) else None
 
             if fut_msg:
-                try: message_result = fut_msg.result()
-                except Exception as e: message_result = {"score": 0, "verdict": "UNKNOWN", "reasons": [str(e)]}
+                try:
+                    message_result = fut_msg.result()
+                except Exception as e:
+                    message_result = {"score": 0, "verdict": "UNKNOWN", "reasons": [str(e)]}
 
             if fut_phone:
-                try: phone_result = fut_phone.result()
-                except Exception as e: phone_result = {"found": False, "score": None, "reputation": "UNKNOWN", "report_count": 0, "reasons": [str(e)]}
+                try:
+                    phone_result = fut_phone.result()
+                except Exception as e:
+                    phone_result = {"found": False, "score": None, "reputation": "UNKNOWN", "report_count": 0, "reasons": [str(e)]}
 
             if fut_link:
-                try: link_result = fut_link.result()
-                except Exception as e: link_result = {"score": 0, "domain": "", "verdict": "UNKNOWN", "reasons": [str(e)]}
+                try:
+                    link_result = fut_link.result()
+                except Exception as e:
+                    link_result = {"score": 0, "domain": "", "verdict": "UNKNOWN", "reasons": [str(e)]}
 
             if fut_ss:
-                try: screenshot_result = fut_ss.result()
-                except Exception as e: screenshot_result = {"score": 0, "verdict": "UNKNOWN", "category": "Unknown", "reasons": [str(e)]}
+                try:
+                    screenshot_result = fut_ss.result()
+                except Exception as e:
+                    screenshot_result = {"score": 0, "verdict": "UNKNOWN", "category": "Unknown", "reasons": [str(e)]}
 
         message_score = int(message_result.get("score", 0) or 0)
         screenshot_score = int(screenshot_result.get("score", 0) or 0)
@@ -310,17 +331,19 @@ def scamcheck_check():
             "screenshot": screenshot_score if has_screenshot else 0
         }
 
+        # 5. Risk Calculation Engine
         risk_res = calculate_risk(scores)
         final_score = risk_res.get("final_score", 0)
         final_verdict = risk_res.get("verdict", "UNKNOWN")
         contribution_data = risk_res.get("contribution", {})
 
+        # 6. Attack Chain & Scam Fingerprint
         fingerprint_data = build_scam_fingerprint(
             message=message,
             phone_result=phone_result,
             link_result=link_result,
             screenshot_result=screenshot_result,
-            language="english"
+            language=selected_language
         )
 
         fingerprint = fingerprint_data.get("scam_fingerprint", [])
@@ -336,6 +359,7 @@ def scamcheck_check():
             ) if r
         ]))
 
+        # 7. SafeNext AI Defensive Advice
         coach_advice = generate_safe_next(
             final_score=final_score,
             verdict=final_verdict,
@@ -344,7 +368,8 @@ def scamcheck_check():
             screenshot_result=screenshot_result,
             phone_result=phone_result,
             fingerprint=fingerprint,
-            attack_chain=attack_chain
+            attack_chain=attack_chain,
+            language=selected_language
         )
 
         wi = what_if_analysis(
@@ -354,9 +379,12 @@ def scamcheck_check():
             screenshot_score=scores["screenshot"]
         )
 
-        urgency_detected = [w for w in ["immediately", "verify", "suspended", "urgent", "24 hours", "blocked", "warning", "kyc"] if w in (message + " " + link).lower()]
+        urgency_detected = [
+            w for w in ["immediately", "verify", "suspended", "urgent", "24 hours", "blocked", "warning", "kyc"] 
+            if w in (message + " " + link).lower()
+        ]
 
-        # Database Logging
+        # 8. Save Record to Supabase DB
         try:
             current_user = session.get("email", "anonymous_user")
             supabase.table("scam_checks").insert({
@@ -380,6 +408,7 @@ def scamcheck_check():
         except Exception as db_err:
             print("DB SCAM CHECK LOG NOTICE:", repr(db_err))
 
+        # 9. Return JSON Response with Dynamic Language Output
         return jsonify({
             "success": True,
             "final_score": final_score,
@@ -390,9 +419,10 @@ def scamcheck_check():
                 "link": has_link,
                 "screenshot": has_screenshot
             },
+            "selected_language": selected_language,
             "message_score": message_score,
             "message_verdict": message_result.get("verdict", "UNKNOWN"),
-            "message_language": message_result.get("language", "English"),
+            "message_language": message_result.get("language", selected_language),
             "message_reasons": [str(r) for r in message_result.get("reasons", [])],
             "phone_score": phone_score,
             "phone_reputation": phone_result.get("reputation", "UNKNOWN"),
@@ -431,12 +461,13 @@ def scamcheck_check():
     except Exception as e:
         traceback.print_exc()
         return jsonify({"success": False, "message": f"Server Error: {str(e)}"}), 500
-
-
 # =========================================================
 # USER TRUST & STATS API
 # =========================================================
 @app.route("/api/user-trust", methods=["GET"])
+
+
+
 def user_trust():
     try:
         if "email" not in session:

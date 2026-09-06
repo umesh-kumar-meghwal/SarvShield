@@ -6,7 +6,8 @@ from urllib.parse import urlparse
 from ai_helper import call_openrouter
 
 
-def link_detect(url: str, language: str = "english") -> dict:
+def link_detect(url: str, language: str = "English") -> dict:
+    target_lang = str(language or "English").strip()
     result = {
         "score": 0,
         "domain": "",
@@ -52,14 +53,10 @@ def link_detect(url: str, language: str = "english") -> dict:
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36"
             }
         )
-
         try:
             result["final_domain"] = urlparse(response.url).netloc.lower().split(":")[0]
         except Exception:
             result["final_domain"] = domain
-
-        if response.status_code >= 400:
-            result["reasons"].append(f"Website returned HTTP status {response.status_code}.")
 
         soup = BeautifulSoup(response.text[:60000], "html.parser")
         for tag in soup(["script", "style", "noscript", "svg", "template"]):
@@ -69,26 +66,17 @@ def link_detect(url: str, language: str = "english") -> dict:
             page_title = soup.title.get_text(" ", strip=True)
 
         extracted = re.sub(r"\s+", " ", soup.get_text(" ", strip=True))[:10000]
-
-        if "just a moment" in extracted.lower():
-            result["reasons"].append("The page appears to be protected by a Cloudflare or bot verification screen.")
-        elif len(extracted) > 30:
+        if len(extracted) > 30:
             website_text = extracted
             result["content_analyzed"] = True
             result["content_preview"] = website_text[:1200]
-        else:
-            result["reasons"].append("Very little readable webpage content was available.")
 
-    except requests.exceptions.Timeout:
-        result["reasons"].append("Website request timed out.")
-    except requests.exceptions.ConnectionError:
-        result["reasons"].append("Could not connect to the website.")
     except Exception as e:
-        result["reasons"].append(f"Website request error: {str(e)}")
+        result["reasons"].append(f"Connection notice: {str(e)}")
 
     prompt = f"""
 You are a Senior Cyber Threat Analyst.
-Analyze the following website details and content for phishing, impersonation, or malicious intent.
+Analyze this website for malicious activity, phishing, or scams:
 
 URL: {url}
 Domain: {domain}
@@ -96,29 +84,31 @@ Path: {url_path}
 Final Domain: {result.get('final_domain', '')}
 Page Title: {page_title}
 Webpage Content:
-{website_text if website_text else "Page text could not be fetched. Analyze domain and URL pattern only."}
+{website_text if website_text else "Page content unavailable. Analyze domain/path pattern only."}
 
-CRITICAL RULES:
-- Output MUST be 100% in pure English.
-- Return ONLY a valid JSON object matching this schema:
+CRITICAL MULTILINGUAL INSTRUCTION:
+- The user requested output in: "{target_lang}".
+- "scam_explanation", "reasons", and "data_harvested" MUST BE WRITTEN 100% IN "{target_lang}" using its native writing script.
+- Keep exact quotes in "exact_scam_lines" unmodified as they appeared on the page.
+- "verdict" must be one of: LOW RISK, SUSPICIOUS, HIGH RISK, VERY HIGH RISK.
+
+Return ONLY valid JSON matching this schema:
 {{
     "score": 0,
     "verdict": "LOW RISK",
-    "scam_explanation": "Concise summary in English explaining if this website poses a threat.",
+    "scam_explanation": "Detailed explanation strictly in {target_lang}",
     "reasons": [
-        "First specific security reason in English.",
-        "Second specific reason in English."
+        "First reason strictly in {target_lang}",
+        "Second reason strictly in {target_lang}"
     ],
     "exact_scam_lines": [],
     "data_harvested": []
 }}
-- Score range: 0-100.
-- Verdict must be one of: LOW RISK, SUSPICIOUS, HIGH RISK, VERY HIGH RISK.
 """
 
     try:
         data = call_openrouter(prompt)
-    except Exception as e:
+    except Exception:
         data = None
 
     if isinstance(data, dict):
@@ -126,7 +116,7 @@ CRITICAL RULES:
         result["score"] = score
         verdict = str(data.get("verdict", "UNKNOWN")).strip().upper()
         result["verdict"] = verdict if verdict in {"LOW RISK", "SUSPICIOUS", "HIGH RISK", "VERY HIGH RISK"} else "UNKNOWN"
-        result["scam_explanation"] = str(data.get("scam_explanation") or "Website security analysis completed.")
+        result["scam_explanation"] = str(data.get("scam_explanation") or "Analysis completed.")
         
         ai_reasons = data.get("reasons", [])
         if isinstance(ai_reasons, list):
@@ -134,8 +124,6 @@ CRITICAL RULES:
 
         result["exact_scam_lines"] = [str(x).strip() for x in data.get("exact_scam_lines", []) if str(x).strip()]
         result["data_harvested"] = [str(x).strip() for x in data.get("data_harvested", []) if str(x).strip()]
-    else:
-        result["reasons"].append("AI website analysis was unavailable.")
 
     result["reasons"] = list(dict.fromkeys(result["reasons"]))
     return result

@@ -2,36 +2,6 @@
 import json
 from ai_helper import call_openrouter
 
-DEFAULT_SAFE_NEXT = {
-    "recommended_action": "Do not interact with the suspicious sender, message, or link.",
-    "why_dangerous": (
-        "This activity shows strong signs of phishing or deceptive social engineering designed "
-        "to harvest sensitive credentials, compromise banking details, or inflict financial loss."
-    ),
-    "immediate_steps": [
-        "Do not click on links or download unexpected attachments.",
-        "Never share OTPs, UPI PINs, passwords, or personal banking credentials.",
-        "Verify communications independently using the entity's verified official portal or app.",
-        "Block the sender and report the contact immediately."
-    ],
-    "recovery_steps": [
-        "If credentials were entered, change passwords immediately and enforce 2-Factor Authentication (2FA).",
-        "If financial details were exposed, notify your bank immediately to freeze affected cards or accounts.",
-        "File an incident complaint with the National Cyber Crime Reporting Portal at cybercrime.gov.in."
-    ],
-    "helplines": [
-        "National Cyber Crime Helpline: 1930",
-        "National Cyber Crime Reporting Portal: cybercrime.gov.in"
-    ]
-}
-
-
-def clean_list(value, fallback):
-    if not isinstance(value, list):
-        return fallback
-    cleaned = [str(item).strip() for item in value if str(item).strip()]
-    return cleaned if cleaned else fallback
-
 
 def generate_safe_next(
     final_score=0,
@@ -41,50 +11,42 @@ def generate_safe_next(
     screenshot_result=None,
     phone_result=None,
     fingerprint=None,
-    attack_chain=None
+    attack_chain=None,
+    language="English"
 ) -> dict:
+    target_lang = str(language or "English").strip()
     link_result = link_result or {}
     screenshot_result = screenshot_result or {}
     phone_result = phone_result or {}
     fingerprint = fingerprint or {}
     attack_chain = attack_chain or {}
 
-    incident_report = f"""
-INCIDENT CONTEXT:
-Overall Threat Score: {final_score}/100 ({verdict})
-User Message: {message}
-Target Link / Domain: {link_result.get("final_domain") or link_result.get("domain") or "N/A"}
-Website Scam Analysis: {link_result.get("scam_explanation", "")}
-Webpage Threat Findings: {json.dumps(link_result.get("reasons", []))}
-Screenshot OCR Transcribed: {screenshot_result.get("detected_text", "")}
-Phone Reputation: {phone_result.get("reputation", "UNKNOWN")}
-Scam Fingerprint: {json.dumps(fingerprint)}
-Attack Chain: {json.dumps(attack_chain)}
-"""
-
     prompt = f"""
-You are SafeNext AI, an incident response cybersecurity expert.
-Analyze the following security incident and generate structured, actionable, and defensive recovery steps.
+You are SafeNext AI, an incident response cybersecurity coach.
+Analyze this incident and generate guidance:
 
-{incident_report}
+Threat Score: {final_score}/100 ({verdict})
+Message: {message}
+Domain: {link_result.get("final_domain") or link_result.get("domain") or "N/A"}
+Phone Reputation: {phone_result.get("reputation", "UNKNOWN")}
 
-CRITICAL RULES:
-- Output MUST be 100% in professional ENGLISH.
-- Tailor advice to the specific attack vectors identified (phishing, fake UPI, banking, KYC, or impersonation).
-- Return ONLY valid JSON matching this schema:
+CRITICAL MULTILINGUAL INSTRUCTION:
+- The user requested response in: "{target_lang}".
+- "recommended_action", "why_dangerous", "immediate_steps", and "recovery_steps" MUST BE FULLY GENERATED IN "{target_lang}" using its native script (Tamil, Russian, Spanish, Bengali, Urdu, Hindi, German, etc.).
+- Helplines should reference 1930 and cybercrime.gov.in.
+
+Return ONLY valid JSON:
 {{
-    "recommended_action": "Clear, direct single recommendation in English.",
-    "why_dangerous": "2-3 sentences explaining why this specific lure is dangerous.",
+    "recommended_action": "Clear single recommendation strictly in {target_lang}",
+    "why_dangerous": "2-3 sentences explaining why it is dangerous strictly in {target_lang}",
     "immediate_steps": [
-        "First immediate defensive step in English",
-        "Second step",
-        "Third step",
-        "Fourth step"
+        "First step strictly in {target_lang}",
+        "Second step strictly in {target_lang}",
+        "Third step strictly in {target_lang}"
     ],
     "recovery_steps": [
-        "First post-incident recovery step in English",
-        "Second step",
-        "Third step"
+        "Recovery step 1 strictly in {target_lang}",
+        "Recovery step 2 strictly in {target_lang}"
     ],
     "helplines": [
         "National Cyber Crime Helpline: 1930",
@@ -95,32 +57,30 @@ CRITICAL RULES:
 
     try:
         data = call_openrouter(prompt)
+        if isinstance(data, dict):
+            immediate = [str(x) for x in data.get("immediate_steps", []) if str(x).strip()]
+            recovery = [str(x) for x in data.get("recovery_steps", []) if str(x).strip()]
+            return {
+                "recommended_action": str(data.get("recommended_action") or "Do not interact with the suspicious sender."),
+                "why_dangerous": str(data.get("why_dangerous") or "Potential cybersecurity deception risk."),
+                "immediate_steps": immediate or ["Do not share OTPs, PINs, or credentials."],
+                "recovery_steps": recovery or ["Report incident to cybercrime.gov.in or 1930."],
+                "helplines": [
+                    "National Cyber Crime Helpline: 1930",
+                    "National Cyber Crime Reporting Portal: cybercrime.gov.in"
+                ],
+                "safe_next": immediate,
+                "language": target_lang
+            }
     except Exception:
-        return {
-            **DEFAULT_SAFE_NEXT,
-            "safe_next": DEFAULT_SAFE_NEXT["immediate_steps"],
-            "language": "en"
-        }
-
-    if not isinstance(data, dict):
-        return {
-            **DEFAULT_SAFE_NEXT,
-            "safe_next": DEFAULT_SAFE_NEXT["immediate_steps"],
-            "language": "en"
-        }
-
-    recommended_action = str(data.get("recommended_action") or DEFAULT_SAFE_NEXT["recommended_action"]).strip()
-    why_dangerous = str(data.get("why_dangerous") or DEFAULT_SAFE_NEXT["why_dangerous"]).strip()
-    immediate = clean_list(data.get("immediate_steps"), DEFAULT_SAFE_NEXT["immediate_steps"])
-    recovery = clean_list(data.get("recovery_steps"), DEFAULT_SAFE_NEXT["recovery_steps"])
-    helplines = clean_list(data.get("helplines"), DEFAULT_SAFE_NEXT["helplines"])
+        pass
 
     return {
-        "recommended_action": recommended_action,
-        "why_dangerous": why_dangerous,
-        "immediate_steps": immediate,
-        "recovery_steps": recovery,
-        "helplines": helplines,
-        "safe_next": immediate,
-        "language": "en"
+        "recommended_action": "Do not interact with suspicious sender or link.",
+        "why_dangerous": "Risk of credential theft or unauthorized transactions.",
+        "immediate_steps": ["Do not share OTPs or click unknown links."],
+        "recovery_steps": ["Contact authorities or call 1930 immediately."],
+        "helplines": ["National Cyber Crime Helpline: 1930", "Portal: cybercrime.gov.in"],
+        "safe_next": ["Do not share OTPs or click unknown links."],
+        "language": target_lang
     }

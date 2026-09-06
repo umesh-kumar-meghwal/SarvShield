@@ -2,54 +2,41 @@
 from ai_helper import call_openrouter
 
 
-def message_detect(message: str) -> dict:
+def message_detect(message: str, language: str = "English") -> dict:
+    target_lang = str(language or "English").strip()
+
     if not message or not str(message).strip():
         return {
             "score": 0,
             "verdict": "NO MESSAGE",
-            "language": "unknown",
+            "language": target_lang,
             "scam_type": "none",
-            "reasons": ["No message content was provided for analysis."]
+            "reasons": ["No message provided."]
         }
 
-    message = str(message).strip()
-    if len(message) > 10000:
-        message = message[:10000]
+    message = str(message).strip()[:10000]
 
     prompt = f"""
-You are a professional cybersecurity threat-classification engine.
-Analyze the EXACT message provided below for scams, phishing, social engineering, impersonation, credential theft, or fraud.
+You are a global cybersecurity threat detection engine.
+Analyze the message below for scam, phishing, impersonation, credential harvesting, or financial fraud:
 
-MESSAGE TO ANALYZE:
+MESSAGE:
 {message}
 
-ANALYSIS RULES:
-1. Always output all text and reasons strictly in ENGLISH.
-2. Evidence-based scoring: 
-   - 0-19: Safe/Routine institutional or personal message.
-   - 20-49: Low Risk.
-   - 50-69: Suspicious / Unverified signals.
-   - 70-89: High Risk / Phishing / Deception.
-   - 90-100: Very High Risk / Critical credential harvesting or financial fraud.
-3. Verdict MUST match the score:
-   - 0-49: "LOW RISK"
-   - 50-69: "SUSPICIOUS"
-   - 70-89: "HIGH RISK"
-   - 90-100: "VERY HIGH RISK"
-4. scam_type MUST be one of:
-   "phishing", "impersonation", "financial fraud", "OTP/credential theft", "fake reward/prize",
-   "job scam", "investment scam", "loan scam", "delivery/payment scam", "account takeover",
-   "extortion/threat", "other", "none".
+CRITICAL MULTILINGUAL INSTRUCTION:
+- The user requested output in: "{target_lang}".
+- Write ALL human-readable reasons in the "reasons" array STRICTLY in "{target_lang}" using its native alphabet/script (e.g., if Bengali, use Bengali script; if Arabic, use Arabic script; if Russian, Cyrillic; if Tamil, Tamil script, etc.).
+- The JSON keys and verdict ("LOW RISK", "SUSPICIOUS", "HIGH RISK", "VERY HIGH RISK") must stay in English.
 
 Return ONLY valid JSON matching this schema:
 {{
     "score": 0,
     "verdict": "LOW RISK",
-    "language": "English",
+    "language": "{target_lang}",
     "scam_type": "none",
     "reasons": [
-        "First evidence-based reason in English.",
-        "Second reason in English."
+        "First evidence-based reason strictly in {target_lang}.",
+        "Second reason strictly in {target_lang}."
     ]
 }}
 """
@@ -60,35 +47,28 @@ Return ONLY valid JSON matching this schema:
             return {
                 "score": 0,
                 "verdict": "UNKNOWN",
-                "language": "English",
+                "language": target_lang,
                 "scam_type": "none",
-                "reasons": ["Message analysis could not be completed."]
+                "reasons": ["Analysis completed."]
             }
 
         score = max(0, min(int(data.get("score", 0) or 0), 100))
-
-        if score <= 49:
-            verdict = "LOW RISK"
-        elif score <= 69:
-            verdict = "SUSPICIOUS"
-        elif score <= 89:
-            verdict = "HIGH RISK"
-        else:
-            verdict = "VERY HIGH RISK"
-
-        scam_type = str(data.get("scam_type") or "none").strip()
-        if score < 50:
-            scam_type = "none"
+        verdict = str(data.get("verdict") or (
+            "VERY HIGH RISK" if score >= 80 else
+            "HIGH RISK" if score >= 60 else
+            "SUSPICIOUS" if score >= 30 else
+            "LOW RISK"
+        )).upper()
 
         reasons = data.get("reasons", [])
         if not isinstance(reasons, list) or not reasons:
-            reasons = ["No critical threat indicators detected in the message text."]
+            reasons = ["Analysis completed."]
 
         return {
             "score": score,
             "verdict": verdict,
-            "language": str(data.get("language") or "English"),
-            "scam_type": scam_type,
+            "language": target_lang,
+            "scam_type": str(data.get("scam_type") or "none"),
             "reasons": [str(r) for r in reasons[:4]]
         }
 
@@ -96,7 +76,7 @@ Return ONLY valid JSON matching this schema:
         return {
             "score": 0,
             "verdict": "UNKNOWN",
-            "language": "English",
+            "language": target_lang,
             "scam_type": "none",
-            "reasons": [f"Message analysis error: {str(e)}"]
+            "reasons": [f"Error: {str(e)}"]
         }

@@ -2,7 +2,9 @@
 from ai_helper import call_openrouter
 
 
-def screenshot_detect(image_data) -> dict:
+def screenshot_detect(image_data, language: str = "English") -> dict:
+    target_lang = str(language or "English").strip()
+
     if not image_data:
         return {
             "score": 0,
@@ -12,32 +14,27 @@ def screenshot_detect(image_data) -> dict:
             "category": "Unknown"
         }
 
-    prompt = """
+    prompt = f"""
 You are an expert cybersecurity visual forensic examiner.
-Analyze this uploaded screenshot carefully for scams, phishing, fake UPI/banking screenshots, fake payment confirmations, fraudulent login portals, fake lottery notifications, or impersonation.
+Analyze this screenshot for phishing, fake payment slips (like UPI/Paytm), fake lottery, or credential theft.
 
-INSTRUCTIONS:
-1. Transcribe any visible key text into 'detected_text'.
-2. Identify threat signals and explain them in clear ENGLISH.
-3. Compute an accurate threat score between 0 and 100.
-4. Output MUST be valid JSON matching this exact structure:
-{
+CRITICAL MULTILINGUAL INSTRUCTION:
+- The user requested output in: "{target_lang}".
+- ALL descriptive forensic points in the "reasons" array MUST BE WRITTEN FULLY IN "{target_lang}" using its native writing script.
+- "detected_text" must contain the original text transcribed from the image.
+- "category" and "verdict" remain standard English.
+
+Return valid JSON:
+{{
   "score": 0,
   "verdict": "LOW RISK",
   "reasons": [
-    "Specific visual/textual evidence found in screenshot in English",
-    "Second reason in English"
+    "Specific visual evidence strictly in {target_lang}",
+    "Second reason strictly in {target_lang}"
   ],
   "detected_text": "Transcribed text from image",
   "category": "Phishing / Fake UPI / Fake Bill / Safe / Unknown"
-}
-
-Scoring Scale:
-0-19: LOW RISK
-20-39: SUSPICIOUS
-40-59: MEDIUM RISK
-60-79: HIGH RISK
-80-100: VERY HIGH RISK
+}}
 """
 
     try:
@@ -46,7 +43,7 @@ Scoring Scale:
             return {
                 "score": 0,
                 "verdict": "UNKNOWN",
-                "reasons": ["AI visual analysis returned an invalid response."],
+                "reasons": ["Visual analysis returned invalid response."],
                 "detected_text": "",
                 "category": "Unknown"
             }
@@ -54,7 +51,7 @@ Scoring Scale:
         score = max(0, min(int(data.get("score", 0) or 0), 100))
         reasons = data.get("reasons", [])
         if not isinstance(reasons, list) or not reasons:
-            reasons = ["Visual scan completed with no obvious threat signatures detected."]
+            reasons = ["Visual scan completed."]
 
         verdict = str(data.get("verdict") or (
             "VERY HIGH RISK" if score >= 80 else
@@ -76,7 +73,7 @@ Scoring Scale:
         return {
             "score": 0,
             "verdict": "UNKNOWN",
-            "reasons": [f"Screenshot AI analysis could not be completed: {str(e)}"],
+            "reasons": [f"Error: {str(e)}"],
             "detected_text": "",
             "category": "Unknown"
         }
