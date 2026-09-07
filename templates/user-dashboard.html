@@ -710,7 +710,7 @@
         }
 
   // =====================================================
-
+// MULTI-LANGUAGE AUDIO ENGINE (BROWSER SPEECH SYNTHESIS)
 // =====================================================
 const speakBtn = document.getElementById("speak-btn");
 const resultContainer = document.getElementById("result");
@@ -718,40 +718,51 @@ const resultContainer = document.getElementById("result");
 let isPlaying = false;
 let audioQueue = [];
 let queueIndex = 0;
-let currentAudio = null;
+window.currentUtterance = null; // Prevents Chrome garbage collection bug
 
- 
+// BCP-47 language codes map for all supported languages
 const allLanguagesMap = {
-    'Punjabi': 'pa',
-    'Hindi': 'hi',
-    'Hinglish': 'hi',
-    'Marathi': 'mr',
-    'Gujarati': 'gu',
-    'Bengali': 'bn',
-    'Tamil': 'ta',
-    'Telugu': 'te',
-    'Kannada': 'kn',
-    'Malayalam': 'ml',
-    'Urdu': 'ur',
-    'English': 'en',
-    'Spanish': 'es',
-    'French': 'fr',
-    'German': 'de',
-    'Russian': 'ru',
-    'Arabic': 'ar',
+    'Punjabi': 'pa-IN',
+    'Hindi': 'hi-IN',
+    'Hinglish': 'hi-IN',
+    'Marathi': 'mr-IN',
+    'Gujarati': 'gu-IN',
+    'Bengali': 'bn-IN',
+    'Tamil': 'ta-IN',
+    'Telugu': 'te-IN',
+    'Kannada': 'kn-IN',
+    'Malayalam': 'ml-IN',
+    'Urdu': 'ur-PK',
+    'English': 'en-IN',
+    'Spanish': 'es-ES',
+    'French': 'fr-FR',
+    'German': 'de-DE',
+    'Russian': 'ru-RU',
+    'Arabic': 'ar-SA',
     'Chinese': 'zh-CN',
-    'Japanese': 'ja',
-    'Portuguese': 'pt'
+    'Japanese': 'ja-JP',
+    'Portuguese': 'pt-PT'
 };
 
+// Preload available browser voices
+let systemVoices = [];
+function loadSystemVoices() {
+    systemVoices = window.speechSynthesis.getVoices();
+}
+loadSystemVoices();
+if (window.speechSynthesis.onvoiceschanged !== undefined) {
+    window.speechSynthesis.onvoiceschanged = loadSystemVoices;
+}
 
+// 1. Extract clean text from the dynamic result container
 function getCleanResultText() {
     if (!resultContainer || resultContainer.innerText.trim() === "") {
         return "";
     }
 
     const clone = resultContainer.cloneNode(true);
-   
+    
+    // Remove unwanted interactive elements like buttons, links, and icons
     const unwanted = clone.querySelectorAll('button, a, svg, i, script, style');
     unwanted.forEach(el => el.remove());
 
@@ -766,9 +777,8 @@ function getCleanResultText() {
     return clean;
 }
 
-
+// 2. Split long text into sentence chunks to prevent audio cutoffs
 function splitTextIntoSentences(text) {
-  
     const rawSentences = text.split(/[।.\n!?]+/);
     let chunks = [];
     let current = "";
@@ -777,7 +787,7 @@ function splitTextIntoSentences(text) {
         let trimmed = s.trim();
         if (!trimmed) return;
 
-        if ((current + " " + trimmed).length < 130) {
+        if ((current + " " + trimmed).length < 120) {
             current += (current ? " " : "") + trimmed;
         } else {
             if (current) chunks.push(current);
@@ -789,9 +799,33 @@ function splitTextIntoSentences(text) {
     return chunks;
 }
 
+// 3. Find matching voice from system voices
+function findMatchingVoice(targetLangCode, langName) {
+    if (!systemVoices || systemVoices.length === 0) {
+        systemVoices = window.speechSynthesis.getVoices();
+    }
 
+    const prefix = targetLangCode.split('-')[0].toLowerCase();
+
+    // Priority 1: Exact language match (e.g. pa-IN, mr-IN)
+    let match = systemVoices.find(v => v.lang && v.lang.toLowerCase().replace('_', '-') === targetLangCode.toLowerCase());
+    if (match) return match;
+
+    // Priority 2: Language prefix match (e.g. pa, mr, gu)
+    match = systemVoices.find(v => v.lang && v.lang.toLowerCase().startsWith(prefix));
+    if (match) return match;
+
+    // Priority 3: Name match (e.g. "Punjabi", "Marathi")
+    match = systemVoices.find(v => v.name && v.name.toLowerCase().includes(langName.toLowerCase()));
+    if (match) return match;
+
+    // Fallback: Default Indian English or first available voice
+    return systemVoices.find(v => v.lang && v.lang.includes("IN")) || null;
+}
+
+// 4. Speak button click handler
 speakBtn.addEventListener("click", function () {
-    
+    // If already playing, stop playback
     if (isPlaying) {
         stopAllPlayback();
         return;
@@ -800,33 +834,31 @@ speakBtn.addEventListener("click", function () {
     const cleanText = getCleanResultText();
 
     if (!cleanText) {
-        alert("⚠️ First 'Run Scam Analysis' button Press ");
+        alert("Please run 'Run Scam Analysis' first to get the result!");
         return;
     }
 
-    
     const selectedLangName = document.getElementById("language").value;
-    const langCode = allLanguagesMap[selectedLangName] || "en";
+    const targetLangCode = allLanguagesMap[selectedLangName] || "en-IN";
 
-     
     audioQueue = splitTextIntoSentences(cleanText);
     queueIndex = 0;
 
     if (audioQueue.length === 0) {
-        alert("⚠️ Not Text To Reading");
+        alert("No readable text found in the result section.");
         return;
     }
 
     isPlaying = true;
-    speakBtn.innerHTML = `<i class="fa-solid fa-circle-stop text-rose-500 animate-pulse text-base"></i> <span class="text-rose-400 font-bold">${selectedLangName}  (Stop)</span>`;
+    speakBtn.innerHTML = `<i class="fa-solid fa-circle-stop text-rose-500 animate-pulse text-base"></i> <span class="text-rose-400 font-bold">Speaking in ${selectedLangName}... (Click to Stop)</span>`;
     speakBtn.classList.add("border-rose-500/50");
 
-   
-    playNextSentence(langCode);
+    // Start playing sequential sentences
+    playNextSentence(targetLangCode, selectedLangName);
 });
 
-
-function playNextSentence(langCode) {
+// 5. Play sentences sequentially without interruptions
+function playNextSentence(targetLangCode, langName) {
     if (!isPlaying || queueIndex >= audioQueue.length) {
         stopAllPlayback();
         return;
@@ -835,43 +867,51 @@ function playNextSentence(langCode) {
     const sentence = audioQueue[queueIndex];
     queueIndex++;
 
-    const encodedText = encodeURIComponent(sentence);
-    
-    const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${langCode}&q=${encodedText}`;
+    window.speechSynthesis.resume();
 
-    currentAudio = new Audio(audioUrl);
+    const utterance = new SpeechSynthesisUtterance(sentence);
+    window.currentUtterance = utterance; // Prevent garbage collector pause
 
-    currentAudio.onended = function () {
-        playNextSentence(langCode);
+    utterance.lang = targetLangCode;
+    utterance.rate = 0.95; // Natural speaking rate
+    utterance.pitch = 1.0;
+
+    const matchedVoice = findMatchingVoice(targetLangCode, langName);
+    if (matchedVoice) {
+        utterance.voice = matchedVoice;
+    }
+
+    let isDone = false;
+
+    utterance.onend = function () {
+        if (!isDone) {
+            isDone = true;
+            playNextSentence(targetLangCode, langName); // Next sentence
+        }
     };
 
-    currentAudio.onerror = function (e) {
-        console.warn("Audio segment skipped, moving to next.", e);
-        playNextSentence(langCode); 
+    utterance.onerror = function (e) {
+        console.warn("Speech error, proceeding to next sentence:", e);
+        if (!isDone) {
+            isDone = true;
+            playNextSentence(targetLangCode, langName);
+        }
     };
 
-    currentAudio.play().catch(err => {
-        console.error("Playback error:", err);
-       
-        playNextSentence(langCode);
-    });
+    window.speechSynthesis.speak(utterance);
 }
 
-
+// 6. Stop all speech playback and reset button state
 function stopAllPlayback() {
     isPlaying = false;
     audioQueue = [];
     queueIndex = 0;
 
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio = null;
-    }
     if (window.speechSynthesis) {
         window.speechSynthesis.cancel();
     }
 
-    speakBtn.innerHTML = `<i class="fa-solid fa-volume-high text-base"></i> <span>🔊 (Speak Result)</span>`;
+    speakBtn.innerHTML = `<i class="fa-solid fa-volume-high text-base"></i> <span>🔊 Speak Result</span>`;
     speakBtn.classList.remove("border-rose-500/50");
 }
     </script>
