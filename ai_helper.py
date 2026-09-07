@@ -16,7 +16,7 @@ OPENROUTER_MAX_TOKENS = int(os.getenv("OPENROUTER_MAX_TOKENS", "1000"))
 OPENROUTER_SITE_URL = os.getenv("OPENROUTER_SITE_URL", "http://localhost:5000").strip()
 OPENROUTER_APP_NAME = os.getenv("OPENROUTER_APP_NAME", "SarvShield").strip()
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-REQUEST_TIMEOUT = 30
+REQUEST_TIMEOUT = 120
 
 # Verified Active Free Models on OpenRouter (Updated)
 FREE_TEXT_MODELS = [
