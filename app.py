@@ -620,6 +620,291 @@ def scam_report():
         return jsonify({"success": False, "message": str(e)}), 500
 
 
+@app.route("/user-show", methods=["GET"])
+def user_show():
+    if "email" not in session or session.get("usertype") != "admin":
+        return redirect("/error")
+    try:
+        result = supabase.table("user").select("name, email, phone, address, profile_picture").execute()
+        return render_template("user-show.html", users=result.data or [])
+    except Exception as e:
+        return f"Error: {str(e)}", 500
+    
+    
+    
+    
+@app.route("/user-edit/<email>", methods=["GET", "POST"])
+def user_edit(email):
+
+    if "email" not in session or session.get("usertype") != "admin":
+        return redirect("/error")
+
+    try:
+
+        # =========================================
+        # GET USER
+        # =========================================
+
+        if request.method == "GET":
+
+            result = (
+                supabase
+                .table("user")
+                .select(
+                    "name, email, phone, address, profile_picture"
+                )
+                .eq("email", email)
+                .execute()
+            )
+
+            if not result.data:
+                return "User not found", 404
+
+            return render_template(
+                "user-edit.html",
+                user=result.data[0]
+            )
+
+
+        # =========================================
+        # POST / UPDATE USER
+        # =========================================
+
+        name = request.form.get("name", "").strip()
+        phone = request.form.get("phone", "").strip()
+        address = request.form.get("address", "").strip()
+
+        update_data = {
+            "name": name,
+            "phone": phone,
+            "address": address
+        }
+
+
+        # =========================================
+        # PROFILE PICTURE
+        # =========================================
+
+        profile_picture = request.files.get("profile_picture")
+
+        if profile_picture and profile_picture.filename:
+
+            filename = secure_filename(profile_picture.filename)
+
+            allowed_extensions = {
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+            }
+
+            extension = filename.rsplit(".", 1)[-1].lower()
+
+            if extension not in allowed_extensions:
+
+                return jsonify({
+                    "success": False,
+                    "message": "Only JPG, JPEG, PNG and WEBP images are allowed."
+                }), 400
+
+
+            # =====================================
+            # DELETE OLD PROFILE PICTURES
+            # =====================================
+
+            bucket = supabase.storage.from_("profile-pictures")
+
+            old_files = bucket.list(email)
+
+            print("Old files:", old_files)
+
+
+            if old_files:
+
+                old_file_paths = []
+
+                for old_file in old_files:
+
+                    old_file_name = old_file.get("name")
+
+                    if old_file_name:
+
+                        old_file_paths.append(
+                            f"{email}/{old_file_name}"
+                        )
+
+
+                if old_file_paths:
+
+                    print(
+                        "Deleting old files:",
+                        old_file_paths
+                    )
+
+                    bucket.remove(old_file_paths)
+
+
+            # =====================================
+            # UPLOAD NEW PROFILE PICTURE
+            # =====================================
+
+            file_path = f"{email}/profile.{extension}"
+
+            file_bytes = profile_picture.read()
+
+
+            bucket.upload(
+                file_path,
+                file_bytes,
+                file_options={
+                    "content-type": profile_picture.content_type,
+                    "upsert": "true"
+                }
+            )
+
+
+            # =====================================
+            # GET PUBLIC URL
+            # =====================================
+
+            public_url = bucket.get_public_url(file_path)
+
+
+            update_data["profile_picture"] = public_url
+
+
+        # =========================================
+        # UPDATE USER TABLE
+        # =========================================
+
+        result = (
+            supabase
+            .table("user")
+            .update(update_data)
+            .eq("email", email)
+            .execute()
+        )
+
+
+        print("User Updated:", result)
+
+
+        return jsonify({
+            "success": True,
+            "message": "User updated successfully!"
+        }), 200
+
+
+    except Exception as e:
+
+        print("User Edit Error:", e)
+
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
+
+from urllib.parse import unquote
+
+@app.route("/scamcheck-userhistory/<path:email>", methods=["GET"])
+def scamcheck_userhistory(email):
+
+    if "email" not in session or session.get("usertype") != "admin":
+        return jsonify({
+            "success": False,
+            "message": "Unauthorized"
+        }), 403
+
+    try:
+        # Decode email if it is URL encoded
+        email = unquote(email).strip().lower()
+
+        print("HISTORY EMAIL:", repr(email))
+
+        result = (
+            supabase
+            .table("scam_checks")
+            .select("*")
+            .eq("user_email", email)
+            .order("created_at", desc=True)
+            .execute()
+        )
+
+        history = result.data or []
+
+        print("HISTORY COUNT:", len(history))
+
+        return render_template(
+            "scamcheck-userhistory",
+            history=history,
+            email=email
+        )
+
+    except Exception as e:
+        print("Scam Check History Error:", repr(e))
+
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
+
+@app.route("/admin-show", methods=["GET"])
+def admin_show():
+    if "email" not in session or session.get("usertype") != "admin":
+        return redirect("/error")
+    try:
+        result = supabase.table("admin").select("name, email, phone, address").execute()
+        return render_template("admin-show.html", admins=result.data or [])
+    except Exception as e:
+        return f"Error: {str(e)}", 500
+    
+@app.route("/admin-register", methods=["GET", "POST"])
+def admin_register():
+    if "email" not in session or session.get("usertype") != "admin":
+        return redirect("/error")
+
+    if request.method == "GET":
+
+        return render_template("admin-register.html")
+
+    try:
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "").strip()
+        address = request.form.get("address", "").strip()
+        phone = request.form.get("phone", "").strip()
+
+        if not name or not email or not password or not address:
+            return jsonify({"success": False, "message": "All fields are required"}), 400
+
+        existing = supabase.table("login").select("email").eq("email", email).execute()
+        if existing.data:
+            return jsonify({"success": False, "message": "Admin email already registered"}), 409
+
+        supabase.table("admin").insert({"name": name, "email": email, "phone": phone, "address": address}).execute()
+        supabase.table("login").insert({"email": email, "password": generate_password_hash(password), "usertype": "admin"}).execute()
+
+        return jsonify({"success": True, "message": "Admin registered successfully!"}), 201
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+
+@app.route("/feedbacks")
+def feedbacks():
+    try:
+        response = supabase.table("feedback").select("email, message, rating, created_at").order("created_at", desc=True).execute()
+
+        feedback_data = response.data or []
+
+        return render_template(
+            "feedbacks.html",
+            feedbacks=feedback_data
+        )
+
+    except Exception as e:
+        print("Feedback Error:", e)
+        return "Unable to fetch feedbacks", 500    
 
 @app.route("/my-profile", methods=["GET", "POST"])
 def my_profile():
@@ -738,22 +1023,6 @@ def my_profile():
 
 
 
-
-@app.route("/feedbacks")
-def feedbacks():
-    try:
-        response = supabase.table("feedback").select("email, message, rating, created_at").order("created_at", desc=True).execute()
-
-        feedback_data = response.data or []
-
-        return render_template(
-            "feedbacks.html",
-            feedbacks=feedback_data
-        )
-
-    except Exception as e:
-        print("Feedback Error:", e)
-        return "Unable to fetch feedbacks", 500
 
 @app.route("/feedback", methods=["GET", "POST"])
 def feedback():
@@ -1031,6 +1300,217 @@ def change_password():
             )
 
     return render_template("change-password.html")
+
+
+
+
+
+@app.route("/user-view/<email>")
+def user_view(email):
+
+    if "email" not in session or session.get("usertype") != "admin":
+        return redirect("/error")
+
+    try:
+
+        result = (
+            supabase
+            .table("user")
+            .select(
+                "name, email, phone, address, profile_picture"
+            )
+            .eq("email", email)
+            .execute()
+        )
+
+        if not result.data:
+            return "User not found", 404
+
+        return render_template(
+            "user-view.html",
+            user=result.data[0]
+        )
+
+    except Exception as e:
+
+        print("User View Error:", e)
+
+        return "Something went wrong", 500
+
+@app.route("/report-userhistory-delete/<id>", methods=["POST"])
+def report_userhistory_delete(id):
+
+    if "email" not in session or session.get("usertype") != "admin":
+        return jsonify({
+            "success": False,
+            "message": "Unauthorized"
+        }), 403
+
+    try:
+
+        result = (
+            supabase
+            .table("scam_reports")
+            .delete()
+            .eq("id", id)
+            .execute()
+        )
+
+        return jsonify({
+            "success": True,
+            "message": "Report deleted successfully!"
+        }), 200
+
+    except Exception as e:
+
+        print("Delete Report Error:", e)
+
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
+@app.route("/scamcheck-userhistory-view/<id>", methods=["GET"])
+def scamcheck_userhistory_view(id):
+
+    if "email" not in session or session.get("usertype") != "admin":
+        return redirect("/error")
+
+    try:
+
+        result = (
+            supabase
+            .table("scam_checks")
+            .select("*")
+            .eq("id", id)
+            .single()
+            .execute()
+        )
+
+        if not result.data:
+            return "Scam check history not found", 404
+
+        scan = result.data
+
+        return render_template(
+            "scamcheck-userhistory-view.html",
+            scan=scan
+        )
+
+    except Exception as e:
+
+        print("Scam Check User History View Error:", e)
+
+        return "Something went wrong", 500
+@app.route("/report-userhistory-edit/<id>", methods=["GET", "POST"])
+def report_userhistory_edit(id):
+
+    if "email" not in session or session.get("usertype") != "admin":
+        return redirect("/error")
+
+    try:
+
+        # ==============================
+        # GET
+        # ==============================
+
+        if request.method == "GET":
+
+            result = (
+                supabase
+                .table("scam_reports")
+                .select("*")
+                .eq("id", id)
+                .single()
+                .execute()
+            )
+
+            if not result.data:
+                return "Report not found", 404
+
+            return render_template(
+                "report-userhistory-edit.html",
+                report=result.data
+            )
+
+
+        # ==============================
+        # POST
+        # ==============================
+
+        phone = request.form.get("phone", "").strip()
+        link = request.form.get("link", "").strip()
+        reason = request.form.get("reason", "").strip()
+
+
+        supabase \
+            .table("scam_reports") \
+            .update({
+                "phone": phone,
+                "link": link,
+                "reason": reason
+            }) \
+            .eq("id", id) \
+            .execute()
+
+
+        return jsonify({
+            "success": True,
+            "message": "Report updated successfully!"
+        }), 200
+
+
+    except Exception as e:
+
+        print("Edit Report Error:", e)
+
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
+
+
+@app.route("/report-userhistory/<path:email>", methods=["GET"])
+def report_userhistory(email):
+
+    if "email" not in session or session.get("usertype") != "admin":
+        return jsonify({
+            "success": False,
+            "message": "Unauthorized"
+        }), 403
+
+    try:
+        # Decode URL-encoded email
+        email = unquote(email).strip().lower()
+
+        print("REPORT HISTORY EMAIL:", repr(email))
+
+        result = (
+            supabase
+            .table("scam_reports")
+            .select("*")
+            .eq("user_email", email)
+            .order("created_at", desc=True)
+            .execute()
+        )
+
+        reports = result.data or []
+
+        print("REPORT HISTORY COUNT:", len(reports))
+
+        return render_template(
+            "report-userhistory",
+            reports=reports,
+            email=email
+        )
+
+    except Exception as e:
+        print("Report History Error:", repr(e))
+
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
+
 
 @app.route("/scam-result/<int:scan_id>")
 def scam_result_detail(scan_id):
