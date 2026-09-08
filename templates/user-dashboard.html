@@ -290,7 +290,10 @@
                 <!-- =====================================================
                      SPEAKER BUTTON (Styled & Responsive)
                 ===================================================== -->
-                
+                <button type="button" id="speak-btn" class="w-full py-3 rounded-2xl bg-dark-card border border-dark-border hover:bg-dark-hover text-blue-400 font-bold text-xs sm:text-sm shadow-md transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-volume-high text-base"></i>
+                    <span>Speak Result</span>
+                </button>
 
                 <!-- =====================================================
                      DYNAMIC RESULT CONTAINER
@@ -573,15 +576,10 @@
                         </span>
                     </div>
                     <div class="flex items-center gap-2">
-                    <button type="button" id="speak-btn" class="w-full py-3 rounded-2xl bg-dark-card border border-dark-border hover:bg-dark-hover text-blue-400 font-bold text-xs sm:text-sm shadow-md transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-volume-high text-base"></i>
-                    <span>Speak Result</span>
-                </button>
                         <span class="text-xs text-slate-400 font-bold">Easy Mode:</span>
                         <button onclick="toggleEasyMode()" class="px-3 py-1 rounded-lg text-xs font-bold transition ${isEasyMode ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'bg-dark-cardLight text-slate-400 border border-dark-border'}">
                             ${isEasyMode ? 'ON (Elderly Friendly)' : 'OFF'}
                         </button>
-
                     </div>
                 </div>
 

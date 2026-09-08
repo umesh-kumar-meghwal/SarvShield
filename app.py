@@ -226,8 +226,6 @@ def user_register():
 @app.route("/scamcheck", methods=["GET", "POST"])
 def scamcheck_check():
     if request.method == "GET":
-        if "email" not in session or session.get("usertype") != "user":
-                return redirect("/error")
         user_email = session.get("email")
         user_data = {}
         if user_email:
