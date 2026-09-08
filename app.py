@@ -7,6 +7,8 @@ import random
 import smtplib
 import secrets
 import traceback
+from flask_cors import CORS
+import requests
 from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
 from urllib.parse import urlparse, unquote
@@ -30,6 +32,7 @@ from scam_fingerprint import build_scam_fingerprint
 from safe_next import generate_safe_next
 
 app = Flask(__name__)
+CORS(app)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "scamcheck-prod-secret-key")
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB Max Upload
 
@@ -223,6 +226,8 @@ def user_register():
 @app.route("/scamcheck", methods=["GET", "POST"])
 def scamcheck_check():
     if request.method == "GET":
+        if "email" not in session or session.get("usertype") != "user":
+                return redirect("/error")
         user_email = session.get("email")
         user_data = {}
         if user_email:
@@ -1613,6 +1618,15 @@ def user_trust():
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+
+
+
+
+
+
+
 
 
 # =========================================================

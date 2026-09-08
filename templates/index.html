@@ -1,48 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>SarvShield | Explainable Threat Intelligence</title>
 
-    <!-- Google Font -->
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef6ff',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        },
+                        dark: {
+                            base: '#060B13',
+                            sidebar: '#080E1A',
+                            card: '#0D1728',
+                            cardLight: '#121F36',
+                            border: '#1E293B',
+                            hover: '#182744'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #060B13; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet"
-    >
+    <!-- FontAwesome Icons CDN (Required for Chatbot & UI icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Flask Static CSS -->
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}"
-    >
-
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='index.css') }}"
-    >
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 </head>
 
-<body class="antialiased">
-    <!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/6a9e8ba1027c483445e2a1f5/1k1tl2sb9';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
+<body class="antialiased bg-dark-base text-slate-100">
 
+    <!-- =====================================================
+         FLOATING AI CHATBOT WIDGET
+    ===================================================== -->
+
+    <!-- 1. Floating Trigger Button (Bottom Right) -->
+   
     <!-- =========================================================
          NAVBAR
     ========================================================== -->
@@ -73,8 +98,6 @@ s0.parentNode.insertBefore(s1,s0);
                     <a href="#faq">FAQ</a>
                 </li>
             </ul>
-
-            
 
         </div>
     </nav>
@@ -128,26 +151,12 @@ s0.parentNode.insertBefore(s1,s0);
             <!-- HERO IMAGE -->
             <div class="hero-visual hero-image-animate">
 
-                <!--
-                    IMAGE WILL BE ADDED LATER.
-
-                    Example:
-
-                    <img
-                        src="{{ url_for('static', filename='images/hero-image.png') }}"
-                        alt="SarvShield threat analysis"
-                        class="hero-main-img"
-                    >
-                -->
-
                 <div class="hero-image-placeholder">
-
                    <img
                      src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y3liZXIlMjBzZWN1cml0eXxlbnwwfHwwfHx8MA%3D%3D"
-                   alt="scam shield threat anlysis"
-                   class="hero-main-img"
+                     alt="SarvShield threat analysis"
+                     class="hero-main-img"
                    >
-
                 </div>
 
             </div>
@@ -255,7 +264,6 @@ s0.parentNode.insertBefore(s1,s0);
             <div class="process-flow">
 
                 <!-- STEP 01 -->
-
                 <div class="process-step reveal-on-scroll">
 
                     <div class="step-card-large">
@@ -295,12 +303,10 @@ s0.parentNode.insertBefore(s1,s0);
 
 
                 <!-- CONNECTOR -->
-
                 <div class="step-connector animated-connector"></div>
 
 
                 <!-- STEP 02 -->
-
                 <div class="process-step reveal-on-scroll delayed-1">
 
                     <div class="step-card-large">
@@ -340,12 +346,10 @@ s0.parentNode.insertBefore(s1,s0);
 
 
                 <!-- CONNECTOR -->
-
                 <div class="step-connector animated-connector"></div>
 
 
                 <!-- STEP 03 -->
-
                 <div class="process-step reveal-on-scroll delayed-2">
 
                     <div class="step-card-large">
@@ -430,7 +434,6 @@ s0.parentNode.insertBefore(s1,s0);
 
 
             <!-- FEATURE 01 -->
-
             <div class="feature-showcase reveal-on-scroll">
 
                 <div class="feature-info">
@@ -493,7 +496,6 @@ s0.parentNode.insertBefore(s1,s0);
 
 
             <!-- FEATURE 02 -->
-
             <div class="feature-showcase reverse reveal-on-scroll">
 
                 <div class="feature-info">
@@ -558,7 +560,6 @@ s0.parentNode.insertBefore(s1,s0);
 
 
             <!-- FEATURE 03 -->
-
             <div class="feature-showcase reveal-on-scroll">
 
                 <div class="feature-info">
@@ -627,7 +628,6 @@ s0.parentNode.insertBefore(s1,s0);
 
 
             <!-- FEATURE 04 -->
-
             <div class="feature-showcase reverse reveal-on-scroll">
 
                 <div class="feature-info">
@@ -688,7 +688,6 @@ s0.parentNode.insertBefore(s1,s0);
 
 
             <!-- FEATURE 05 -->
-
             <div class="feature-showcase reveal-on-scroll">
 
                 <div class="feature-info">
@@ -801,26 +800,12 @@ s0.parentNode.insertBefore(s1,s0);
             </div>
 
 
-            <!-- IMAGE WILL BE ADDED LATER -->
-
             <div class="intelligent-defense-visual reveal-on-scroll delayed-1">
 
-                <!--
-                    Add your selected image here later.
-
-                    Example:
-
-                    <img
-                        src="{{ url_for('static', filename='images/intelligent-defense.png') }}"
-                        alt="SarvShield intelligent threat analysis"
-                        class="intelligent-defense-image"
-                    >
-                -->
-
                <img
-               src="https://plus.unsplash.com/premium_photo-1661877737564-3dfd7282efcb?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y3liZXIlMjBzZWN1cml0eXxlbnwwfHwwfHx8MA%3D%3D"
-               alt="ScamShild inteligent threat analysis"
-               class="intelligent-defense-image"
+                 src="https://plus.unsplash.com/premium_photo-1661877737564-3dfd7282efcb?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y3liZXIlMjBzZWN1cml0eXxlbnwwfHwwfHx8MA%3D%3D"
+                 alt="SarvShield intelligent threat analysis"
+                 class="intelligent-defense-image"
                >
 
             </div>
@@ -863,7 +848,6 @@ s0.parentNode.insertBefore(s1,s0);
             <div class="scam-types-layout">
 
                 <!-- SCAM TYPE LIST -->
-
                 <div class="scam-type-list reveal-on-scroll">
 
                     <div class="scam-type active">
@@ -941,7 +925,6 @@ s0.parentNode.insertBefore(s1,s0);
 
 
                 <!-- EXPLANATION PANEL -->
-
                 <div class="scam-explanation reveal-on-scroll delayed-1">
 
                     <div class="scam-explanation-header">
@@ -1201,9 +1184,8 @@ s0.parentNode.insertBefore(s1,s0);
          JAVASCRIPT
     ========================================================== -->
 
-    <script
-        src="{{ url_for('static', filename='index.js') }}"
-    ></script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
 
+    
 </body>
 </html>
