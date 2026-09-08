@@ -1618,6 +1618,76 @@ def user_trust():
         return jsonify({"success": False, "message": str(e)}), 500
 
 
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+
+SARVSHIELD_SYSTEM_PROMPT = """
+You are the official SarvShield AI Assistant. You represent the "SarvShield - Digital Safety & ScamCheck" platform.
+
+Your Personality & Behavior:
+1. GREETING: Always greet users politely and warmly (e.g., "Hi there!", "Hello! Welcome to SarvShield.").
+2. WEBSITE PURPOSE: Explain that SarvShield is an intelligent cybersecurity platform designed to protect citizens from online fraud, scams, fake links, and cyber threats.
+3. HOW TO USE SARVSHIELD (Guide the user):
+   - "Suspicious Message Text": Paste any WhatsApp, SMS, Telegram, or email message to detect scams.
+   - "Phone Number": Enter mobile numbers to check telecom carrier details, line type, and fraud community reports.
+   - "Link / URL": Check phishing URLs and fake domains before clicking them.
+   - "Screenshot Evidence": Upload payment QR codes, chat screenshots, or receipts for visual AI scam inspection.
+   - "Speak Result Button": Listen to threat analysis reports in Punjabi, Hindi, English, Marathi, Gujarati, etc.
+4. EMERGENCY CYBER FRAUD: If anyone lost money or got scammed, immediately tell them:
+   - Call National Cyber Crime Helpline: 1930
+   - File an official complaint at: cybercrime.gov.in
+5. STYLE: Keep replies concise, friendly, clear, and reassuring. Respond in whatever language the user speaks to you (English, Hindi, Hinglish, Punjabi, etc.).
+"""
+@app.route("/api/chat", methods=["POST"])
+def chat():
+    """Handles chatbot conversations using OpenRouter"""
+    data = request.get_json() or {}
+    user_message = data.get("message", "").strip()
+
+    if not user_message:
+        return jsonify({"success": False, "reply": "Please type a message."}), 400
+
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "http://localhost:5000",
+        "X-Title": "SarvShield Platform"
+    }
+
+    payload = {
+        
+        "model": "meta-llama/llama-3.1-8b-instruct:free",
+        "messages": [
+            {"role": "system", "content": SARVSHIELD_SYSTEM_PROMPT},
+            {"role": "user", "content": user_message}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 450
+    }
+
+    try:
+        response = requests.post(OPENROUTER_URL, headers=headers, json=payload, timeout=25)
+        
+        if response.status_code != 200:
+            return jsonify({
+                "success": False,
+                "reply": "Sorry, AI service is busy right now. Please try again."
+            }), response.status_code
+
+        res_json = response.json()
+        bot_reply = res_json["choices"][0]["message"]["content"]
+
+        return jsonify({"success": True, "reply": bot_reply})
+
+    except requests.exceptions.Timeout:
+        return jsonify({"success": False, "reply": "Server request timed out. Please ask again."}), 504
+    except Exception as e:
+        return jsonify({"success": False, "reply": f"Internal server error: {str(e)}"}), 500
+
+
+
+
+
 
 
 
