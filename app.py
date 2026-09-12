@@ -473,7 +473,7 @@ def history():
     if "email" not in session or session.get("usertype") != "user":
         return redirect("/error")
     user_email = session.get("email")
-    response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+    response = (supabase.table("user").select("profile_picture","email").eq("email", user_email).single().execute())
     data = response.data
     if not data:
         return redirect("/error")
@@ -491,7 +491,7 @@ def scam_report():
     user_email = session.get("email")
 
     if request.method == "GET":
-        response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+        response = (supabase.table("user").select("profile_picture","email").eq("email", user_email).single().execute())
         data = response.data
         if not data:
             return redirect("/error")
@@ -1040,7 +1040,7 @@ def feedback():
         try:
             user_profile = (
                 supabase.table("user")  # <-- Yahan 'user' table aayega
-                .select("name, profile_picture")
+                .select("name, profile_picture","email")
                 .eq("email", user_email)
                 .limit(1)
                 .execute()
@@ -1142,7 +1142,7 @@ def alerts():
     if "email" not in session or session.get("usertype") != "user":
         return redirect("/error")
     user_email = session.get("email")
-    response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+    response = (supabase.table("user").select("profile_picture","email").eq("email", user_email).single().execute())
     data = response.data
     if not data:
         return redirect("/error")
@@ -1153,7 +1153,7 @@ def learn_more():
     if "email" not in session or session.get("usertype") != "user":
             return redirect("/error")
     user_email = session.get("email")
-    response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+    response = (supabase.table("user").select("profile_picture","email").eq("email", user_email).single().execute())
     data = response.data
     if not data:
         return redirect("/error")
@@ -1190,7 +1190,7 @@ def checkscam_history():
                     .get_public_url(scan["screenshot"])
             else:
                 scan["screenshot_url"] = None
-        response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+        response = (supabase.table("user").select("profile_picture","email").eq("email", user_email).single().execute())
         data = response.data
         if not data:
             return redirect("/error")
@@ -1218,7 +1218,7 @@ def report_history():
             .execute()
         )
         reports = result.data or []
-        response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+        response = (supabase.table("user").select("profile_picture","email").eq("email", user_email).single().execute())
         data = response.data
         if not data:
             return redirect("/error")
@@ -1545,7 +1545,7 @@ def scam_result_detail(scan_id):
                 .get_public_url(scan["screenshot"])
         else:
             scan["screenshot_url"] = None
-        response = (supabase.table("user").select("profile_picture").eq("email", user_email).single().execute())
+        response = (supabase.table("user").select("profile_picture","email").eq("email", user_email).single().execute())
         data = response.data
         if not data:
             return redirect("/error")
@@ -1705,7 +1705,7 @@ def home_page():
     if "email" not in session or session.get("usertype") != "user":
         return redirect("/error")
     user_email = session.get("email")
-    response = supabase.table("user").select("profile_picture").eq("email", user_email).single().execute()
+    response = supabase.table("user").select("profile_picture","email").eq("email", user_email).single().execute()
     return render_template('home.html', data=response.data or {})
 
 
