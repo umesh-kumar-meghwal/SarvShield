@@ -230,7 +230,7 @@ def scamcheck_check():
         user_data = {}
         if user_email:
             try:
-                res = supabase.table("user").select("name, profile_picture").eq("email", user_email).limit(1).execute()
+                res = supabase.table("user").select("name, profile_picture","email").eq("email", user_email).limit(1).execute()
                 if res.data:
                     user_data = res.data[0]
             except Exception:
