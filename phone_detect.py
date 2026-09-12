@@ -267,7 +267,7 @@ def phone_detect(supabase, phone: str, language: str = "English") -> dict:
         else:
             reasons.append("ڈیٹا بیس میں کوئی فعال شکایت نہیں پائی گئی۔")
 
-    else:  # Default English
+    else:  
         if spam_reports > 0:
             reasons.append(f"Found {spam_reports} verified community spam complaint(s) in database.")
         else:
