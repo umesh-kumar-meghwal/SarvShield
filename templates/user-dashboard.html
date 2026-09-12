@@ -223,7 +223,7 @@
                                     <label for="language" class="block text-xs uppercase tracking-wider font-bold text-white">
                                         Select Output Language
                                     </label>
-                                    <p class="text-[11px] text-slate-400">Choose any language in the world for AI analysis & advice.</p>
+                                    <p class="text-[11px] text-slate-400">Choose any language in the world for  analysis & advice.</p>
                                 </div>
                             </div>
                             <div class="w-full sm:w-64">
@@ -343,7 +343,7 @@
          SCRIPTS & DYNAMIC RESULT RENDERING LOGIC
     ===================================================== -->
     <script>
-        let isEasyMode = false;
+        let isEasyMode = true;
         let cachedResponse = null;
 
         // 1. File Upload Name Display
@@ -435,7 +435,7 @@
 
             $("#checkBtn")
                 .prop("disabled", true)
-                .html(`<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> SarvShield AI Analyzing...`);
+                .html(`<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> SarvShield Analyzing...`);
 
             $("#result").html(`
                 <div class="p-8 sm:p-12 rounded-3xl bg-dark-card border border-dark-border text-center space-y-4 animate-pulse shadow-2xl">
