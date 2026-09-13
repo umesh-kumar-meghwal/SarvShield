@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="dark scroll-smooth">
-
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>SarvShield | Explainable Threat Intelligence</title>
 
     <!-- Tailwind CSS CDN -->
@@ -39,641 +39,1069 @@
         }
     </script>
 
-    <!-- Google Fonts & FontAwesome Icons -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #060B13; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #334155; }
-        
-        .glow-text {
-            text-shadow: 0 0 25px rgba(59, 130, 246, 0.45);
-        }
-        .glow-box {
-            box-shadow: 0 0 35px rgba(37, 99, 235, 0.15);
-        }
-    </style>
+    <!-- Flask Static CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 </head>
 
-<body class="bg-dark-base text-slate-100 antialiased overflow-x-hidden relative selection:bg-blue-600 selection:text-white">
+<body class="antialiased bg-dark-base text-slate-100">
 
     <!-- =========================================================
-         NAVBAR (Sticky + Glassmorphism + Mobile Drawer)
+         NAVBAR
     ========================================================== -->
-    <header class="fixed top-0 inset-x-0 z-50 bg-dark-base/85 backdrop-blur-md border-b border-dark-border transition-all">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            
-            <!-- Logo -->
-            <a href="/" class="flex items-center gap-3 group">
-                <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 text-lg shadow-inner group-hover:scale-105 transition">
-                    <i class="fa-solid fa-shield-halved"></i>
-                </div>
-                <div>
-                    <h1 class="font-extrabold text-lg tracking-tight text-white leading-none">SarvShield</h1>
-                    <span class="text-[10px] tracking-widest uppercase font-bold text-blue-400">Digital Safety</span>
-                </div>
-            </a>
+    <nav class="navbar glass-panel">
+        <div class="container nav-container">
 
-            <!-- Desktop Links -->
-            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-                <a href="#vision" class="hover:text-blue-400 transition">Vision</a>
-                <a href="#how-it-works" class="hover:text-blue-400 transition">How It Works</a>
-                <a href="#features" class="hover:text-blue-400 transition">Features</a>
-                <a href="#scam-types" class="hover:text-blue-400 transition">Scam Types</a>
-                <a href="#faq" class="hover:text-blue-400 transition">FAQ</a>
-            </nav>
-
-            <!-- CTA Actions -->
-            <div class="hidden md:flex items-center gap-4">
-                <a href="/login" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-600/30 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2">
-                    <i class="fa-solid fa-lock text-[11px]"></i>
-                    <span>Get Started</span>
-                </a>
+            <div class="logo">
+                <span class="logo-text text-glow">
+                    SarvShield
+                </span>
             </div>
 
-            <!-- Mobile Hamburger Button -->
-            <button id="mobileNavToggle" class="md:hidden p-2.5 rounded-xl bg-dark-card border border-dark-border text-slate-300 hover:text-white focus:outline-none" aria-label="Toggle menu">
-                <i class="fa-solid fa-bars text-lg" id="navIcon"></i>
+            <!-- Hamburger Button for Mobile -->
+            <button class="nav-toggle" id="navToggleBtn" aria-label="Toggle navigation">
+                <i class="fa-solid fa-bars"></i>
             </button>
-        </div>
 
-        <!-- Mobile Menu Dropdown -->
-        <div id="mobileMenu" class="hidden md:hidden border-b border-dark-border bg-dark-sidebar/95 backdrop-blur-xl px-6 py-6 space-y-4 text-sm font-medium">
-            <a href="#vision" class="block py-2 text-slate-300 hover:text-blue-400 mobile-link">Vision</a>
-            <a href="#how-it-works" class="block py-2 text-slate-300 hover:text-blue-400 mobile-link">How It Works</a>
-            <a href="#features" class="block py-2 text-slate-300 hover:text-blue-400 mobile-link">Features</a>
-            <a href="#scam-types" class="block py-2 text-slate-300 hover:text-blue-400 mobile-link">Scam Types</a>
-            <a href="#faq" class="block py-2 text-slate-300 hover:text-blue-400 mobile-link">FAQ</a>
-            <div class="pt-4 border-t border-dark-border">
-                <a href="/login" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold text-center block shadow-lg shadow-blue-600/30">
-                    Get Started
-                </a>
-            </div>
+            <!-- Navigation Links -->
+            <ul class="nav-links" id="navLinksMenu">
+                <li>
+                    <a href="#vision">Vision</a>
+                </li>
+                <li>
+                    <a href="#how-it-works">How It Works</a>
+                </li>
+                <li>
+                    <a href="#features">Features</a>
+                </li>
+                <li>
+                    <a href="#faq">FAQ</a>
+                </li>
+            </ul>
+
         </div>
-    </header>
+    </nav>
+
 
     <!-- =========================================================
          HERO SECTION
     ========================================================== -->
-    <section id="hero" class="relative pt-32 pb-20 sm:pt-40 sm:pb-28 lg:pt-48 lg:pb-36 overflow-hidden">
-        <!-- Glowing Background Orbs -->
-        <div class="absolute top-20 left-1/2 -translate-x-1/2 w-96 sm:w-[650px] h-96 sm:h-[650px] bg-blue-600/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
-        <div class="absolute top-1/3 -right-24 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+    <section id="hero" class="hero-section dark-theme">
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-                
-                <!-- Hero Left: Content -->
-                <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
-                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase bg-blue-500/15 text-blue-400 border border-blue-500/30">
-                        <i class="fa-solid fa-bolt-lightning text-xs"></i> Transparent. Explainable. Real-time.
-                    </div>
+        <!-- Background glow -->
+        <div class="bg-shape shape-1 float-anim"></div>
+        <div class="bg-shape shape-2 float-anim-delayed"></div>
 
-                    <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1] glow-text">
-                        Decoding Deception. <br class="hidden sm:inline">
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-sky-300">
-                            Empowering Action.
-                        </span>
-                    </h1>
+        <div class="container hero-container">
 
-                    <p class="text-slate-300 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                        SarvShield analyzes suspicious messages, links, screenshots, and phone numbers with multi-signal intelligence to explain why threats exist and guide your safest next step.
-                    </p>
+            <!-- HERO TEXT -->
+            <div class="hero-content hero-text-animate">
 
-                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-                        <a href="/login" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-blue-600/30 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2.5">
-                            <span>Get Started Free</span>
-                            <i class="fa-solid fa-arrow-right text-xs"></i>
-                        </a>
-                        <a href="#how-it-works" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-dark-card hover:bg-dark-hover text-slate-200 border border-dark-border font-bold text-sm transition flex items-center justify-center gap-2">
-                            <span>How It Works</span>
-                        </a>
-                    </div>
+                <p class="hero-badge text-glow">
+                    Transparent. Explainable. Real-time.
+                </p>
 
-                    <!-- Micro Trust Metrics -->
-                    <div class="pt-6 grid grid-cols-3 gap-4 border-t border-dark-border/60 max-w-lg mx-auto lg:mx-0 text-center lg:text-left">
-                        <div>
-                            <strong class="text-xl sm:text-2xl font-black text-white block">2-Layer</strong>
-                            <span class="text-[11px] text-slate-400">Telecom & Risk AI</span>
-                        </div>
-                        <div>
-                            <strong class="text-xl sm:text-2xl font-black text-white block">20+</strong>
-                            <span class="text-[11px] text-slate-400">Global Languages</span>
-                        </div>
-                        <div>
-                            <strong class="text-xl sm:text-2xl font-black text-white block">100%</strong>
-                            <span class="text-[11px] text-slate-400">Explainable Why</span>
-                        </div>
-                    </div>
-                </div>
+                <h1 class="hero-headline text-glow">
+                    Decoding Deception.
+                    <br>
+                    Empowering Action.
+                </h1>
 
-                <!-- Hero Right: Live Visual Threat Preview -->
-                <div class="lg:col-span-5 relative">
-                    <div class="relative mx-auto max-w-md lg:max-w-none rounded-3xl bg-gradient-to-b from-dark-card to-dark-sidebar border border-blue-500/30 p-5 sm:p-7 shadow-2xl glow-box">
-                        <div class="flex items-center justify-between pb-4 border-b border-dark-border">
-                            <div class="flex items-center gap-2">
-                                <span class="w-3 h-3 rounded-full bg-rose-500 animate-pulse"></span>
-                                <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Live Analysis Engine</span>
-                            </div>
-                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">HIGH RISK</span>
-                        </div>
+                <p class="hero-subheadline">
+                    SarvShield analyzes messages, links, screenshots, and numbers
+                    to explain risk and guide your safest next step.
+                </p>
 
-                        <!-- Mini Threat Gauge Demo -->
-                        <div class="py-6 flex items-center justify-center">
-                            <div class="relative w-36 h-36 rounded-full flex items-center justify-center p-2.5" style="background: conic-gradient(#f43f5e 313deg, rgba(30, 41, 59, 0.6) 313deg 360deg); box-shadow: 0 0 28px rgba(244, 63, 94, 0.35);">
-                                <div class="w-full h-full rounded-full bg-dark-card flex flex-col items-center justify-center border border-dark-border">
-                                    <strong class="text-3xl font-black text-white">87</strong>
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">/ 100</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="space-y-2.5">
-                            <div class="p-3 rounded-xl bg-dark-cardLight border border-dark-border text-xs flex items-center gap-2 text-slate-200">
-                                <span class="text-rose-400">⚠️</span>
-                                <span>Phishing URL & Fake Domain Pattern</span>
-                            </div>
-                            <div class="p-3 rounded-xl bg-dark-cardLight border border-dark-border text-xs flex items-center gap-2 text-slate-200">
-                                <span class="text-amber-400">⚠️</span>
-                                <span>High Psychological Urgency Trigger</span>
-                            </div>
-                            <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs flex items-center gap-2 text-emerald-300 font-medium">
-                                <span>🛡️</span>
-                                <span>SafeNext: Do not click. Block sender.</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="hero-actions">
+                    <a href="/login" class="btn-primary btn-large hover-lift">
+                        Get Started
+                    </a>
                 </div>
 
             </div>
+
+            <!-- HERO IMAGE -->
+            <div class="hero-visual hero-image-animate">
+                <div class="hero-image-placeholder">
+                   <img
+                     src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=700&auto=format&fit=crop&q=70&ixlib=rb-4.1.0"
+                     alt="SarvShield threat analysis"
+                     class="hero-main-img"
+                   >
+                </div>
+            </div>
+
         </div>
+
     </section>
+
 
     <!-- =========================================================
          VISION SECTION
     ========================================================== -->
-    <section id="vision" class="py-20 sm:py-28 bg-dark-card/40 border-y border-dark-border relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-                
-                <div class="lg:col-span-7 space-y-5">
-                    <span class="text-xs uppercase font-bold tracking-widest text-blue-400 block">THE SARVSHIELD VISION</span>
-                    <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
-                        Don't Just Detect. <br>
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">Understand The Deception.</span>
-                    </h2>
-                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
-                        SarvShield doesn't stop at giving you a generic "scam" label. It explains <strong class="text-white">why</strong> content is dangerous, which exact signals triggered suspicion, and what specific trick the scammer is trying to pull.
-                    </p>
-                    <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
-                        We turn confusing cyber threats into transparent, multilingual decisions — empowering you to protect your identity, bank account, and family.
-                    </p>
-                </div>
+    <section id="vision" class="vision-section light-theme vision-pattern">
 
-                <div class="lg:col-span-5 space-y-4">
-                    <div class="p-5 rounded-2xl bg-dark-card border border-dark-border space-y-2">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Detection</span>
-                        <p class="text-sm font-semibold text-white">Tells you <span class="text-blue-400">WHAT</span> happened.</p>
-                    </div>
-                    <div class="p-5 rounded-2xl bg-dark-card border border-blue-500/30 space-y-2 shadow-lg glow-box">
-                        <span class="text-xs font-bold text-blue-400 uppercase tracking-wider block">Explainability</span>
-                        <p class="text-sm font-semibold text-white">Tells you <span class="text-indigo-400">WHY</span> it is dangerous.</p>
-                    </div>
-                    <div class="p-5 rounded-2xl bg-dark-card border border-dark-border space-y-2">
-                        <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider block">SafeNext</span>
-                        <p class="text-sm font-semibold text-white">Guides you on <span class="text-emerald-400">EXACTLY WHAT TO DO</span> next.</p>
-                    </div>
-                </div>
+        <div class="container vision-container">
+
+            <div class="vision-content reveal-on-scroll">
+
+                <p class="section-eyebrow">
+                    THE SarvShield VISION
+                </p>
+
+                <h2 class="section-heading">
+                    Don't Just Detect.
+                    <span>Understand.</span>
+                </h2>
+
+                <p class="section-body">
+                    SarvShield doesn't stop at telling you that something is
+                    a scam. It explains why the content is dangerous, what
+                    signals make it suspicious, and what the attacker is
+                    trying to make you do.
+                </p>
+
+                <p class="section-body vision-secondary-text">
+                    Our goal is to turn confusing digital threats into clear,
+                    understandable decisions — so users can recognize
+                    deception, understand the risk, and take control of
+                    what happens next.
+                </p>
 
             </div>
+
+            <div class="vision-highlight reveal-on-scroll delayed-1">
+
+                <div class="vision-highlight-line"></div>
+
+                <p>
+                    Detection tells you
+                    <strong>what</strong> happened.
+                </p>
+
+                <p>
+                    Explainability tells you
+                    <strong>why</strong>.
+                </p>
+
+                <p>
+                    SafeNext tells you
+                    <strong>what to do.</strong>
+                </p>
+
+            </div>
+
         </div>
+
     </section>
+
 
     <!-- =========================================================
          HOW IT WORKS
     ========================================================== -->
-    <section id="how-it-works" class="py-20 sm:py-28 relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-            
-            <div class="text-center max-w-3xl mx-auto space-y-4">
-                <span class="text-xs uppercase font-bold tracking-widest text-blue-400 block">THE PROCESS</span>
-                <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">How SarvShield Thinks</h2>
-                <p class="text-slate-400 text-xs sm:text-base leading-relaxed">
-                    From suspicious evidence to a clear decision, SarvShield evaluates multi-signal intelligence across 4 dedicated security vectors.
+    <section id="how-it-works" class="process-section process-pattern">
+
+        <div class="container">
+
+            <div class="section-intro text-center reveal-on-scroll">
+
+                <p class="section-eyebrow">
+                    THE PROCESS
                 </p>
+
+                <h2 class="section-heading">
+                    How SarvShield Thinks
+                </h2>
+
+                <p class="section-body process-intro">
+                    From suspicious evidence to a clear decision, SarvShield
+                    combines multiple signals to understand the threat and
+                    guide you toward the safest next action.
+                </p>
+
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-                
+            <div class="process-flow">
+
                 <!-- STEP 01 -->
-                <div class="p-6 sm:p-8 rounded-3xl bg-dark-card border border-dark-border hover:border-blue-500/40 transition space-y-5 shadow-xl relative group">
-                    <span class="w-12 h-12 rounded-2xl bg-blue-600/20 text-blue-400 border border-blue-500/30 font-black text-lg flex items-center justify-center font-mono">01</span>
-                    <div class="space-y-2">
-                        <span class="text-[10px] uppercase font-bold tracking-widest text-blue-400 block">INPUT</span>
-                        <h3 class="text-lg sm:text-xl font-bold text-white">Submit Evidence</h3>
-                        <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                            Paste suspicious SMS, Telegram or WhatsApp chats, URLs, screenshots (with OCR vision), or phone numbers.
-                        </p>
+                <div class="process-step reveal-on-scroll">
+
+                    <div class="step-card-large">
+
+                        <div class="step-number-large">
+                            01
+                        </div>
+
+                        <div class="step-content">
+
+                            <p class="step-label">
+                                INPUT
+                            </p>
+
+                            <h3 class="step-title">
+                                Submit Evidence
+                            </h3>
+
+                            <p class="step-desc">
+                                Add a suspicious SMS, URL, screenshot,
+                                email content, or phone number that you
+                                want to inspect.
+                            </p>
+
+                            <div class="step-example">
+                                <span>Message</span>
+                                <span>URL</span>
+                                <span>Screenshot</span>
+                                <span>Number</span>
+                            </div>
+
+                        </div>
+
                     </div>
-                    <div class="flex flex-wrap gap-2 pt-2 text-[11px] font-mono text-slate-300">
-                        <span class="px-2.5 py-1 rounded-lg bg-dark-cardLight border border-dark-border">SMS/Chat</span>
-                        <span class="px-2.5 py-1 rounded-lg bg-dark-cardLight border border-dark-border">URL</span>
-                        <span class="px-2.5 py-1 rounded-lg bg-dark-cardLight border border-dark-border">Screenshot</span>
-                        <span class="px-2.5 py-1 rounded-lg bg-dark-cardLight border border-dark-border">Phone</span>
-                    </div>
+
                 </div>
+
+                <!-- CONNECTOR -->
+                <div class="step-connector animated-connector"></div>
 
                 <!-- STEP 02 -->
-                <div class="p-6 sm:p-8 rounded-3xl bg-dark-card border border-dark-border hover:border-indigo-500/40 transition space-y-5 shadow-xl relative group">
-                    <span class="w-12 h-12 rounded-2xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-black text-lg flex items-center justify-center font-mono">02</span>
-                    <div class="space-y-2">
-                        <span class="text-[10px] uppercase font-bold tracking-widest text-indigo-400 block">ANALYSIS</span>
-                        <h3 class="text-lg sm:text-xl font-bold text-white">Multi-Vector AI Scan</h3>
-                        <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                            Cross-verifies spam database complaints, 2-layer telecom carrier records, website domain spoofing, and visual deception.
-                        </p>
+                <div class="process-step reveal-on-scroll delayed-1">
+
+                    <div class="step-card-large">
+
+                        <div class="step-number-large">
+                            02
+                        </div>
+
+                        <div class="step-content">
+
+                            <p class="step-label">
+                                ANALYSIS
+                            </p>
+
+                            <h3 class="step-title">
+                                Analyze Multiple Signals
+                            </h3>
+
+                            <p class="step-desc">
+                                SarvShield examines language patterns,
+                                domains, links, numbers, known indicators
+                                and other available risk signals.
+                            </p>
+
+                            <div class="signal-list">
+                                <span>Language Pattern</span>
+                                <span>Domain Risk</span>
+                                <span>Sender Signal</span>
+                                <span>Threat Pattern</span>
+                            </div>
+
+                        </div>
+
                     </div>
-                    <div class="flex flex-wrap gap-2 pt-2 text-[11px] font-mono text-slate-300">
-                        <span class="px-2.5 py-1 rounded-lg bg-dark-cardLight border border-dark-border">Domain Risk</span>
-                        <span class="px-2.5 py-1 rounded-lg bg-dark-cardLight border border-dark-border">Telecom API</span>
-                        <span class="px-2.5 py-1 rounded-lg bg-dark-cardLight border border-dark-border">Vision OCR</span>
-                    </div>
+
                 </div>
 
+                <!-- CONNECTOR -->
+                <div class="step-connector animated-connector"></div>
+
                 <!-- STEP 03 -->
-                <div class="p-6 sm:p-8 rounded-3xl bg-dark-card border border-dark-border hover:border-emerald-500/40 transition space-y-5 shadow-xl relative group">
-                    <span class="w-12 h-12 rounded-2xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 font-black text-lg flex items-center justify-center font-mono">03</span>
-                    <div class="space-y-2">
-                        <span class="text-[10px] uppercase font-bold tracking-widest text-emerald-400 block">DECISION</span>
-                        <h3 class="text-lg sm:text-xl font-bold text-white">Explain & Action</h3>
-                        <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                            Receive a 0–100 calibrated risk score, attack chain sequence, and emergency recovery steps in your own regional language.
-                        </p>
+                <div class="process-step reveal-on-scroll delayed-2">
+
+                    <div class="step-card-large">
+
+                        <div class="step-number-large">
+                            03
+                        </div>
+
+                        <div class="step-content">
+
+                            <p class="step-label">
+                                DECISION
+                            </p>
+
+                            <h3 class="step-title">
+                                Explain & Protect
+                            </h3>
+
+                            <p class="step-desc">
+                                Receive a risk score, supporting reasons,
+                                confidence level, and a clear SafeNext
+                                action plan.
+                            </p>
+
+                            <div class="result-preview">
+
+                                <span>
+                                    Risk Score
+                                </span>
+
+                                <strong>
+                                    87 / 100
+                                </strong>
+
+                                <small>
+                                    High Risk
+                                </small>
+
+                            </div>
+
+                        </div>
+
                     </div>
-                    <div class="flex flex-wrap gap-2 pt-2 text-[11px] font-mono text-slate-300">
-                        <span class="px-2.5 py-1 rounded-lg bg-dark-cardLight border border-dark-border">Risk Score</span>
-                        <span class="px-2.5 py-1 rounded-lg bg-dark-cardLight border border-dark-border">SafeNext Plan</span>
-                        <span class="px-2.5 py-1 rounded-lg bg-dark-cardLight border border-dark-border">Voice Output</span>
-                    </div>
+
                 </div>
 
             </div>
 
         </div>
+
     </section>
 
+
     <!-- =========================================================
-         FEATURES (The Intelligence Suite)
+         FEATURES
     ========================================================== -->
-    <section id="features" class="py-20 sm:py-28 bg-dark-sidebar/50 border-t border-dark-border relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
-            
-            <div class="text-center max-w-3xl mx-auto space-y-4">
-                <span class="text-xs uppercase font-bold tracking-widest text-blue-400 block">THE INTELLIGENCE LAYER</span>
-                <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">Built for Unmatched Safety</h2>
-                <p class="text-slate-400 text-xs sm:text-base leading-relaxed">
-                    SarvShield provides transparent intelligence tools designed to help every user avoid digital fraud.
+    <section id="features" class="features-section off-white-theme">
+
+        <div class="container">
+
+            <div class="section-intro text-center reveal-on-scroll">
+
+                <p class="section-eyebrow">
+                    THE INTELLIGENCE LAYER
                 </p>
+
+                <h2 class="section-heading">
+                    See What SarvShield Can Do
+                </h2>
+
+                <p class="section-body features-intro">
+                    SarvShield turns raw evidence into understandable
+                    intelligence — giving you more than a simple
+                    "scam" or "safe" label.
+                </p>
+
             </div>
 
             <!-- FEATURE 01 -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-                <div class="lg:col-span-6 space-y-4">
-                    <span class="text-3xl font-black text-blue-500 font-mono">01</span>
-                    <h3 class="text-2xl sm:text-3xl font-bold text-white">Calibrated Risk Score Generator</h3>
-                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                        Converts complex signals into a crystal-clear 0–100 risk score based on calibrated cybersecurity thresholds (Low Risk, Suspicious, High Risk, Critical Threat).
+            <div class="feature-showcase reveal-on-scroll">
+
+                <div class="feature-info">
+
+                    <p class="feature-number">
+                        01
                     </p>
-                    <ul class="space-y-2 text-xs sm:text-sm text-slate-300">
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-400"></i> Multi-signal weighted risk evaluation</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-400"></i> Strict evidence-based threat thresholds</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-400"></i> Instant explainable bullet points</li>
+
+                    <h3>
+                        Risk Score Generator
+                    </h3>
+
+                    <p>
+                        Converts multiple threat signals into a clear
+                        0–100 risk score so users can immediately understand
+                        how serious a suspicious piece of evidence may be.
+                    </p>
+
+                    <ul class="feature-points">
+                        <li>Multi-signal risk analysis</li>
+                        <li>Clear severity classification</li>
+                        <li>Confidence-backed result</li>
                     </ul>
+
                 </div>
 
-                <div class="lg:col-span-6 p-6 sm:p-8 rounded-3xl bg-dark-card border border-dark-border shadow-xl">
-                    <div class="flex items-center justify-between pb-4 border-b border-dark-border">
-                        <span class="text-xs font-bold uppercase text-slate-300">Risk Assessment Demo</span>
-                        <span class="text-xs font-bold text-rose-400 font-mono">Score: 87/100</span>
-                    </div>
-                    <div class="py-6 flex items-center justify-center">
-                        <div class="w-28 h-28 rounded-full border-8 border-rose-500 shadow-[0_0_25px_rgba(244,63,94,0.35)] flex flex-col items-center justify-center bg-dark-cardLight">
-                            <strong class="text-3xl font-black text-white">87</strong>
-                            <span class="text-[9px] text-slate-400 uppercase">HIGH RISK</span>
+                <div class="feature-demo risk-demo">
+
+                    <div class="risk-gauge">
+
+                        <div class="risk-gauge-inner">
+                            <strong>87</strong>
+                            <span>/ 100</span>
                         </div>
+
                     </div>
-                    <div class="space-y-2 text-xs text-slate-300">
-                        <div class="p-2.5 rounded-xl bg-dark-cardLight border border-dark-border">⚠️ Detected unverified APK download link</div>
-                        <div class="p-2.5 rounded-xl bg-dark-cardLight border border-dark-border">⚠️ Carrier reports indicate virtual VOIP line</div>
+
+                    <div class="risk-demo-info">
+
+                        <span class="risk-status">
+                            HIGH RISK
+                        </span>
+
+                        <p>
+                            Multiple suspicious signals detected.
+                        </p>
+
+                        <div class="risk-reasons">
+                            <span>Suspicious URL</span>
+                            <span>Urgency Language</span>
+                            <span>Unknown Sender</span>
+                        </div>
+
                     </div>
+
                 </div>
+
             </div>
 
             <!-- FEATURE 02 -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-                <div class="lg:col-span-6 lg:order-2 space-y-4">
-                    <span class="text-3xl font-black text-indigo-500 font-mono">02</span>
-                    <h3 class="text-2xl sm:text-3xl font-bold text-white">Attack Chain Sequence Visualizer</h3>
-                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                        Maps out the exact sequence through which scammers lure victims — from the initial contact to data harvesting and financial compromise.
+            <div class="feature-showcase reverse reveal-on-scroll">
+
+                <div class="feature-info">
+
+                    <p class="feature-number">
+                        02
                     </p>
-                    <ul class="space-y-2 text-xs sm:text-sm text-slate-300">
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-indigo-400"></i> Clear stage-by-stage attack flow</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-indigo-400"></i> Highlights the deception vector</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-indigo-400"></i> Educates on attacker psychology</li>
+
+                    <h3>
+                        Attack Chain Visualizer
+                    </h3>
+
+                    <p>
+                        Shows how a deceptive interaction can move from
+                        the initial message to a potentially harmful outcome.
+                    </p>
+
+                    <ul class="feature-points">
+                        <li>Visual attack sequence</li>
+                        <li>Connected threat stages</li>
+                        <li>Easy-to-understand flow</li>
                     </ul>
+
                 </div>
 
-                <div class="lg:col-span-6 lg:order-1 p-6 sm:p-8 rounded-3xl bg-dark-card border border-dark-border shadow-xl space-y-3">
-                    <div class="p-3.5 rounded-2xl bg-dark-cardLight border border-dark-border flex items-center gap-3 text-xs">
-                        <span class="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center text-[10px]">01</span>
-                        <strong class="text-white">Unsolicited Electricity Bill SMS</strong>
+                <div class="feature-demo attack-chain-demo">
+
+                    <div class="attack-node">
+                        <span>01</span>
+                        <strong>Unknown Sender</strong>
                     </div>
-                    <div class="w-0.5 h-3 bg-indigo-500/40 mx-auto"></div>
-                    <div class="p-3.5 rounded-2xl bg-dark-cardLight border border-dark-border flex items-center gap-3 text-xs">
-                        <span class="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center text-[10px]">02</span>
-                        <strong class="text-white">Urgent Power Disconnection Threat</strong>
+
+                    <div class="attack-line"></div>
+
+                    <div class="attack-node">
+                        <span>02</span>
+                        <strong>Fake Message</strong>
                     </div>
-                    <div class="w-0.5 h-3 bg-indigo-500/40 mx-auto"></div>
-                    <div class="p-3.5 rounded-2xl bg-dark-cardLight border border-dark-border flex items-center gap-3 text-xs">
-                        <span class="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center text-[10px]">03</span>
-                        <strong class="text-white">Fake UPI / App Download Prompt</strong>
+
+                    <div class="attack-line"></div>
+
+                    <div class="attack-node">
+                        <span>03</span>
+                        <strong>Malicious Link</strong>
                     </div>
-                    <div class="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-center text-rose-400 text-xs font-bold">
-                        ⚠️ Critical Compromise Point
+
+                    <div class="attack-line"></div>
+
+                    <div class="attack-node">
+                        <span>04</span>
+                        <strong>Credential Request</strong>
                     </div>
+
+                    <div class="attack-warning">
+                        Account Compromise Risk
+                    </div>
+
                 </div>
+
             </div>
 
             <!-- FEATURE 03 -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-                <div class="lg:col-span-6 space-y-4">
-                    <span class="text-3xl font-black text-emerald-500 font-mono">03</span>
-                    <h3 class="text-2xl sm:text-3xl font-bold text-white">SafeNext Action Coach</h3>
-                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                        Rather than leaving you helpless with just a warning, SarvShield provides a practical, easy-to-follow emergency checklist and instant helpline access.
+            <div class="feature-showcase reveal-on-scroll">
+
+                <div class="feature-info">
+
+                    <p class="feature-number">
+                        03
                     </p>
-                    <ul class="space-y-2 text-xs sm:text-sm text-slate-300">
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> Step-by-step immediate containment</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> Direct one-tap 1930 Cyber Helpline button</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> One-click WhatsApp sharing for family help</li>
+
+                    <h3>
+                        Scam Fingerprinting
+                    </h3>
+
+                    <p>
+                        Identifies recurring fraud patterns and compares
+                        suspicious evidence against recognizable scam
+                        characteristics.
+                    </p>
+
+                    <ul class="feature-points">
+                        <li>Pattern recognition</li>
+                        <li>Fraud characteristic matching</li>
+                        <li>Similarity-based intelligence</li>
                     </ul>
+
                 </div>
 
-                <div class="lg:col-span-6 p-6 sm:p-8 rounded-3xl bg-dark-card border border-emerald-500/30 shadow-xl space-y-4">
-                    <div class="flex items-center justify-between pb-3 border-b border-dark-border">
-                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Action Plan</span>
-                        <span class="text-xs text-slate-400">Immediate Steps</span>
+                <div class="feature-demo fingerprint-demo">
+
+                    <div class="fingerprint-header">
+                        <span>Pattern Match</span>
+                        <strong>94%</strong>
                     </div>
-                    <div class="space-y-2.5 text-xs text-slate-200">
-                        <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2.5">
-                            <span class="text-emerald-400 font-bold">01</span>
-                            <span>Do not enter OTP or approve any payment request.</span>
-                        </div>
-                        <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2.5">
-                            <span class="text-emerald-400 font-bold">02</span>
-                            <span>Block the sender's phone number and report spam.</span>
-                        </div>
-                        <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2.5">
-                            <span class="text-emerald-400 font-bold">03</span>
-                            <span>Call National Cyber Crime Helpline: 1930 immediately.</span>
-                        </div>
+
+                    <div class="fingerprint-bar">
+                        <div class="fingerprint-progress"></div>
                     </div>
+
+                    <div class="fingerprint-results">
+
+                        <div>
+                            <span>Urgency Trigger</span>
+                            <strong>Detected</strong>
+                        </div>
+
+                        <div>
+                            <span>Reward Claim</span>
+                            <strong>Detected</strong>
+                        </div>
+
+                        <div>
+                            <span>Payment Request</span>
+                            <strong>Detected</strong>
+                        </div>
+
+                        <div>
+                            <span>Known Scam Pattern</span>
+                            <strong>Matched</strong>
+                        </div>
+
+                    </div>
+
                 </div>
+
+            </div>
+
+            <!-- FEATURE 04 -->
+            <div class="feature-showcase reverse reveal-on-scroll">
+
+                <div class="feature-info">
+
+                    <p class="feature-number">
+                        04
+                    </p>
+
+                    <h3>
+                        Trust Graph Lite
+                    </h3>
+
+                    <p>
+                        Helps visualize relationships between suspicious
+                        numbers, domains, messages and reported threat
+                        indicators.
+                    </p>
+
+                    <ul class="feature-points">
+                        <li>Threat relationships</li>
+                        <li>Connected indicators</li>
+                        <li>Visual intelligence graph</li>
+                    </ul>
+
+                </div>
+
+                <div class="feature-demo trust-graph-demo">
+
+                    <div class="graph-node graph-center">
+                        Message
+                    </div>
+
+                    <div class="graph-node graph-top">
+                        Phone Number
+                    </div>
+
+                    <div class="graph-node graph-left">
+                        Domain
+                    </div>
+
+                    <div class="graph-node graph-right">
+                        Report
+                    </div>
+
+                    <div class="graph-node graph-bottom">
+                        Threat Pattern
+                    </div>
+
+                    <div class="graph-line line-top"></div>
+                    <div class="graph-line line-left"></div>
+                    <div class="graph-line line-right"></div>
+                    <div class="graph-line line-bottom"></div>
+
+                </div>
+
+            </div>
+
+            <!-- FEATURE 05 -->
+            <div class="feature-showcase reveal-on-scroll">
+
+                <div class="feature-info">
+
+                    <p class="feature-number">
+                        05
+                    </p>
+
+                    <h3>
+                        SafeNext Coach
+                    </h3>
+
+                    <p>
+                        Turns analysis into action by giving users a clear,
+                        practical recommendation for what they should do next.
+                    </p>
+
+                    <ul class="feature-points">
+                        <li>Action-focused guidance</li>
+                        <li>Risk-aware recommendations</li>
+                        <li>Simple next-step decisions</li>
+                    </ul>
+
+                </div>
+
+                <div class="feature-demo safenext-demo">
+
+                    <div class="safenext-header">
+                        <span>
+                            SAFENEXT RECOMMENDATION
+                        </span>
+                    </div>
+
+                    <div class="safenext-main">
+
+                        <h4>
+                            Do not interact with this message.
+                        </h4>
+
+                        <p>
+                            Multiple high-risk signals were detected.
+                        </p>
+
+                    </div>
+
+                    <div class="safenext-actions">
+
+                        <div>
+                            <strong>01</strong>
+                            Block the sender
+                        </div>
+
+                        <div>
+                            <strong>02</strong>
+                            Do not open the link
+                        </div>
+
+                        <div>
+                            <strong>03</strong>
+                            Report the message
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
 
         </div>
+
     </section>
 
+
     <!-- =========================================================
-         SCAM TYPES DECODED
+         INTELLIGENT DEFENSE
     ========================================================== -->
-    <section id="scam-types" class="py-20 sm:py-28 relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-            
-            <div class="text-center max-w-3xl mx-auto space-y-4">
-                <span class="text-xs uppercase font-bold tracking-widest text-blue-400 block">THREAT AWARENESS</span>
-                <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">Common Scam Vectors</h2>
-                <p class="text-slate-400 text-xs sm:text-base leading-relaxed">
-                    Recognize the deceptive patterns used by modern financial fraudsters.
+    <section id="intelligent-defense" class="signature-section intelligent-defense-section accent-theme">
+
+        <div class="container intelligent-defense-container">
+
+            <div class="intelligent-defense-content reveal-on-scroll">
+
+                <p class="section-eyebrow">
+                    INTELLIGENT DEFENSE
                 </p>
+
+                <h2 class="section-heading">
+                    From Detection
+                    <br>
+                    to Understanding.
+                </h2>
+
+                <p class="section-body">
+                    SarvShield exposes the mechanics behind digital deception.
+                    Instead of hiding the reasoning behind a prediction, it
+                    brings together patterns, signals, attack flow and
+                    confidence into an explanation users can understand.
+                </p>
+
+                <p class="section-body">
+                    The result is simple: less uncertainty, better decisions,
+                    and a safer next step.
+                </p>
+
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                
-                <div class="p-6 rounded-3xl bg-dark-card border border-dark-border hover:border-blue-500/40 transition space-y-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center text-lg">
-                        <i class="fa-solid fa-credit-card"></i>
-                    </div>
-                    <h3 class="text-base font-bold text-white">Payment & UPI Fraud</h3>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        Fake QR codes, "Enter PIN to receive money", and spoofed transaction receipts.
-                    </p>
-                </div>
-
-                <div class="p-6 rounded-3xl bg-dark-card border border-dark-border hover:border-blue-500/40 transition space-y-3">
-                    <div class="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center text-lg">
-                        <i class="fa-solid fa-link-slash"></i>
-                    </div>
-                    <h3 class="text-base font-bold text-white">Phishing & Fake Logins</h3>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        Spoofed bank portals, electricity bill notices, and fake PAN/KYC update URLs.
-                    </p>
-                </div>
-
-                <div class="p-6 rounded-3xl bg-dark-card border border-dark-border hover:border-blue-500/40 transition space-y-3">
-                    <div class="w-10 h-10 rounded-xl bg-amber-600/20 text-amber-400 flex items-center justify-center text-lg">
-                        <i class="fa-solid fa-briefcase"></i>
-                    </div>
-                    <h3 class="text-base font-bold text-white">Part-Time Job Scams</h3>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        "Like YouTube videos & earn ₹5000/day" task traps demanding deposit payments.
-                    </p>
-                </div>
-
-                <div class="p-6 rounded-3xl bg-dark-card border border-dark-border hover:border-blue-500/40 transition space-y-3">
-                    <div class="w-10 h-10 rounded-xl bg-rose-600/20 text-rose-400 flex items-center justify-center text-lg">
-                        <i class="fa-solid fa-trophy"></i>
-                    </div>
-                    <h3 class="text-base font-bold text-white">Lottery & Customs Scams</h3>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        KBC lottery messages, fake parcel clearance fees, and digital arrest threats.
-                    </p>
-                </div>
-
+            <div class="intelligent-defense-visual reveal-on-scroll delayed-1">
+               <img
+                 src="https://plus.unsplash.com/premium_photo-1661877737564-3dfd7282efcb?w=700&auto=format&fit=crop&q=70&ixlib=rb-4.1.0"
+                 alt="SarvShield intelligent threat analysis"
+                 class="intelligent-defense-image"
+               >
             </div>
 
         </div>
+
     </section>
+
 
     <!-- =========================================================
-         FAQ SECTION (Interactive Native Accordion)
+         SCAM TYPES
     ========================================================== -->
-    <section id="faq" class="py-20 sm:py-28 bg-dark-card/30 border-t border-dark-border relative">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-            
-            <div class="text-center space-y-3">
-                <span class="text-xs uppercase font-bold tracking-widest text-blue-400 block">NEED TO KNOW</span>
-                <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">Frequently Asked Questions</h2>
-                <p class="text-slate-400 text-xs sm:text-sm">Find quick answers about how SarvShield protects your digital safety.</p>
+    <section id="scam-types" class="scam-types-section light-theme">
+
+        <div class="container">
+
+            <div class="section-intro reveal-on-scroll">
+
+                <p class="section-eyebrow">
+                    THREAT AWARENESS
+                </p>
+
+                <h2 class="section-heading">
+                    Scam Types, Decoded
+                </h2>
+
+                <p class="section-body">
+                    Different scams use different tricks, but most follow
+                    recognizable patterns. SarvShield helps turn those
+                    patterns into information you can understand.
+                </p>
+
             </div>
 
-            <div class="space-y-4" id="faqAccordion">
-                
-                <!-- FAQ 1 -->
-                <div class="rounded-2xl bg-dark-card border border-dark-border overflow-hidden transition">
-                    <button class="w-full p-5 text-left font-bold text-sm sm:text-base text-white flex items-center justify-between gap-4 faq-btn">
-                        <span>What inputs does SarvShield check?</span>
-                        <i class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform faq-icon"></i>
-                    </button>
-                    <div class="px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed hidden faq-content">
-                        SarvShield accepts suspicious SMS or WhatsApp text messages, website links/URLs, phone numbers (with carrier & spam lookup), and uploaded screenshots (payment chats, QR codes, receipts analyzed with AI vision).
+            <div class="scam-types-layout">
+
+                <!-- SCAM TYPE LIST -->
+                <div class="scam-type-list reveal-on-scroll">
+
+                    <div class="scam-type active">
+
+                        <span>01</span>
+
+                        <div>
+                            <h3>
+                                Phishing & Fake Login
+                            </h3>
+
+                            <p>
+                                Fake links designed to capture passwords
+                                or sensitive information.
+                            </p>
+                        </div>
+
                     </div>
+
+                    <div class="scam-type">
+
+                        <span>02</span>
+
+                        <div>
+                            <h3>
+                                Payment & UPI Scams
+                            </h3>
+
+                            <p>
+                                Messages that pressure users into sending
+                                money or approving transactions.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="scam-type">
+
+                        <span>03</span>
+
+                        <div>
+                            <h3>
+                                Job & Internship Scams
+                            </h3>
+
+                            <p>
+                                Fake opportunities used to collect money
+                                or personal information.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="scam-type">
+
+                        <span>04</span>
+
+                        <div>
+                            <h3>
+                                Reward & Lottery Scams
+                            </h3>
+
+                            <p>
+                                Fake prizes used to create urgency and
+                                demand payment or information.
+                            </p>
+                        </div>
+
+                    </div>
+
                 </div>
 
-                <!-- FAQ 2 -->
-                <div class="rounded-2xl bg-dark-card border border-dark-border overflow-hidden transition">
-                    <button class="w-full p-5 text-left font-bold text-sm sm:text-base text-white flex items-center justify-between gap-4 faq-btn">
-                        <span>Is my submitted data kept private?</span>
-                        <i class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform faq-icon"></i>
-                    </button>
-                    <div class="px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed hidden faq-content">
-                        Yes. Submissions are processed with stringent privacy controls. Personal identification information is isolated, and data is only referenced to cross-check community threat databases.
-                    </div>
-                </div>
+                <!-- EXPLANATION PANEL -->
+                <div class="scam-explanation reveal-on-scroll delayed-1">
 
-                <!-- FAQ 3 -->
-                <div class="rounded-2xl bg-dark-card border border-dark-border overflow-hidden transition">
-                    <button class="w-full p-5 text-left font-bold text-sm sm:text-base text-white flex items-center justify-between gap-4 faq-btn">
-                        <span>Can I receive the analysis in my regional language?</span>
-                        <i class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform faq-icon"></i>
-                    </button>
-                    <div class="px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed hidden faq-content">
-                        Yes! SarvShield supports over 20 languages including Hindi, Hinglish, Marathi, Punjabi, Gujarati, Bengali, Tamil, Telugu, Kannada, Malayalam, and Urdu, with built-in voice audio playback.
-                    </div>
-                </div>
+                    <div class="scam-explanation-header">
 
-                <!-- FAQ 4 -->
-                <div class="rounded-2xl bg-dark-card border border-dark-border overflow-hidden transition">
-                    <button class="w-full p-5 text-left font-bold text-sm sm:text-base text-white flex items-center justify-between gap-4 faq-btn">
-                        <span>What should I do if I already clicked a scam link?</span>
-                        <i class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform faq-icon"></i>
-                    </button>
-                    <div class="px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed hidden faq-content">
-                        Immediately disconnect your device from the internet, freeze your bank debit/credit cards via your bank app, change your passwords from a safe device, and call <strong>1930</strong> (National Cyber Crime Helpline) without delay.
+                        <span>
+                            EXAMPLE ANALYSIS
+                        </span>
+
+                        <strong>
+                            PHISHING
+                        </strong>
+
                     </div>
+
+                    <div class="scam-message">
+                        "Your account requires immediate verification.
+                        Click the link below to avoid suspension."
+                    </div>
+
+                    <div class="scam-analysis">
+
+                        <div class="analysis-row">
+                            <span>Urgency</span>
+                            <strong>Detected</strong>
+                        </div>
+
+                        <div class="analysis-row">
+                            <span>Account Impersonation</span>
+                            <strong>Detected</strong>
+                        </div>
+
+                        <div class="analysis-row">
+                            <span>Suspicious Link</span>
+                            <strong>Detected</strong>
+                        </div>
+
+                    </div>
+
+                    <div class="scam-explanation-result">
+
+                        <span>
+                            WHY IT MATTERS
+                        </span>
+
+                        <p>
+                            The message creates urgency and directs the
+                            user toward a potentially unsafe verification
+                            link.
+                        </p>
+
+                    </div>
+
                 </div>
 
             </div>
 
         </div>
+
     </section>
+
+
+    <!-- =========================================================
+         FAQ
+    ========================================================== -->
+    <section id="faq" class="faq-section light-theme">
+
+        <div class="container faq-container">
+
+            <div class="faq-heading reveal-on-scroll">
+
+                <p class="section-eyebrow">
+                    NEED TO KNOW
+                </p>
+
+                <h2 class="section-heading">
+                    Frequently Asked Questions
+                </h2>
+
+                <p class="section-body">
+                    Find quick answers about what SarvShield analyzes,
+                    how its explanations work, and what happens to your
+                    submissions.
+                </p>
+
+            </div>
+
+            <div class="accordion-container">
+
+                <div class="accordion-item glass-card hover-lift reveal-on-scroll">
+
+                    <button class="accordion-header">
+                        What does SarvShield check?
+                    </button>
+
+                    <div class="accordion-content">
+                        <p>
+                            We analyze SMS messages, URLs, uploaded screenshots,
+                            and phone numbers to detect recognizable fraud
+                            patterns.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="accordion-item glass-card hover-lift reveal-on-scroll">
+
+                    <button class="accordion-header">
+                        Is my data stored securely?
+                    </button>
+
+                    <div class="accordion-content">
+                        <p>
+                            Submissions are processed with security and privacy
+                            in mind, while personal identifiers can be removed
+                            from intelligence records where applicable.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="accordion-item glass-card hover-lift reveal-on-scroll">
+
+                    <button class="accordion-header">
+                        How do I know the score is reliable?
+                    </button>
+
+                    <div class="accordion-content">
+                        <p>
+                            Every score is supported by a transparent set of
+                            reasons and a confidence level based on the signals
+                            available during analysis.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="accordion-item glass-card hover-lift reveal-on-scroll">
+
+                    <button class="accordion-header">
+                        What happens after I report a scam?
+                    </button>
+
+                    <div class="accordion-content">
+                        <p>
+                            Reports can contribute to broader threat
+                            intelligence, helping identify recurring patterns
+                            and protect users from similar fraudulent activity.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
 
     <!-- =========================================================
          FOOTER
     ========================================================== -->
-    <footer class="border-t border-dark-border bg-dark-sidebar py-12 text-xs text-slate-400">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                
-                <div class="space-y-3 md:col-span-2">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 text-sm">
-                            <i class="fa-solid fa-shield-halved"></i>
-                        </div>
-                        <span class="font-extrabold text-base text-white">SarvShield</span>
-                    </div>
-                    <p class="text-slate-400 max-w-sm leading-relaxed">
-                        Explainable digital safety and threat intelligence platform. Empowering citizens to detect deception and stay protected.
-                    </p>
-                </div>
+    <footer class="site-footer dark-theme">
 
-                <div class="space-y-2.5">
-                    <h4 class="font-bold text-white uppercase text-[11px] tracking-wider">Navigation</h4>
-                    <ul class="space-y-1.5">
-                        <li><a href="#vision" class="hover:text-blue-400 transition">Vision</a></li>
-                        <li><a href="#how-it-works" class="hover:text-blue-400 transition">How It Works</a></li>
-                        <li><a href="#features" class="hover:text-blue-400 transition">Features</a></li>
-                        <li><a href="#scam-types" class="hover:text-blue-400 transition">Scam Types</a></li>
-                    </ul>
-                </div>
+        <div class="container footer-content">
 
-                <div class="space-y-2.5">
-                    <h4 class="font-bold text-white uppercase text-[11px] tracking-wider">Official Helplines</h4>
-                    <ul class="space-y-1.5">
-                        <li><a href="tel:1930" class="text-rose-400 hover:underline font-semibold">📞 Cyber Crime: 1930</a></li>
-                        <li><a href="https://cybercrime.gov.in" target="_blank" class="hover:text-blue-400 transition">🌐 cybercrime.gov.in</a></li>
-                        <li><a href="/login" class="hover:text-blue-400 transition">Sign In / Register</a></li>
-                    </ul>
-                </div>
+            <div class="footer-brand">
+
+                <span class="logo-text">
+                    SarvShield
+                </span>
+
+                <p>
+                    Explainable intelligence for a safer digital world.
+                </p>
+
+                <a href="/home" class="footer-cta">
+                    Start protecting yourself →
+                </a>
 
             </div>
 
-            <div class="pt-8 border-t border-dark-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-                <span>© 2026 SarvShield Project. All rights reserved.</span>
-                <span>Think twice. Scan smart. Stay protected.</span>
+            <div class="footer-column">
+
+                <h4>
+                    Product
+                </h4>
+
+                <a href="#vision">Vision</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#features">Features</a>
+                <a href="#scam-types">Scam Types</a>
+
             </div>
+
+            <div class="footer-column">
+
+                <h4>
+                    Safety
+                </h4>
+
+                <a href="/scam-report">Report a Scam</a>
+                <a href="#faq">FAQ</a>
+                <a href="/contact">Support</a>
+
+            </div>
+
+            <div class="footer-column">
+
+                <h4>
+                    SarvShield
+                </h4>
+
+                <a href="#hero">Back to Top</a>
+                <a href="/login">Get Started</a>
+
+            </div>
+
         </div>
+
+        <div class="footer-bottom">
+
+            <div class="container footer-bottom-content">
+
+                <p>
+                    © 2026 SarvShield Project. All rights reserved.
+                </p>
+
+                <p>
+                    Think twice. Scan smart. Stay protected.
+                </p>
+
+            </div>
+
+        </div>
+
     </footer>
 
+
     <!-- =========================================================
-         INLINE JAVASCRIPT (Mobile Nav Toggle + FAQ Accordion)
+         JAVASCRIPT
     ========================================================== -->
-    <script>
-        // 1. Mobile Menu Toggle
-        const mobileNavToggle = document.getElementById('mobileNavToggle');
-        const mobileMenu = document.getElementById('mobileMenu');
-        const navIcon = document.getElementById('navIcon');
-
-        if (mobileNavToggle && mobileMenu) {
-            mobileNavToggle.addEventListener('click', () => {
-                const isHidden = mobileMenu.classList.contains('hidden');
-                if (isHidden) {
-                    mobileMenu.classList.remove('hidden');
-                    navIcon.classList.remove('fa-bars');
-                    navIcon.classList.add('fa-xmark');
-                } else {
-                    mobileMenu.classList.add('hidden');
-                    navIcon.classList.remove('fa-xmark');
-                    navIcon.classList.add('fa-bars');
-                }
-            });
-
-            // Close mobile menu when clicking any nav link
-            document.querySelectorAll('.mobile-link').forEach(link => {
-                link.addEventListener('click', () => {
-                    mobileMenu.classList.add('hidden');
-                    navIcon.classList.remove('fa-xmark');
-                    navIcon.classList.add('fa-bars');
-                });
-            });
-        }
-
-        // 2. FAQ Accordion Logic
-        document.querySelectorAll('.faq-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                const content = button.nextElementSibling;
-                const icon = button.querySelector('.faq-icon');
-                const isOpened = !content.classList.contains('hidden');
-
-                // Close all other open accordions
-                document.querySelectorAll('.faq-content').forEach(c => c.classList.add('hidden'));
-                document.querySelectorAll('.faq-icon').forEach(i => i.classList.remove('rotate-180'));
-
-                // Toggle selected
-                if (!isOpened) {
-                    content.classList.remove('hidden');
-                    icon.classList.add('rotate-180');
-                }
-            });
-        });
-    </script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
 
 </body>
 </html>
