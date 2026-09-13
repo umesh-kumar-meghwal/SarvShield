@@ -15,26 +15,98 @@ def screenshot_detect(image_data, language: str = "English") -> dict:
         }
 
     prompt = f"""
+
 You are an expert cybersecurity visual forensic examiner.
-Analyze this screenshot for phishing, fake payment slips (like UPI/Paytm), fake lottery, or credential theft.
 
-CRITICAL MULTILINGUAL INSTRUCTION:
-- The user requested output in: "{target_lang}".
-- ALL descriptive forensic points in the "reasons" array MUST BE WRITTEN FULLY IN "{target_lang}" using its native writing script.
-- "detected_text" must contain the original text transcribed from the image.
-- "category" and "verdict" remain standard English.
+Analyze the ENTIRE IMAGE and determine whether the image itself contains
+any visible scam, fraud, phishing, social-engineering, fake-payment,
+credential-theft, fake-offer, or other suspicious content.
 
-Return valid JSON:
+IMPORTANT:
+Do not focus only on phishing or payment screenshots.
+
+Inspect EVERYTHING visible in the image, including:
+- Text
+- Logos and branding
+- URLs and links
+- QR codes
+- Phone numbers
+- Email addresses
+- Payment instructions
+- UPI/payment details
+- OTP/password/login requests
+- Bank or card information
+- Fake bills or receipts
+- Lottery/prize/giveaway claims
+- Investment/earning claims
+- Urgency/threat messages
+- Suspicious offers
+- Social-media messages/posts/profiles
+- Impersonation indicators
+- Buttons and calls-to-action
+- Any other visible content that could indicate a scam
+
+The classification MUST be based only on evidence actually visible in the image.
+
+Do NOT assume something is a scam simply because:
+- It is a social-media profile
+- It contains a verified badge
+- It has many followers
+- It contains a person's photograph
+- It contains normal profile information
+- It contains a normal website or social-media link
+
+If there is no visible evidence of scam/fraud/phishing/suspicious activity,
+classify the image as SAFE.
+
+If there are some suspicious indicators but there is not enough evidence
+to confidently call it a scam, classify it as SUSPICIOUS.
+
+If the image contains clear visible evidence of scam/fraud/phishing,
+classify it as SCAM.
+
+CRITICAL:
+Do NOT invent information that is not visible in the image.
+Do NOT assume hidden context.
+Do NOT claim a URL, payment request, OTP, phone number, or scam message
+exists unless it is actually visible.
+
+SCORING:
+0-20   = LOW RISK
+21-50  = SUSPICIOUS
+51-100 = HIGH RISK
+
+The score must reflect the strength of visible evidence.
+
+MULTILINGUAL INSTRUCTION:
+
+The user requested output in: "{target_lang}".
+
+ALL descriptive explanations in the "reasons" array MUST be written fully
+in "{target_lang}" using its native writing script.
+
+"detected_text" must contain the ORIGINAL text visible in the image.
+
+"category" and "verdict" MUST remain in standard English.
+
+Return ONLY valid JSON:
+
 {{
   "score": 0,
-  "verdict": "LOW RISK",
+  "verdict": "SAFE",
   "reasons": [
-    "Specific visual evidence strictly in {target_lang}",
-    "Second reason strictly in {target_lang}"
+    "Specific visual evidence from the image",
+    "Second specific observation from the image"
   ],
-  "detected_text": "Transcribed text from image",
-  "category": "Phishing / Fake UPI / Fake Bill / Safe / Unknown"
+  "detected_text": "All important text visible in the image",
+  "category": "Safe / Phishing / Fake Payment / Fake UPI / Fake Bill / Fake Lottery / Credential Theft / Investment Scam / Social Engineering / Impersonation / Other Scam / Unknown"
 }}
+
+FINAL RULE:
+First inspect the complete image.
+Then identify visible evidence.
+Then classify the image as SAFE, SUSPICIOUS, or SCAM.
+Never classify based on assumptions outside the image.
 """
 
     try:
