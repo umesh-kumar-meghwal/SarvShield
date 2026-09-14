@@ -310,7 +310,7 @@
                 <!-- SPEAKER BUTTON -->
                 <button type="button" id="speak-btn" class="w-full py-3.5 rounded-2xl bg-dark-card border border-dark-border hover:bg-dark-hover text-blue-400 font-bold text-xs sm:text-sm shadow-md transition flex items-center justify-center gap-2.5">
                     <i class="fa-solid fa-volume-high text-base"></i>
-                    <span>Speak Result</span>
+                    <span>Listen Result</span>
                 </button>
 
                 <!-- DYNAMIC RESULT CONTAINER -->
@@ -1287,7 +1287,7 @@
                 window.speechSynthesis.cancel();
             }
 
-            speakBtn.innerHTML = `<i class="fa-solid fa-volume-high text-base"></i> <span>Speak Result</span>`;
+            speakBtn.innerHTML = `<i class="fa-solid fa-volume-high text-base"></i> <span>Listen Result</span>`;
             speakBtn.classList.remove("border-rose-500/50");
         }
     </script>
