@@ -218,11 +218,23 @@ def user_register():
 
     except Exception as e:
         return jsonify({"success": False, "message": f"Registration failed: {str(e)}"}), 500
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template("404.html"), 404
 
 
+@app.errorhandler(500)
+def internal_server_error(error):
+    return render_template("404.html"), 500
+
+
+@app.errorhandler(403)
+def forbidden(error):
+    return render_template("404.html"), 403
 # =========================================================
 # CORE SCAMCHECK DETECTION ROUTE
 # =========================================================
+
 @app.route("/scamcheck", methods=["GET", "POST"])
 def scamcheck_check():
     if request.method == "GET":
@@ -230,7 +242,13 @@ def scamcheck_check():
         user_data = {}
         if user_email:
             try:
-                res = supabase.table("user").select("name, profile_picture","email").eq("email", user_email).limit(1).execute()
+                res = (
+                    supabase.table("user")
+                    .select("name, profile_picture, email")
+                    .eq("email", user_email)
+                    .limit(1)
+                    .execute()
+                )
                 if res.data:
                     user_data = res.data[0]
             except Exception:
@@ -244,11 +262,11 @@ def scamcheck_check():
         link = request.form.get("link", "").strip()
         screenshot_file = request.files.get("screenshot")
 
-        # 2. Extract selected language dynamically (POST form or GET query param)
+        # 2. Extract selected language
         selected_language = (
             request.form.get("language") or 
             request.args.get("lang") or 
-            "Marathi"
+            "English"
         ).strip()
 
         has_message = bool(message)
@@ -291,7 +309,7 @@ def scamcheck_check():
         link_result = {"score": 0, "domain": "", "final_domain": "", "verdict": "UNKNOWN", "reasons": []}
         screenshot_result = {"score": 0, "verdict": "UNKNOWN", "category": "Unknown", "detected_text": "", "reasons": []}
 
-        # 4. Multi-Threaded Parallel Execution with Safe Exception Handling
+        # 4. Multi-Threaded Parallel Execution
         with ThreadPoolExecutor(max_workers=4) as executor:
             fut_msg = executor.submit(message_detect, message, selected_language) if has_message else None
             fut_phone = executor.submit(phone_detect, supabase, phone, selected_language) if has_phone else None
@@ -340,18 +358,22 @@ def scamcheck_check():
         final_verdict = risk_res.get("verdict", "UNKNOWN")
         contribution_data = risk_res.get("contribution", {})
 
-        # 6. Attack Chain & Scam Fingerprint
+        # 6. Attack Chain & Scam Fingerprint (Ab poora context pass hota hai)
         fingerprint_data = build_scam_fingerprint(
             message=message,
+            phone=phone,
             phone_result=phone_result,
+            link=link,
             link_result=link_result,
             screenshot_result=screenshot_result,
+            final_score=final_score,
             language=selected_language
         )
 
         fingerprint = fingerprint_data.get("scam_fingerprint", [])
         attack_chain = fingerprint_data.get("attack_chain", [])
         why_text = fingerprint_data.get("why", "Security analysis completed based on submitted attributes.")
+        match_score = fingerprint_data.get("match_score", final_score)
 
         evidence = list(dict.fromkeys([
             str(r) for r in (
@@ -411,7 +433,7 @@ def scamcheck_check():
         except Exception as db_err:
             print("DB SCAM CHECK LOG NOTICE:", repr(db_err))
 
-        # 9. Return JSON Response with Dynamic Language Output
+        # 9. Return JSON Response with Dynamic Tailored Output
         return jsonify({
             "success": True,
             "final_score": final_score,
@@ -446,6 +468,7 @@ def scamcheck_check():
             "screenshot_reasons": [str(r) for r in screenshot_result.get("reasons", [])],
             "scam_fingerprint": fingerprint,
             "attack_chain": attack_chain,
+            "fingerprint_match": match_score,   # <-- Dynamic percentage returned
             "evidence": evidence,
             "why": why_text,
             "urgency_level": "HIGH" if len(urgency_detected) >= 2 else "MEDIUM" if len(urgency_detected) == 1 else "LOW",
@@ -464,7 +487,6 @@ def scamcheck_check():
     except Exception as e:
         traceback.print_exc()
         return jsonify({"success": False, "message": f"Server Error: {str(e)}"}), 500
-    
     
     
     

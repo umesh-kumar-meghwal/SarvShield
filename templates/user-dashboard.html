@@ -560,7 +560,7 @@
                 ? res.immediate_steps
                 : (Array.isArray(res.safe_next) && res.safe_next.length > 0 ? res.safe_next : ["Do not interact with the suspicious sender or link."]);
 
-            // Trusted Helper Popup
+            // Trusted Helper Popup (Easy Mode)
             let trustedHelperHTML = isEasyMode ? `
             <div class="p-5 sm:p-6 rounded-3xl bg-amber-500/10 border border-amber-500/30 space-y-4 shadow-xl">
                 <div class="flex items-center gap-2.5 text-amber-400 font-bold text-sm sm:text-base">
@@ -604,16 +604,10 @@
                         }
                         return '';
                     }).join('')}
-                    <a href="tel:1930" class="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 font-bold text-xs sm:text-sm transition">📞 1930</a>
-                    <a href="https://cybercrime.gov.in" target="_blank" class="px-4 py-2 rounded-xl bg-dark-cardLight hover:bg-dark-card border border-dark-border text-blue-400 text-xs sm:text-sm transition">🌐 cybercrime.gov.in</a>
                 </div>
             </div>`;
 
-            
-
-            
-
-            // Vector Breakdown Section (Only displays active submitted vectors!)
+            // Active Vectors Breakdown Section
             let activeVectorsHTML = "";
             if (hasMessage) {
                 activeVectorsHTML += `
@@ -829,18 +823,19 @@
             }
 
             // =========================================================================
-            // 02: SCAM FINGERPRINTING CARD (EXACT LANDING PAGE SPLIT DESIGN FROM SCREENSHOT)
+            // 02: SCAM FINGERPRINTING (DYNAMIC MATCH SCORE FROM BACKEND)
             // =========================================================================
             const fingerprintItems = Array.isArray(res.scam_fingerprint) && res.scam_fingerprint.length > 0
                 ? res.scam_fingerprint
                 : ["Urgency Trigger", "Reward Claim", "Payment Request", "Known Scam Pattern"];
 
-            // Calculate realistic Match Percentage (min 60%, max 98%)
-            const matchPercentage = Math.min(98, Math.max(60, finalScore >= 70 ? 94 : (finalScore > 0 ? finalScore + 15 : 78)));
+            // Real dynamic match percentage from backend API (res.fingerprint_match)
+            const matchPercentage = res.fingerprint_match 
+                ? Number(res.fingerprint_match) 
+                : (finalScore > 0 ? Math.min(99, Math.max(25, finalScore)) : 15);
 
             let fingerprintRowsHtml = "";
             fingerprintItems.forEach((fp, index) => {
-                // If last item or contains 'pattern', tag it 'Matched', otherwise 'Detected'
                 const isMatched = (index === fingerprintItems.length - 1 && fingerprintItems.length > 2) || fp.toLowerCase().includes('pattern');
                 const tagLabel = isMatched ? "Matched" : "Detected";
 
@@ -861,7 +856,7 @@
             <div class="p-6 sm:p-8 rounded-3xl bg-dark-card border border-dark-border shadow-2xl">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
                     
-                    <!-- Left Column: Title, Numbers & Bullet Points (Exact Screenshot) -->
+                    <!-- Left Column: Title, Numbers & Bullet Points -->
                     <div class="lg:col-span-5 space-y-4">
                         <span class="text-3xl font-black text-blue-500 font-mono">02</span>
                         <h4 class="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
@@ -886,24 +881,18 @@
                         </ul>
                     </div>
 
-                    <!-- Right Column: The Exact Visual Card (Screenshot) -->
+                    <!-- Right Column: Visual Card -->
                     <div class="lg:col-span-7 p-5 sm:p-7 rounded-3xl bg-[#0B1324] border border-blue-500/25 shadow-xl space-y-5">
-                        
-                        <!-- Header: Pattern Match + % -->
                         <div class="flex items-center justify-between">
                             <span class="text-xs sm:text-sm font-semibold text-slate-400">Pattern Match</span>
                             <strong class="text-2xl sm:text-3xl font-black text-blue-400 font-mono tracking-tight">
                                 ${matchPercentage}%
                             </strong>
                         </div>
-
-                        <!-- Cyan Glowing Progress Bar -->
                         <div class="w-full h-2.5 bg-dark-cardLight rounded-full overflow-hidden">
                             <div class="h-full rounded-full bg-gradient-to-r from-blue-500 via-sky-400 to-cyan-300 shadow-[0_0_12px_rgba(56,189,248,0.5)] transition-all duration-700" 
                                  style="width: ${matchPercentage}%;"></div>
                         </div>
-
-                        <!-- Detected Rows -->
                         <div class="space-y-2.5 pt-1">
                             ${fingerprintRowsHtml}
                         </div>
@@ -980,7 +969,6 @@
                             </div>
                         </div>
                     </div>
-
 
                     <!-- 3 Simple Reasons -->
                     <div class="space-y-3 pt-2">
@@ -1068,7 +1056,7 @@
                             </div>
                         </div>
 
-                        <!-- 02: Scam Fingerprinting (Exact Landing Page Screenshot Layout) -->
+                        <!-- 02: Scam Fingerprinting (Dynamic Match Score) -->
                         ${scamFingerprintCardHTML}
 
                         <!-- Hard Evidence Trigger List -->
