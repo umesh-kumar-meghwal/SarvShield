@@ -609,37 +609,9 @@
                 </div>
             </div>`;
 
-            // Urgency & Pressure Detector
-            const urgencyLevel = (res.urgency_level || "LOW").toUpperCase();
-            let urgencyColor = "text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
-            if (urgencyLevel === "HIGH") urgencyColor = "text-rose-400 bg-rose-500/10 border-rose-500/30";
-            else if (urgencyLevel === "MEDIUM") urgencyColor = "text-amber-400 bg-amber-500/10 border-amber-500/30";
+            
 
-            let urgencyHTML = `
-            <div class="p-4 sm:p-5 rounded-2xl bg-dark-cardLight border border-dark-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-                <div class="space-y-1">
-                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Psychological Urgency & Stress Tactics</span>
-                    <p class="text-xs sm:text-sm text-slate-200">
-                        <strong>Urgency Cues:</strong> <span class="text-slate-300 italic font-medium">${escapeHtml(res.urgency_detected || "None detected")}</span>
-                    </p>
-                </div>
-                <div class="px-3.5 py-1.5 rounded-xl border text-xs sm:text-sm font-bold ${urgencyColor} shrink-0 self-start sm:self-auto">
-                    <i class="fa-solid fa-gauge-high mr-1.5"></i> Urgency: ${escapeHtml(urgencyLevel)}
-                </div>
-            </div>`;
-
-            // Coach Recommended Action Card
-            let coachActionHTML = res.recommended_action ? `
-            <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-rose-500/15 via-red-950/20 to-transparent border border-rose-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div class="space-y-1.5 flex-1">
-                    <span class="text-[10px] sm:text-xs uppercase font-bold tracking-widest text-rose-400 block">Coach's Immediate Verdict</span>
-                    <h5 class="text-base sm:text-lg font-black text-white">${escapeHtml(res.recommended_action)}</h5>
-                    ${res.why_dangerous ? `<p class="text-xs sm:text-sm text-rose-200/90 leading-relaxed">${escapeHtml(res.why_dangerous)}</p>` : ''}
-                </div>
-                <div class="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 text-xl shrink-0">
-                    <i class="fa-solid fa-hand"></i>
-                </div>
-            </div>` : '';
+            
 
             // Vector Breakdown Section (Only displays active submitted vectors!)
             let activeVectorsHTML = "";
@@ -1009,8 +981,6 @@
                         </div>
                     </div>
 
-                    ${coachActionHTML}
-                    ${urgencyHTML}
 
                     <!-- 3 Simple Reasons -->
                     <div class="space-y-3 pt-2">
