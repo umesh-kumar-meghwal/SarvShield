@@ -1697,17 +1697,187 @@ def chat():
 
 
 
+def get_user_real_trust_metrics(user_email):
+    """
+    Supabase Schema se real data calculate karta hai:
+    - scam_checks: Total scans aur recent threat scores
+    - scam_reports: User ne kitni reports file ki
+    - Trust score: User ke recent scans ke risk scores ka inverse (Low risk = High Trust)
+    """
+    try:
+        # 1. Total Scam Checks Count
+        checks_count_res = (
+            supabase.table("scam_checks")
+            .select("id", count="exact")
+            .eq("user_email", user_email)
+            .execute()
+        )
+        total_checks = checks_count_res.count if checks_count_res.count is not None else 0
+
+        # 2. Total Reports Submitted Count
+        reports_count_res = (
+            supabase.table("scam_reports")
+            .select("id", count="exact")
+            .eq("user_email", user_email)
+            .execute()
+        )
+        total_reports = reports_count_res.count if reports_count_res.count is not None else 0
+
+        # 3. Recent Scam Checks (Latest 10 for Activity Log & Chart)
+        recent_checks_res = (
+            supabase.table("scam_checks")
+            .select("id, message, phone, link, screenshot, final_score, verdict, created_at")
+            .eq("user_email", user_email)
+            .order("created_at", desc=True)
+            .limit(10)
+            .execute()
+        )
+        recent_checks = recent_checks_res.data or []
+
+        # 4. Real Trust Score Calculation
+        if recent_checks:
+            # Average risk nikal kar 100 me se minus karte hain (Suraksha score)
+            avg_risk = sum(int(c.get("final_score") or 0) for c in recent_checks) / len(recent_checks)
+            trust_score = max(10, min(100, int(100 - avg_risk)))
+        else:
+            # Agar user ne abhi tak koi scan nahi kiya to clean standing 95
+            trust_score = 95
+
+        # Trust Label
+        if trust_score >= 80:
+            trust_label = "Excellent Standing"
+            badge_class = "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+        elif trust_score >= 50:
+            trust_label = "Moderate Caution"
+            badge_class = "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+        else:
+            trust_label = "High Threat Exposure"
+            badge_class = "bg-rose-500/15 text-rose-400 border border-rose-500/30"
+
+        # 5. Historical Trend Chart Points (Oldest to Newest)
+        chronological_checks = list(reversed(recent_checks))
+        labels = []
+        scores = []
+
+        if chronological_checks:
+            for i, item in enumerate(chronological_checks):
+                raw_time = str(item.get("created_at") or "")
+                # Format date: DD/MM
+                if len(raw_time) >= 10:
+                    parts = raw_time[:10].split("-")
+                    labels.append(f"{parts[2]}/{parts[1]}" if len(parts) == 3 else f"Scan {i+1}")
+                else:
+                    labels.append(f"Scan {i+1}")
+
+                # Item safety score
+                risk = int(item.get("final_score") or 0)
+                scores.append(max(5, 100 - risk))
+        else:
+            labels = ["Baseline", "Today"]
+            scores = [trust_score, trust_score]
+
+        # 6. Recent Activity List
+        activities = []
+        for c in recent_checks[:5]:
+            if c.get("phone"):
+                title = f"Phone: {c['phone']}"
+            elif c.get("link"):
+                domain_val = c['link'].replace("https://", "").replace("http://", "").split("/")[0]
+                title = f"URL: {domain_val[:25]}"
+            elif c.get("screenshot"):
+                title = "Screenshot Evidence Scan"
+            elif c.get("message"):
+                msg_snippet = c['message'][:24] + "..." if len(c['message']) > 24 else c['message']
+                title = f"Message: {msg_snippet}"
+            else:
+                title = "Security Scan"
+
+            verdict = str(c.get("verdict") or "LOW RISK").upper()
+            score_val = int(c.get("final_score") or 0)
+
+            if "SCAM" in verdict or "HIGH" in verdict or score_val >= 60:
+                badge_style = "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                status_text = "High Risk"
+            elif "SUSPICIOUS" in verdict or score_val >= 30:
+                badge_style = "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                status_text = "Suspicious"
+            else:
+                badge_style = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                status_text = "Safe"
+
+            # Parse time e.g. 14:30
+            raw_t = str(c.get("created_at") or "")
+            time_display = raw_t[11:16] if len(raw_t) >= 16 else "Recently"
+
+            activities.append({
+                "title": title,
+                "status": status_text,
+                "badgeClass": badge_style,
+                "time": time_display
+            })
+
+        return {
+            "success": True,
+            "trust_score": trust_score,
+            "trust_label": trust_label,
+            "badge_class": badge_class,
+            "scam_checks": total_checks,
+            "reports": total_reports,
+            "labels": labels,
+            "scores": scores,
+            "activities": activities
+        }
+    except Exception as e:
+        print("[TRUST METRICS ERROR]:", repr(e))
+        return {
+            "success": False,
+            "trust_score": 90,
+            "trust_label": "Active Protection",
+            "badge_class": "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30",
+            "scam_checks": 0,
+            "reports": 0,
+            "labels": ["Initial", "Today"],
+            "scores": [90, 90],
+            "activities": []
+        }
+
+
 # =========================================================
-# OTHER DASHBOARD & PROFILE ROUTES
+# HOME PAGE ROUTE (WITH REAL SUPABASE DATA)
 # =========================================================
 @app.route('/home')
 def home_page():
     if "email" not in session or session.get("usertype") != "user":
         return redirect("/error")
+    
     user_email = session.get("email")
-    response = supabase.table("user").select("profile_picture","email").eq("email", user_email).single().execute()
-    return render_template('home.html', data=response.data or {})
 
+    # 1. Fetch User Profile Info
+    user_resp = (
+        supabase.table("user")
+        .select("profile_picture, email, name")
+        .eq("email", user_email)
+        .single()
+        .execute()
+    )
+    user_data = user_resp.data or {"email": user_email}
+
+    # 2. Fetch Real Trust Metrics from Supabase
+    trust_stats = get_user_real_trust_metrics(user_email)
+
+    return render_template('home.html', data=user_data, stats=trust_stats)
+
+
+# =========================================================
+# AJAX REFRESH ROUTE FOR TRUST OVERVIEW
+# =========================================================
+@app.route('/api/user-trust-stats')
+def api_user_trust_stats():
+    if "email" not in session:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    stats = get_user_real_trust_metrics(session.get("email"))
+    return jsonify(stats)
 
 @app.route("/admin-dashboard")
 def admin_dashboard():

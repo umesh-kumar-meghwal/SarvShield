@@ -37,7 +37,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <!-- jQuery -->
+    <!-- Chart.js & jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <style>
@@ -51,17 +52,12 @@
 
 <body class="bg-dark-base text-slate-100 flex min-h-screen overflow-x-hidden antialiased relative">
 
-    <!-- =====================================================
-         MOBILE BACKDROP OVERLAY
-    ===================================================== -->
+    <!-- Mobile Backdrop -->
     <div id="sidebarBackdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
 
-    <!-- =====================================================
-         SIDEBAR NAVIGATION (DESKTOP & MOBILE DRAWER)
-    ===================================================== -->
+    <!-- Sidebar Navigation -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 md:w-64 bg-dark-sidebar border-r border-dark-border flex flex-col justify-between shrink-0 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300 ease-in-out">
         <div>
-            <!-- Sidebar Header / Logo -->
             <div class="h-20 flex items-center justify-between px-6 border-b border-dark-border/60">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 text-lg shadow-inner">
@@ -73,14 +69,12 @@
                     </div>
                 </div>
 
-                <!-- Close Button (Mobile Only) -->
                 <button id="closeSidebarBtn" class="md:hidden text-slate-400 hover:text-white p-1 rounded-lg focus:outline-none" aria-label="Close Sidebar">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
-            <!-- Navigation Links -->
-            <nav class="p-4 space-y-1.5 text-sm font-medium">
+            <nav class="p-4 space-y-1.5 text-sm font-medium sidebar-nav">
                 <!-- Home (Active) -->
                 <a href="{{ url_for('home_page') }}" class="flex items-center gap-3.5 px-4 py-3 rounded-xl bg-blue-600/15 text-blue-400 border border-blue-500/20 font-semibold shadow-sm transition">
                     <svg class="w-5 h-5 stroke-current fill-none" stroke-width="1.8" viewBox="0 0 24 24">
@@ -122,27 +116,23 @@
             </nav>
         </div>
 
-        <!-- Sidebar Bottom Profile & Logout -->
+        <!-- Sidebar Profile -->
         <div class="p-4 border-t border-dark-border/60 space-y-2">
             <a href="{{ url_for('my_profile') }}" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-dark-hover transition">
-                  {% if data.email %}
-    <img
-        src="https://pabknuafhuozdylipmzf.supabase.co/storage/v1/object/public/profile-pictures/{{ data.email }}/profile.png"
-        alt="Profile Picture"
-        class="w-9 h-9 rounded-full object-cover border border-blue-500/40 shrink-0"
-        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-    >
-
-    <div
-        class="w-9 h-9 rounded-full border border-blue-500/40 shrink-0 items-center justify-center"
-        style="display:none;"
-    >
-        <i class="fa-solid fa-user text-sm"></i>
-    </div>
-{% endif %}
+                {% if data.email %}
+                <img
+                    src="https://pabknuafhuozdylipmzf.supabase.co/storage/v1/object/public/profile-pictures/{{ data.email }}/profile.png"
+                    alt="Profile Picture"
+                    class="w-9 h-9 rounded-full object-cover border border-blue-500/40 shrink-0"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                >
+                <div class="w-9 h-9 rounded-full border border-blue-500/40 shrink-0 items-center justify-center" style="display:none;">
+                    <i class="fa-solid fa-user text-sm"></i>
+                </div>
+                {% endif %}
                 <div class="overflow-hidden">
-                    <p class="text-xs font-semibold text-white truncate">My Profile</p>
-                    <p class="text-[10px] text-slate-400 truncate">Manage Account</p>
+                    <p class="text-xs font-semibold text-white truncate">{{ data.name if data.name else 'My Profile' }}</p>
+                    <p class="text-[10px] text-slate-400 truncate">{{ data.email }}</p>
                 </div>
             </a>
 
@@ -157,22 +147,16 @@
         </div>
     </aside>
 
-    <!-- =====================================================
-         MAIN PAGE WRAPPER
-    ===================================================== -->
+    <!-- Main Wrapper -->
     <div class="flex-1 flex flex-col min-w-0 w-full" id="pageWrapper">
 
-        <!-- Responsive Top Bar Navigation -->
+        <!-- Top Header -->
         <header class="h-20 border-b border-dark-border flex items-center justify-between px-4 sm:px-6 lg:px-10 bg-dark-base/90 backdrop-blur sticky top-0 z-30">
-            
-            <!-- Left: Toggle Hamburger + Breadcrumbs -->
             <div class="flex items-center gap-3">
-                <!-- Mobile Hamburger Button -->
                 <button id="mobileMenuBtn" class="md:hidden w-10 h-10 rounded-xl bg-dark-card border border-dark-border text-slate-300 hover:text-white flex items-center justify-center focus:outline-none active:scale-95 transition" aria-label="Open Navigation">
                     <i class="fa-solid fa-bars-staggered text-base"></i>
                 </button>
 
-                <!-- Breadcrumb Title -->
                 <div class="flex items-center gap-2">
                     <span class="text-xs uppercase font-bold tracking-widest text-slate-400">SarvShield</span>
                     <span class="text-slate-600 hidden xs:inline">/</span>
@@ -180,7 +164,6 @@
                 </div>
             </div>
 
-            <!-- Right Actions -->
             <div class="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium">
                 <a href="{{ url_for('feedback') }}" class="text-slate-400 hover:text-white transition hidden sm:inline">Feedback</a>
                 
@@ -194,139 +177,130 @@
 
                 <a href="/my-profile" class="w-9 h-9 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 hover:bg-blue-600 hover:text-white transition" aria-label="Profile">
                     {% if data.email %}
-    <img
-        src="https://pabknuafhuozdylipmzf.supabase.co/storage/v1/object/public/profile-pictures/{{ data.email }}/profile.png"
-        alt="Profile Picture"
-        class="w-9 h-9 rounded-full object-cover border border-blue-500/40 shrink-0"
-        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-    >
-
-    <div
-        class="w-9 h-9 rounded-full border border-blue-500/40 shrink-0 items-center justify-center"
-        style="display:none;"
-    >
-        <i class="fa-solid fa-user text-sm"></i>
-    </div>
-{% endif %}
+                    <img
+                        src="https://pabknuafhuozdylipmzf.supabase.co/storage/v1/object/public/profile-pictures/{{ data.email }}/profile.png"
+                        alt="Profile Picture"
+                        class="w-9 h-9 rounded-full object-cover border border-blue-500/40 shrink-0"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                    >
+                    <div class="w-9 h-9 rounded-full border border-blue-500/40 shrink-0 items-center justify-center" style="display:none;">
+                        <i class="fa-solid fa-user text-sm"></i>
+                    </div>
+                    {% endif %}
                 </a>
             </div>
         </header>
 
-        <!-- Main Content -->
+        <!-- Main Content Area -->
         <main class="flex-1 p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-8 sm:space-y-12">
 
             <!-- =====================================================
-                 HERO SECTION (DARK GRADIENT & LIVE VISUAL)
+                 REAL TRUST OVERVIEW SECTION (DIRECT FROM SUPABASE)
             ===================================================== -->
-            <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#12274d] via-[#0b1b36] to-[#0a1324] border border-blue-900/40 p-6 sm:p-8 lg:p-12 shadow-2xl">
-                <!-- Radial Glow Background -->
-                <div class="absolute -right-16 -top-16 w-80 sm:w-96 h-80 sm:h-96 rounded-full bg-blue-500/15 blur-3xl pointer-events-none"></div>
+            <section class="space-y-6">
+                <!-- Header with refresh -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-blue-400">Security Reputation</span>
+                        <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight mt-0.5">Trust Overview</h2>
+                    </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+                    <button id="refreshTrust" type="button" class="inline-flex items-center gap-2 rounded-xl border border-dark-border bg-dark-card px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-dark-hover transition active:scale-95">
+                        <i class="fa-solid fa-arrows-rotate"></i> <span>Refresh</span>
+                    </button>
+                </div>
+
+                <!-- 3 Metric Cards (Real Supabase Data) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                     
-                    <!-- Left: Hero Text -->
-                    <div class="lg:col-span-7 space-y-5">
-                        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-widest uppercase bg-blue-500/20 text-blue-400 border border-blue-400/30">
-                            <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
-                            YOUR DIGITAL SAFETY CENTER
-                        </span>
-
-                        <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
-                            Stay one step ahead <br>
-                            <span class="text-blue-400">of digital scams.</span>
-                        </h1>
-
-                        <p class="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed max-w-xl">
-                            SarvShield helps you understand suspicious messages, phone numbers, links, and screenshots before they become a threat.
-                        </p>
-
-                        <!-- Actions -->
-                        <div class="flex flex-wrap items-center gap-3 pt-2">
-                            <a href="/scamcheck" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-600/30 transition transform active:scale-95 flex items-center justify-center gap-2">
-                                <span>Check a Scam</span>
-                                <i class="fa-solid fa-arrow-right text-xs"></i>
-                            </a>
-
-                            <a href="{{ url_for('learn_more') }}" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-dark-card border border-dark-border hover:bg-dark-hover text-slate-300 hover:text-white font-semibold text-xs sm:text-sm text-center transition">
-                                Learn how it works
-                            </a>
+                    <!-- Card 1: Trust Score -->
+                    <div class="rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 flex flex-col justify-between shadow-xl">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs uppercase tracking-wider font-semibold text-slate-400">Current Trust Score</p>
+                                <span class="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm"><i class="fa-solid fa-gauge-high"></i></span>
+                            </div>
+                            <div class="flex items-baseline gap-1 mt-3 sm:mt-4">
+                                <span id="trustScore" class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">{{ stats.trust_score if stats else 95 }}</span>
+                                <span class="text-slate-500 text-base sm:text-lg font-bold">/100</span>
+                            </div>
                         </div>
-
-                        <!-- Stats Bar -->
-                        <div class="flex items-center justify-between sm:justify-start gap-4 sm:gap-8 pt-4 border-t border-dark-border/60 text-xs">
-                            <div>
-                                <strong class="text-lg sm:text-xl font-bold text-white block">4</strong>
-                                <span class="text-slate-400 text-[11px]">Threat Signals</span>
+                        <div class="mt-4 sm:mt-5 space-y-2.5">
+                            <div id="trustLabel" class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ stats.badge_class if stats else 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' }}">
+                                {{ stats.trust_label if stats else 'Excellent Standing' }}
                             </div>
-                            <div class="h-7 w-px bg-dark-border"></div>
-                            <div>
-                                <strong class="text-lg sm:text-xl font-bold text-white block">100</strong>
-                                <span class="text-slate-400 text-[11px]">Risk Scale</span>
-                            </div>
-                            <div class="h-7 w-px bg-dark-border"></div>
-                            <div>
-                                <strong class="text-lg sm:text-xl font-bold text-white block">24/7</strong>
-                                <span class="text-slate-400 text-[11px]">Protection</span>
+                            <div class="h-2 rounded-full bg-slate-800/80 overflow-hidden">
+                                <div id="trustBar" class="h-full bg-gradient-to-r from-blue-500 to-emerald-400 rounded-full transition-all duration-700" style="width: {{ stats.trust_score if stats else 95 }}%"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Right: Live Visual Card -->
-                    <div class="lg:col-span-5 flex justify-center">
-                        <div class="w-full max-w-md rounded-2xl border border-dark-border bg-dark-card/90 backdrop-blur p-5 sm:p-6 shadow-2xl space-y-4 sm:space-y-5">
-                            
-                            <div class="flex items-center justify-between border-b border-dark-border pb-3 text-xs">
-                                <span class="font-bold uppercase tracking-wider text-slate-400 text-[11px]">LIVE RISK ANALYSIS</span>
-                                <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">ACTIVE</span>
+                    <!-- Card 2: Total Scam Checks in Database -->
+                    <div class="rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-xl flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs uppercase tracking-wider font-semibold text-slate-400">Scam Checks</p>
+                                <span class="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm"><i class="fa-solid fa-shield-virus"></i></span>
                             </div>
-
-                            <div class="flex flex-col items-center justify-center py-2">
-                                <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-rose-500/20 border-t-rose-500 flex flex-col items-center justify-center shadow-lg shadow-rose-500/10">
-                                    <span class="text-2xl sm:text-3xl font-extrabold text-white">87</span>
-                                    <span class="text-[10px] text-slate-400 font-bold">/ 100</span>
-                                </div>
-                                <span class="mt-3 text-xs font-bold uppercase tracking-wider text-rose-400">HIGH RISK DETECTED</span>
+                            <div id="scamCheckCount" class="text-4xl sm:text-5xl font-extrabold text-white mt-3 sm:mt-4 tracking-tight">
+                                {{ stats.scam_checks if stats else 0 }}
                             </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-4 sm:mt-5 flex items-center gap-1.5"><i class="fa-regular fa-circle-check text-indigo-400"></i> Previous security analyses completed</p>
+                    </div>
 
-                            <!-- Signal Bars -->
-                            <div class="space-y-2.5 text-xs">
-                                <div>
-                                    <div class="flex justify-between text-[11px] mb-1 text-slate-400">
-                                        <span>Message signal</span>
-                                        <span class="text-slate-300">82%</span>
-                                    </div>
-                                    <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                                        <div class="h-full bg-rose-500 rounded-full" style="width: 82%"></div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div class="flex justify-between text-[11px] mb-1 text-slate-400">
-                                        <span>Link signal</span>
-                                        <span class="text-slate-300">94%</span>
-                                    </div>
-                                    <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                                        <div class="h-full bg-rose-500 rounded-full" style="width: 94%"></div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div class="flex justify-between text-[11px] mb-1 text-slate-400">
-                                        <span>Phone signal</span>
-                                        <span class="text-slate-300">61%</span>
-                                    </div>
-                                    <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                                        <div class="h-full bg-amber-500 rounded-full" style="width: 61%"></div>
-                                    </div>
-                                </div>
+                    <!-- Card 3: Reports Submitted in Database -->
+                    <div class="sm:col-span-2 lg:col-span-1 rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-xl flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs uppercase tracking-wider font-semibold text-slate-400">Reports Submitted</p>
+                                <span class="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm"><i class="fa-solid fa-flag"></i></span>
                             </div>
+                            <div id="reportCount" class="text-4xl sm:text-5xl font-extrabold text-white mt-3 sm:mt-4 tracking-tight">
+                                {{ stats.reports if stats else 0 }}
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-4 sm:mt-5 flex items-center gap-1.5"><i class="fa-solid fa-bullhorn text-amber-400"></i> Community spam & fraud alerts</p>
+                    </div>
+                </div>
 
-                            <p class="text-[11px] text-slate-400 text-center pt-2 border-t border-dark-border">
-                                <i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i> Multiple suspicious indicators detected
-                            </p>
+                <!-- Trust Graph & Recent Activity Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+                    
+                    <!-- Left: Real Chart.js Line Trend -->
+                    <div class="lg:col-span-2 rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-xl">
+                        <div class="mb-4 sm:mb-5">
+                            <h4 class="font-bold text-white text-sm sm:text-base">Trust Score Trend</h4>
+                            <p class="text-xs text-slate-400">Historical performance based on security activity</p>
+                        </div>
+                        <div class="relative h-60 sm:h-64 w-full">
+                            <canvas id="trustChart"></canvas>
+                            <div id="noTrustData" class="absolute inset-0 flex items-center justify-center text-xs text-slate-500 hidden">No security scans recorded yet</div>
                         </div>
                     </div>
 
+                    <!-- Right: Real Activity from scam_checks table -->
+                    <div class="rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-xl flex flex-col">
+                        <div class="mb-4">
+                            <h4 class="font-bold text-white text-sm sm:text-base">Recent Activity</h4>
+                            <p class="text-xs text-slate-400">Latest threat scans</p>
+                        </div>
+                        <div id="trustActivity" class="space-y-3 overflow-y-auto max-h-60 sm:max-h-64 pr-1">
+                            {% if stats and stats.activities %}
+                                {% for act in stats.activities %}
+                                <div class="p-3 rounded-xl bg-dark-cardLight border border-dark-border text-xs flex items-center justify-between">
+                                    <div class="truncate mr-2">
+                                        <strong class="text-white block truncate">{{ act.title }}</strong>
+                                        <span class="text-[10px] text-slate-400">{{ act.time }}</span>
+                                    </div>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ act.badgeClass }}">{{ act.status }}</span>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-xs text-slate-400">No activity logs recorded yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -341,7 +315,6 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
                     
-                    <!-- Action 1 -->
                     <a href="/scamcheck" class="group rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 flex flex-col justify-between hover:border-blue-500/40 hover:bg-dark-cardLight transition shadow-lg">
                         <div class="space-y-2.5 sm:space-y-3">
                             <span class="text-2xl font-extrabold text-blue-500 font-mono">01</span>
@@ -353,7 +326,6 @@
                         </span>
                     </a>
 
-                    <!-- Action 2 -->
                     <a href="/scam-report" class="group rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 flex flex-col justify-between hover:border-blue-500/40 hover:bg-dark-cardLight transition shadow-lg">
                         <div class="space-y-2.5 sm:space-y-3">
                             <span class="text-2xl font-extrabold text-amber-500 font-mono">02</span>
@@ -365,7 +337,6 @@
                         </span>
                     </a>
 
-                    <!-- Action 3 -->
                     <a href="{{ url_for('history') }}" class="group rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 flex flex-col justify-between hover:border-blue-500/40 hover:bg-dark-cardLight transition shadow-lg">
                         <div class="space-y-2.5 sm:space-y-3">
                             <span class="text-2xl font-extrabold text-emerald-500 font-mono">03</span>
@@ -424,7 +395,6 @@
             ===================================================== -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
                 
-                <!-- Community -->
                 <div class="lg:col-span-7 rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-8 flex flex-col justify-between space-y-4">
                     <div class="space-y-2">
                         <span class="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-blue-400">COMMUNITY PROTECTION</span>
@@ -438,7 +408,6 @@
                     </div>
                 </div>
 
-                <!-- Community Stat -->
                 <div class="lg:col-span-5 rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-8 flex flex-col justify-between space-y-4">
                     <span class="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-slate-400">COMMUNITY SIGNAL</span>
                     <div>
@@ -477,9 +446,7 @@
 
     </div>
 
-    <!-- =====================================================
-         WELCOME MODAL
-    ===================================================== -->
+    <!-- Welcome Modal -->
     <div class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden" id="welcomeOverlay">
         <div class="w-full max-w-md rounded-3xl border border-dark-border bg-dark-card p-6 lg:p-8 space-y-5 shadow-2xl relative">
             
@@ -509,12 +476,12 @@
     </div>
 
     <!-- =====================================================
-         RESPONSIVE SIDEBAR & MODAL JAVASCRIPT
+         SCRIPTS: SIDEBAR, MODAL & REAL CHART RENDERING
     ===================================================== -->
     <script>
         $(document).ready(function () {
             
-            // --- Mobile Drawer Toggle Logic ---
+            // --- 1. Mobile Drawer Toggle Logic ---
             function openMobileSidebar() {
                 $('#sidebar').removeClass('-translate-x-full');
                 $('#sidebarBackdrop').removeClass('hidden');
@@ -527,25 +494,22 @@
                 $('body').removeClass('overflow-hidden');
             }
 
-            // Click Hamburger to Open
             $('#mobileMenuBtn').on('click', function(e) {
                 e.stopPropagation();
                 openMobileSidebar();
             });
 
-            // Click Close button or Backdrop to Close
             $('#closeSidebarBtn, #sidebarBackdrop').on('click', function() {
                 closeMobileSidebar();
             });
 
-            // Close sidebar when clicking any navigation link on mobile
             $('.sidebar-nav a').on('click', function() {
                 if ($(window).width() < 768) {
                     closeMobileSidebar();
                 }
             });
 
-            // --- Welcome Modal Logic ---
+            // --- 2. Welcome Modal Logic ---
             const hasSeenModal = localStorage.getItem('SarvShield_welcome_seen');
             if (!hasSeenModal) {
                 $('#welcomeOverlay').removeClass('hidden');
@@ -557,6 +521,122 @@
             }
 
             $('#closeWelcome, #startExploring').on('click', dismissModal);
+
+            // --- 3. Real Trust Overview Chart & Metrics Loader ---
+            let trustChartInstance = null;
+
+            function renderTrustChart(labels, dataPoints) {
+                const ctx = document.getElementById('trustChart');
+                if (!ctx) return;
+
+                if (trustChartInstance) {
+                    trustChartInstance.destroy();
+                }
+
+                const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 220);
+                gradient.addColorStop(0, 'rgba(59, 130, 246, 0.35)');
+                gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+                trustChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Trust Score',
+                            data: dataPoints,
+                            borderColor: '#3b82f6',
+                            borderWidth: 2.5,
+                            backgroundColor: gradient,
+                            fill: true,
+                            tension: 0.35,
+                            pointBackgroundColor: '#60a5fa',
+                            pointBorderColor: '#0D1728',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#121F36',
+                                borderColor: '#1E293B',
+                                borderWidth: 1,
+                                titleColor: '#fff',
+                                bodyColor: '#60a5fa',
+                                padding: 10,
+                                displayColors: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: 'rgba(255, 255, 255, 0.04)' },
+                                ticks: { color: '#64748b', font: { size: 10 } }
+                            },
+                            y: {
+                                min: 0,
+                                max: 100,
+                                grid: { color: 'rgba(255, 255, 255, 0.04)' },
+                                ticks: { color: '#64748b', font: { size: 10 }, stepSize: 25 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Initial Render from Jinja Real Data
+            {% if stats and stats.labels and stats.scores %}
+                renderTrustChart({{ stats.labels|tojson }}, {{ stats.scores|tojson }});
+            {% else %}
+                renderTrustChart(["Initial", "Today"], [95, 95]);
+            {% endif %}
+
+            // Live Refresh Button Logic
+            $('#refreshTrust').on('click', function() {
+                const $icon = $(this).find('i');
+                $icon.addClass('fa-spin');
+
+                $.ajax({
+                    url: '/api/user-trust-stats',
+                    type: 'GET',
+                    success: function (res) {
+                        if (res && res.success) {
+                            $('#trustScore').text(res.trust_score);
+                            $('#trustBar').css('width', res.trust_score + '%');
+                            $('#scamCheckCount').text(res.scam_checks);
+                            $('#reportCount').text(res.reports);
+                            $('#trustLabel').attr('class', 'inline-flex rounded-full px-3 py-1 text-xs font-semibold ' + res.badge_class).text(res.trust_label);
+
+                            if (res.labels && res.scores) {
+                                renderTrustChart(res.labels, res.scores);
+                            }
+
+                            if (res.activities && res.activities.length > 0) {
+                                let actHtml = '';
+                                res.activities.forEach(act => {
+                                    actHtml += `
+                                        <div class="p-3 rounded-xl bg-dark-cardLight border border-dark-border text-xs flex items-center justify-between">
+                                            <div class="truncate mr-2">
+                                                <strong class="text-white block truncate">${act.title}</strong>
+                                                <span class="text-[10px] text-slate-400">${act.time}</span>
+                                            </div>
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${act.badgeClass}">${act.status}</span>
+                                        </div>
+                                    `;
+                                });
+                                $('#trustActivity').html(actHtml);
+                            }
+                        }
+                    },
+                    complete: function() {
+                        setTimeout(() => $icon.removeClass('fa-spin'), 400);
+                    }
+                });
+            });
+
         });
     </script>
 </body>
