@@ -7,6 +7,5 @@ gunicorn
 google-genai
 Pillow
 beautifulsoup4
-cv2
+opencv-python-headless
 numpy
-PIL
