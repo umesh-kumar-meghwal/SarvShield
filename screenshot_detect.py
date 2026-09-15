@@ -9,7 +9,8 @@ import requests
 from bs4 import BeautifulSoup
 import urllib3
 from ai_helper import call_openrouter
-  
+
+# Free hosting / untrusted SSL warnings disable karta hai
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
@@ -142,10 +143,7 @@ def extract_qr_code_payload(image_bytes) -> list:
 
 
 def fetch_webpage_content(target_url: str) -> dict:
-    """
-    Kisi bhi destination website ko open karta hai aur uska actual data
-    (Title, Headings, Text, Forms, Outbound Action Links) extract karta hai.
-    """
+    """Destination website ko open karke uska content scrape karta hai."""
     page_info = {
         "url": target_url,
         "final_url": target_url,
@@ -153,24 +151,18 @@ def fetch_webpage_content(target_url: str) -> dict:
         "title": "",
         "headings": [],
         "text_content": "",
-        "form_inputs": [],
         "action_links": [],
-        "is_direct_download": False,
-        "error": None
+        "is_direct_download": False
     }
 
     headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-            "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-        ),
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9,hi;q=0.8"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
     }
 
     try:
         session = requests.Session()
-        resp = session.get(target_url, timeout=8, allow_redirects=True, headers=headers, verify=False)
+        resp = session.get(target_url, timeout=7, allow_redirects=True, headers=headers, verify=False)
         page_info["final_url"] = resp.url
         page_info["domain"] = urlparse(resp.url).netloc.lower().split(":")[0]
 
@@ -178,26 +170,17 @@ def fetch_webpage_content(target_url: str) -> dict:
         if resp.url.lower().endswith((".apk", ".exe", ".zip")) or "application/vnd.android.package-archive" in content_type:
             page_info["is_direct_download"] = True
 
-        html_text = resp.text[:75000]
+        html_text = resp.text[:50000]
         soup = BeautifulSoup(html_text, "html.parser")
 
-        # 1. Page Title
         if soup.title and soup.title.string:
             page_info["title"] = re.sub(r"\s+", " ", soup.title.string).strip()
 
-        # 2. Page Headings (H1, H2, H3)
         for h in soup.find_all(["h1", "h2", "h3"]):
-            text = h.get_text(" ", strip=True)
-            if text and len(text) > 2:
-                page_info["headings"].append(text)
+            t = h.get_text(" ", strip=True)
+            if t and len(t) > 2:
+                page_info["headings"].append(t)
 
-        # 3. Form Inputs (User se kya maang rahe hain)
-        for inp in soup.find_all(["input", "textarea"]):
-            name_val = inp.get("placeholder") or inp.get("name") or inp.get("type") or ""
-            if name_val and name_val not in page_info["form_inputs"]:
-                page_info["form_inputs"].append(name_val)
-
-        # 4. Outbound Action Links & Buttons (Andar lage huye doosre links)
         for a_tag in soup.find_all("a", href=True):
             raw_href = a_tag["href"].strip()
             if raw_href and not raw_href.startswith(("#", "javascript:")):
@@ -207,24 +190,19 @@ def fetch_webpage_content(target_url: str) -> dict:
                 if desc not in page_info["action_links"]:
                     page_info["action_links"].append(desc)
 
-        # 5. Clean Visible Body Text
         for tag in soup(["script", "style", "noscript", "svg"]):
             tag.decompose()
         clean_text = re.sub(r"\s+", " ", soup.get_text(" ", strip=True))
-        page_info["text_content"] = clean_text[:3000]
+        page_info["text_content"] = clean_text[:1200]
 
-    except Exception as e:
-        page_info["error"] = str(e)
+    except Exception:
+        pass
 
     return page_info
 
 
 def deep_trace_any_link(initial_payload: str) -> dict:
-    """
-    100% Generic Multi-Hop Link Tracer:
-    Yeh kisi bhi link (Link 1 -> Link 2 -> Link 3) ko deeply trace karke
-    uska poora asli content nikalta hai. Koi bhi brand hardcode nahi hai.
-    """
+    """Link 1 -> Link 2 -> Link 3 ko deeply trace karta hai."""
     report = {
         "initial_payload": initial_payload,
         "is_url": False,
@@ -239,7 +217,6 @@ def deep_trace_any_link(initial_payload: str) -> dict:
     if not initial_payload:
         return report
 
-    # Check UPI
     if initial_payload.lower().startswith("upi://pay"):
         report["is_upi"] = True
         try:
@@ -255,7 +232,6 @@ def deep_trace_any_link(initial_payload: str) -> dict:
             pass
         return report
 
-    # Check Web URL
     is_http = bool(re.match(r"^https?://", initial_payload, re.IGNORECASE))
     is_domain = bool(re.match(r"^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(/.*)?$", initial_payload))
 
@@ -266,7 +242,6 @@ def deep_trace_any_link(initial_payload: str) -> dict:
     url_1 = initial_payload if is_http else ("https://" + initial_payload)
     report["hops"].append(url_1)
 
-    # 1. Fetch First Destination Page
     page_1 = fetch_webpage_content(url_1)
     report["pages"].append(page_1)
 
@@ -275,17 +250,14 @@ def deep_trace_any_link(initial_payload: str) -> dict:
     report["deepest_url"] = page_1["final_url"]
     report["deepest_title"] = page_1["title"]
 
-    # 2. Check if Page 1 has an Outbound/Nested Link to another external service
     next_external_target = None
     for link_str in page_1["action_links"]:
         actual_url = link_str.split(" -> ")[-1]
         p_target = urlparse(actual_url)
-        # Agar link kisi doosre domain ya Telegram/download par le ja raha hai
         if p_target.netloc and p_target.netloc != page_1["domain"] and not p_target.netloc.endswith("google.com"):
             next_external_target = actual_url
             report["nested_links_found"].append(link_str)
 
-    # 3. Agar andar doosra link mila, toh usko bhi fetch aur scrape karo!
     if next_external_target and next_external_target not in report["hops"]:
         report["hops"].append(next_external_target)
         if not ("t.me/" in next_external_target or next_external_target.lower().endswith(".apk")):
@@ -312,109 +284,89 @@ def screenshot_detect(image_data, language: str = "English") -> dict:
             "qr_content": ""
         }
 
-    # 1. Hardware/Optical scan for QR Code
+    # 1. Check if Image contains a QR code
     qr_payloads = extract_qr_code_payload(image_data)
     has_qr = len(qr_payloads) > 0
     raw_qr_payload = qr_payloads[0] if has_qr else ""
 
-    # 2. Deep Generic Link Trace & Web Scrape
+    # 2. If QR Code exists, trace the destination link / UPI
     intel = deep_trace_any_link(raw_qr_payload) if has_qr else {}
 
-    # 3. Format the actual scraped webpage content for AI (NO HARDCODING)
-    scraped_report_text = "NO QR CODE PRESENT"
-
+    # QR Context Report
+    qr_info_block = "NO QR CODE DETECTED IN IMAGE."
     if has_qr:
         if intel.get("is_url"):
-            pages_summary = []
-            for i, pg in enumerate(intel.get("pages", [])):
-                headings_fmt = " | ".join(pg.get("headings", [])) if pg.get("headings") else "None"
-                inputs_fmt = ", ".join(pg.get("form_inputs", [])) if pg.get("form_inputs") else "None"
-                links_fmt = "\n    * ".join(pg.get("action_links", [])[:6]) if pg.get("action_links") else "None"
-                text_preview = pg.get("text_content", "")[:1500]
+            hops_str = " -> ".join(intel.get("hops", [raw_qr_payload]))
+            nested_str = ", ".join(intel.get("nested_links_found", ["None"])) if intel.get("nested_links_found") else "None"
+            scraped_snippet = intel.get("pages", [{}])[0].get("text_content", "")[:600] if intel.get("pages") else ""
 
-                pages_summary.append(f"""
---- [WEBPAGE {i+1} SCRAPED DATA] ---
-- Requested URL: {pg.get('requested_url')}
-- Final Loaded URL: {pg.get('final_url')}
-- Domain: {pg.get('domain')}
-- Page Title: "{pg.get('title') or 'No Title'}"
-- Headings on Page: "{headings_fmt}"
-- Forms / Data Fields Requested from User: "{inputs_fmt}"
-- Direct Download Flag: {"YES (.apk / binary download)" if pg.get('is_direct_download') else "NO"}
-- Outbound Action Links / Buttons Discovered on this Page:
-    * {links_fmt}
-- ACTUAL VISIBLE TEXT WRITTEN ON THIS WEBPAGE:
-\"\"\"{text_preview if text_preview else 'Page text is empty or dynamically hidden.'}\"\"\"
-""")
-
-            hops_chain = " -> ".join(intel.get("hops", [raw_qr_payload]))
-            nested_str = "\n  * ".join(intel.get("nested_links_found", ["None"])) if intel.get("nested_links_found") else "None"
-
-            scraped_report_text = f"""
-============================================================
-LIVE QR CODE & FULL WEBPAGE SCRAPED FORENSIC REPORT:
-- Initial Scanned QR Link: "{raw_qr_payload}"
-- Complete Redirection Chain (Hops): {hops_chain}
-- Final Deepest Destination URL: "{intel.get('deepest_url')}"
-- Final Destination Title: "{intel.get('deepest_title') or 'No Title'}"
-- Secondary / Nested Action Links Found Inside Pages:
-  * {nested_str}
-
-{chr(10).join(pages_summary)}
-============================================================
+            qr_info_block = f"""
+QR CODE FORENSIC TRACE:
+- QR Code Decoded: YES
+- Initial QR URL: "{raw_qr_payload}"
+- Redirect Chain: {hops_str}
+- Final Destination: "{intel.get('deepest_url')}"
+- Target Page Title: "{intel.get('deepest_title')}"
+- Nested Inner Links Found on Page: {nested_str}
+- Scraped Webpage Text Preview: "{scraped_snippet}"
 """
         elif intel.get("is_upi"):
             upi = intel.get("upi_details") or {}
-            scraped_report_text = f"""
-- QR Code Decoded: UPI Payment Intent
+            qr_info_block = f"""
+QR CODE UPI INTENT DETECTED:
 - Payee VPA / ID: "{upi.get('payee_vpa')}"
 - Payee Name: "{upi.get('payee_name')}"
-- Amount: "{upi.get('amount') or 'Open / Dynamic Amount'}"
+- Requested Amount: "{upi.get('amount') or 'User Input'}"
 """
         else:
-            scraped_report_text = f"- Raw QR Decoded Text: {raw_qr_payload}"
+            qr_info_block = f"QR Code Decoded Text: {raw_qr_payload}"
 
-    # 4. Pure Dynamic AI Analysis (AI reads the content and decides category & reasons)
+    # 3. Comprehensive Vision Prompt (Reads Image Text + QR Code)
     prompt = f"""
-You are a Senior Cyber Threat Intelligence Investigator.
-Analyze the submitted screenshot alongside the ACTUAL LIVE SCRAPED WEBPAGE CONTENT provided below.
+You are a Senior Cybersecurity Visual Forensic Examiner.
 
-{scraped_report_text}
+Analyze the ATTACHED SCREENSHOT IMAGE thoroughly.
 
-CRITICAL RULES FOR DYNAMIC THREAT EVALUATION:
-1. READ THE "ACTUAL VISIBLE TEXT WRITTEN ON THIS WEBPAGE" CAREFULLY.
-2. DO NOT USE ANY STATIC OR HARDCODED ASSUMPTIONS.
-   - Analyze whatever the webpage is actually about (e.g. Electricity Bill, Banking, Job Offer, Exam Results, Crypto, Courier Delivery, Lottery, Telegram Group, or completely legitimate content).
-3. IN THE "reasons" ARRAY, YOU MUST PROVIDE 2 TO 4 DETAILED, EVIDENCE-BASED BULLET POINTS IN "{target_lang}":
-   - Explicitly quote or describe what claims, services, or text are actually written on the destination webpage.
-   - If the QR code redirects to an intermediate page which then links to another destination (like Telegram or an APK download), explain this exact multi-hop funnel.
-   - Point out what data the page is trying to collect or why the domain/hosting looks unverified.
-4. "category" MUST BE DECIDED DYNAMICALLY BY YOU based solely on the actual evidence (e.g. Phishing, Quishing, Fake Payment, Malware Distribution, Job Scam, Impersonation, Credential Theft, Safe, etc.).
-5. "score": Integer 0-100 reflecting the genuine threat level.
+{qr_info_block}
+
+CRITICAL FORENSIC INSTRUCTIONS:
+1. READ AND EXTRACT ALL VISIBLE TEXT IN THE IMAGE:
+   - Carefully read every text line visible in the image (e.g. bank names, account numbers, payment instructions, offer claims, WhatsApp messages, buttons).
+   - Return this in "detected_text".
+2. ANALYZE BOTH VISUAL EVIDENCE AND QR CODE:
+   - If a QR code is present, compare the text written in the image with what the QR code actually does!
+     (Example: If image text says "Scan to receive money / cashback" while it's a payment QR, that is an INSTANT HIGH RISK FRAUD [1, 2]).
+   - If NO QR code is present, perform full visual threat analysis on the image text, logos, fake bills, fake receipts, urgency threats, or impersonation.
+3. IN THE "reasons" ARRAY, YOU MUST PROVIDE 2 TO 4 SPECIFIC OBSERVATIONS IN "{target_lang}":
+   - Specifically mention what text and details you read from the image.
+   - If a QR code was scanned, mention what link/data was found inside it.
+   - Explain why this is safe, suspicious, or a scam.
+4. "category": Choose dynamically based on evidence (e.g. Fake Payment, Quishing, Phishing, Fake UPI, Fake Bill, Fake Receipt, Safe, etc.).
+5. "score": Integer 0 to 100.
 6. "verdict": LOW RISK, SUSPICIOUS, HIGH RISK, or VERY HIGH RISK.
 
 MULTILINGUAL INSTRUCTION:
 - Target Language: "{target_lang}".
-- ALL bullet points in the "reasons" array MUST be written fully in "{target_lang}" using its native script.
+- Write ALL "reasons" strictly in "{target_lang}" using its native script.
 
 Return ONLY valid JSON matching this schema:
 {{
   "score": 0,
-  "verdict": "SAFE",
+  "verdict": "LOW RISK",
   "qr_detected": { "true" if has_qr else "false" },
   "qr_content": "{raw_qr_payload}",
   "reasons": [
-    "Specific explanation in {target_lang} describing the exact content and claims found on the scraped webpage",
-    "Second specific observation in {target_lang} explaining the link redirection or nested action buttons"
+    "Observation 1 in {target_lang} describing text/visuals seen in the image",
+    "Observation 2 in {target_lang}"
   ],
-  "detected_text": "{intel.get('deepest_title') or raw_qr_payload}",
-  "category": "Dynamically determined category"
+  "detected_text": "Transcribe all visible text from the image here",
+  "category": "..."
 }}
 """
 
     try:
-        # Send pure text prompt so the AI can process full scraped HTML text without vision timeouts
-        raw_res = call_openrouter(prompt)
+        # Pass image_data so Vision AI reads the image pixels directly!
+        raw_res = call_openrouter(prompt, image_data=image_data)
 
         if isinstance(raw_res, str):
             clean_str = re.sub(r"^```json\s*", "", raw_res.strip())
@@ -428,7 +380,7 @@ Return ONLY valid JSON matching this schema:
         if isinstance(data, dict):
             score = max(0, min(int(data.get("score", 0) or 0), 100))
             reasons = [str(x).strip() for x in data.get("reasons", []) if str(x).strip()]
-            category = str(data.get("category") or "Quishing").strip()
+            category = str(data.get("category") or ("Quishing" if has_qr else "Visual Scan")).strip()
             verdict = str(data.get("verdict") or (
                 "VERY HIGH RISK" if score >= 80 else
                 "HIGH RISK" if score >= 60 else
@@ -436,58 +388,40 @@ Return ONLY valid JSON matching this schema:
                 "LOW RISK"
             )).upper()
 
+            detected_t = str(data.get("detected_text") or "").strip()
+            if not detected_t and intel.get("deepest_title"):
+                detected_t = intel.get("deepest_title")
+
             if reasons:
                 return {
                     "score": score,
                     "verdict": verdict,
                     "reasons": reasons,
-                    "detected_text": str(data.get("detected_text") or intel.get("deepest_title") or raw_qr_payload),
+                    "detected_text": detected_t,
                     "category": category,
                     "qr_detected": bool(has_qr),
                     "qr_content": str(raw_qr_payload),
                     "qr_destination": intel.get("deepest_url", raw_qr_payload)
                 }
     except Exception as e:
-        print("[AI DYNAMIC ANALYSIS ERROR]:", repr(e))
+        print("[SCREENSHOT VISION ERROR]:", repr(e))
 
-    # Dynamic Fallback based strictly on real scraped metadata (NO hardcoded brands!)
-    target_l = target_lang.lower()
-    is_hi = target_l in ["hindi", "hi", "hinglish"]
-
-    dynamic_reasons = []
-    deep_url = intel.get("deepest_url", raw_qr_payload)
-    deep_title = intel.get("deepest_title", "")
-    has_redirect = len(intel.get("hops", [])) > 1
-
-    if has_redirect:
-        if is_hi:
-            dynamic_reasons.append(f"QR कोड रीडायरेक्शन: यह लिंक आगे '{deep_url}' पर रीडायरेक्ट हो रहा है।")
-        else:
-            dynamic_reasons.append(f"QR Redirection: The link redirects to '{deep_url}'.")
-
-    if deep_title:
-        if is_hi:
-            dynamic_reasons.append(f"वेबसाइट कंटेंट: इस पेज का टाइटल '{deep_title}' है।")
-        else:
-            dynamic_reasons.append(f"Webpage Content: The page displays title '{deep_title}'.")
-
-    if intel.get("nested_links_found"):
-        top_nested = intel["nested_links_found"][0]
-        if is_hi:
-            dynamic_reasons.append(f"पेज के अंदर अगला लिंक मिला: {top_nested[:65]}...")
-        else:
-            dynamic_reasons.append(f"Nested Link Inside Page: Discovered secondary link: {top_nested[:65]}...")
-
-    if not dynamic_reasons:
-        dynamic_reasons = [f"QR Link analyzed: {raw_qr_payload}"]
+    # Safe Dynamic Fallback
+    fallback_reasons = []
+    if has_qr:
+        fallback_reasons.append(f"QR Code Scanned: {raw_qr_payload}")
+        if intel.get("deepest_title"):
+            fallback_reasons.append(f"Target page title: {intel.get('deepest_title')}")
+    else:
+        fallback_reasons.append("Visual analysis completed based on image evidence.")
 
     return {
-        "score": 65 if has_redirect else (30 if has_qr else 0),
-        "verdict": "HIGH RISK" if has_redirect else ("SUSPICIOUS" if has_qr else "LOW RISK"),
-        "reasons": dynamic_reasons,
-        "detected_text": deep_title or raw_qr_payload,
-        "category": "QR Analysis",
+        "score": 40 if has_qr else 0,
+        "verdict": "SUSPICIOUS" if has_qr else "LOW RISK",
+        "reasons": fallback_reasons,
+        "detected_text": intel.get("deepest_title", raw_qr_payload),
+        "category": "Quishing" if has_qr else "Visual Analysis",
         "qr_detected": bool(has_qr),
         "qr_content": str(raw_qr_payload),
-        "qr_destination": deep_url
+        "qr_destination": intel.get("deepest_url", raw_qr_payload)
     }
