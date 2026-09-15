@@ -485,35 +485,32 @@
             const inputs = res.inputs || {};
             const finalScore = Math.max(0, Math.min(100, Number(res.final_score || 0)));
 
-            // IDENTIFY STRICTLY WHICH INPUTS WERE SUBMITTED BY THE USER
             const hasPhone = Boolean(inputs.phone || (res.phone_score !== undefined && res.phone_score > 0) || (res.phone_carrier && res.phone_carrier !== 'Unknown') || ($("#phone").val() && $("#phone").val().trim().length > 0));
             const hasLink = Boolean(inputs.link || (res.link_score !== undefined && res.link_score > 0) || Boolean(res.link_domain) || ($("#link").val() && $("#link").val().trim().length > 0));
             const hasMessage = Boolean(inputs.message || (res.message_score !== undefined && res.message_score > 0) || ($("#message").val() && $("#message").val().trim().length > 0));
             const hasScreenshot = Boolean(inputs.screenshot || (res.screenshot_score !== undefined && res.screenshot_score > 0) || Boolean(res.detected_text));
 
-            // Strict Backend Thresholds (Matches risk_engine.py calculate_risk logic)
-            // >= 80: VERY HIGH RISK | >= 60: HIGH RISK | >= 30: SUSPICIOUS | < 30: LOW RISK
             let calculatedVerdict = "LOW RISK";
-            let themeColor = "#10b981"; // Emerald
+            let themeColor = "#10b981";
             let themeBg = "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
             let glowColor = "rgba(16, 185, 129, 0.4)";
             let gaugeLabel = "SAFE / LOW RISK";
 
             if (finalScore >= 80 || String(res.verdict).toUpperCase() === "VERY HIGH RISK") {
                 calculatedVerdict = "VERY HIGH RISK";
-                themeColor = "#f43f5e"; // Rose
+                themeColor = "#f43f5e";
                 themeBg = "bg-rose-500/15 text-rose-400 border-rose-500/30";
                 glowColor = "rgba(244, 63, 94, 0.45)";
                 gaugeLabel = "CRITICAL SCAM THREAT";
             } else if (finalScore >= 60 || String(res.verdict).toUpperCase() === "HIGH RISK") {
                 calculatedVerdict = "HIGH RISK";
-                themeColor = "#f97316"; // Orange
+                themeColor = "#f97316";
                 themeBg = "bg-orange-500/15 text-orange-400 border-orange-500/30";
                 glowColor = "rgba(249, 115, 22, 0.4)";
                 gaugeLabel = "HIGH RISK DETECTED";
             } else if (finalScore >= 30 || String(res.verdict).toUpperCase() === "SUSPICIOUS" || String(res.verdict).toUpperCase() === "MEDIUM RISK") {
                 calculatedVerdict = "SUSPICIOUS";
-                themeColor = "#f59e0b"; // Amber
+                themeColor = "#f59e0b";
                 themeBg = "bg-amber-500/15 text-amber-400 border-amber-500/30";
                 glowColor = "rgba(245, 158, 11, 0.4)";
                 gaugeLabel = "SUSPICIOUS ACTIVITY";
@@ -523,7 +520,6 @@
             const fontClass = isEasyMode ? "text-sm sm:text-base leading-relaxed" : "text-xs sm:text-sm leading-relaxed";
             const titleSize = isEasyMode ? "text-2xl sm:text-4xl" : "text-xl sm:text-3xl";
 
-            // Aggregated Reasons
             let allReasonTags = [];
             if (res.message_reasons) allReasonTags.push(...res.message_reasons);
             if (res.link_reasons) allReasonTags.push(...res.link_reasons);
@@ -533,7 +529,6 @@
             allReasonTags = [...new Set(allReasonTags)];
             if (allReasonTags.length === 0) allReasonTags = ["Analysis completed based on submitted attributes."];
 
-            // Attack Chain Nodes
             const chainItems = Array.isArray(res.attack_chain) && res.attack_chain.length > 0
                 ? res.attack_chain
                 : ["Initial Contact", "Threat Vector", "Compromise"];
@@ -555,12 +550,10 @@
                 }
             });
 
-            // SafeNext Steps
             const stepItems = Array.isArray(res.immediate_steps) && res.immediate_steps.length > 0
                 ? res.immediate_steps
                 : (Array.isArray(res.safe_next) && res.safe_next.length > 0 ? res.safe_next : ["Do not interact with the suspicious sender or link."]);
 
-            // Trusted Helper Popup (Easy Mode)
             let trustedHelperHTML = isEasyMode ? `
             <div class="p-5 sm:p-6 rounded-3xl bg-amber-500/10 border border-amber-500/30 space-y-4 shadow-xl">
                 <div class="flex items-center gap-2.5 text-amber-400 font-bold text-sm sm:text-base">
@@ -576,7 +569,6 @@
                 </div>
             </div>` : "";
 
-            // Dynamic Helplines List
             let helplinesList = [];
             if (Array.isArray(res.helplines) && res.helplines.length > 0) {
                 helplinesList = res.helplines;
@@ -607,7 +599,6 @@
                 </div>
             </div>`;
 
-            // Active Vectors Breakdown Section
             let activeVectorsHTML = "";
             if (hasMessage) {
                 activeVectorsHTML += `
@@ -682,7 +673,7 @@
             </div>` : '';
 
             // =========================================================================
-            // "WHAT-IF" RISK SENSITIVITY (STRICTLY FILTERS ONLY USER-SUBMITTED INPUTS)
+            // "WHAT-IF" RISK SENSITIVITY
             // =========================================================================
             let whatIfHTML = "";
             if (res.what_if) {
@@ -901,7 +892,6 @@
                 </div>
             </div>`;
 
-            // Evidence Log
             let evidenceHTML = "";
             if (Array.isArray(res.evidence) && res.evidence.length > 0) {
                 evidenceHTML = `
@@ -915,8 +905,7 @@
                 </div>`;
             }
 
-            // DYNAMIC CONIC-GRADIENT PROGRESS GAUGE (Fills Exactly to Score 0-100%)
-            const gaugeFillDeg = Math.round(finalScore * 3.6); // 100% = 360deg
+            const gaugeFillDeg = Math.round(finalScore * 3.6);
 
             let html = `
             <div class="space-y-8 sm:space-y-10 pt-6 animate-fade-in">
@@ -945,7 +934,6 @@
                 <!-- ===================================================== -->
                 <div class="rounded-3xl border border-dark-border bg-dark-card p-6 sm:p-8 lg:p-10 space-y-8 shadow-2xl">
                     
-                    <!-- Top Overview & Score with Dynamic Radial Gauge -->
                     <div class="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-dark-border/80 pb-8 text-center md:text-left">
                         <div class="space-y-2 max-w-xl">
                             <div class="flex items-center justify-center md:justify-start gap-2">
@@ -958,11 +946,9 @@
                             <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">${escapeHtml(res.why || res.why_dangerous || 'Multi-signal analysis completed.')}</p>
                         </div>
                         
-                        <!-- DYNAMIC CONIC-GRADIENT PROGRESS GAUGE (True Score % Fill) -->
                         <div class="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full flex items-center justify-center p-2.5 shrink-0 transition-transform duration-500 hover:scale-105"
                              style="background: conic-gradient(${themeColor} ${gaugeFillDeg}deg, rgba(30, 41, 59, 0.6) ${gaugeFillDeg}deg 360deg); box-shadow: 0 0 32px ${glowColor};">
                             
-                            <!-- Inner Cutout Circle -->
                             <div class="w-full h-full rounded-full bg-dark-card flex flex-col items-center justify-center border border-dark-border/80 shadow-inner">
                                 <strong class="text-3xl sm:text-4xl font-black text-white tracking-tight leading-none">${finalScore}</strong>
                                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">/ 100</span>
@@ -970,7 +956,6 @@
                         </div>
                     </div>
 
-                    <!-- 3 Simple Reasons -->
                     <div class="space-y-3 pt-2">
                         <h5 class="text-xs uppercase font-bold tracking-wider text-slate-400 block">Key Risk Signals & Reasons:</h5>
                         <div class="space-y-3">
@@ -983,7 +968,6 @@
                         </div>
                     </div>
 
-                    <!-- SafeNext Actions -->
                     <div class="space-y-3 pt-2">
                         <h5 class="text-xs uppercase font-bold tracking-wider text-emerald-400 block">Recommended Actions:</h5>
                         <div class="space-y-3">
@@ -1012,17 +996,11 @@
 
                     <div id="advancedDetailsContent" class="${isEasyMode ? 'hidden' : 'space-y-8 sm:space-y-10 pt-2'}">
                         
-                        <!-- Vector Breakdown Cards (Active Inputs Only) -->
                         ${vectorCardsHTML}
-
-                        <!-- What-If Simulator (Filtered Strictly for Active Inputs Only) -->
                         ${whatIfHTML}
-
-                        <!-- Signal Contributions & Weights -->
                         ${signalContributionHTML}
 
                         ${hasPhone ? `
-                        <!-- Phone Telecom Card -->
                         <div class="rounded-3xl border border-blue-500/40 bg-dark-card p-6 sm:p-8 shadow-xl space-y-4">
                             <span class="text-xs uppercase font-bold tracking-wider text-blue-400 block">Telecom & Risk Engine (2-Layer)</span>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs sm:text-sm">
@@ -1059,7 +1037,6 @@
                         <!-- 02: Scam Fingerprinting (Dynamic Match Score) -->
                         ${scamFingerprintCardHTML}
 
-                        <!-- Hard Evidence Trigger List -->
                         ${evidenceHTML}
 
                         <!-- 03: Full Recovery Steps -->
@@ -1090,9 +1067,7 @@
             }, 500);
         }
 
-        // =====================================================
-        // MULTI-LANGUAGE AUDIO ENGINE (BROWSER SPEECH SYNTHESIS)
-        // =====================================================
+        // Speech Engine
         const speakBtn = document.getElementById("speak-btn");
         const resultContainer = document.getElementById("result");
 
