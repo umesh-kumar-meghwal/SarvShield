@@ -9,8 +9,7 @@ import requests
 from bs4 import BeautifulSoup
 import urllib3
 from ai_helper import call_openrouter
-
-# Free hosting ya untrusted domain ke SSL warning ko disable karta hai
+  
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 

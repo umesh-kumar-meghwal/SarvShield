@@ -7,3 +7,6 @@ gunicorn
 google-genai
 Pillow
 beautifulsoup4
+cv2
+numpy
+PIL
