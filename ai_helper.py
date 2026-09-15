@@ -21,9 +21,6 @@ REQUEST_TIMEOUT = 120
 # Verified Active Free Models on OpenRouter (Updated)
 FREE_TEXT_MODELS = [
     "openrouter/free",
-    "minimax/minimax-m3:free",
-    "minimax/minimax-m2.7:free",
-    "inclusionai/ling-3.0-flash:free",
     "nvidia/nemotron-3-super-120b-a12b:free",
     "nvidia/nemotron-3-ultra-550b-a55b:free",
     "poolside/laguna-s-2.1:free"
