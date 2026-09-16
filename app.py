@@ -1581,65 +1581,177 @@ def scam_result_detail(scan_id):
     
 # =========================================================
 # USER TRUST & STATS API
-# =========================================================
 @app.route("/api/user-trust", methods=["GET"])
 def user_trust():
+
     try:
         if "email" not in session:
-            return jsonify({"success": False, "message": "Please login again."}), 401
+            return jsonify({
+                "success": False,
+                "message": "Please login again."
+            }), 401
 
         user_email = str(session.get("email", "")).strip().lower()
-        scam_result = supabase.table("scam_checks").select("id, final_score, verdict, created_at").eq("user_email", user_email).order("created_at", desc=False).execute()
+
+        # ==============================
+        # SCAM CHECKS
+        # ==============================
+        scam_result = (
+            supabase
+            .table("scam_checks")
+            .select("*")
+            .eq("user_email", user_email)
+            .order("created_at", desc=False)
+            .execute()
+        )
+
         scam_checks = scam_result.data or []
 
-        report_result = supabase.table("scam_reports").select("id, phone, link, reason, created_at").eq("user_email", user_email).order("created_at", desc=False).execute()
+        # ==============================
+        # SCAM REPORTS
+        # ==============================
+        report_result = (
+            supabase
+            .table("scam_reports")
+            .select("*")
+            .eq("user_email", user_email)
+            .order("created_at", desc=False)
+            .execute()
+        )
+
         reports = report_result.data or []
 
+        # ==============================
+        # TRUST SCORE
+        # ==============================
         if scam_checks:
-            trust_values = [100 - max(0, min(100, float(row.get("final_score") or 0))) for row in scam_checks]
-            trust_score = round(sum(trust_values) / len(trust_values))
+
+            trust_values = []
+
+            for row in scam_checks:
+
+                try:
+                    risk = float(row.get("final_score") or 0)
+                except (ValueError, TypeError):
+                    risk = 0
+
+                risk = max(0, min(100, risk))
+
+                trust_values.append(100 - risk)
+
+            trust_score = round(
+                sum(trust_values) / len(trust_values)
+            )
+
         else:
             trust_score = 100
 
-        label = "TRUSTED" if trust_score >= 80 else "CAUTION" if trust_score >= 50 else "HIGH RISK"
+        # ==============================
+        # TRUST LABEL
+        # ==============================
+        if trust_score >= 80:
+            label = "TRUSTED"
+        elif trust_score >= 50:
+            label = "CAUTION"
+        else:
+            label = "HIGH RISK"
 
+        # ==============================
+        # ACTIVITIES
+        # ==============================
         activities = []
+
         for row in scam_checks:
-            risk = float(row.get("final_score") or 0)
+
+            try:
+                risk = float(row.get("final_score") or 0)
+            except (ValueError, TypeError):
+                risk = 0
+
+            risk = max(0, min(100, risk))
+
             activities.append({
                 "date": row.get("created_at"),
                 "type": "Scam Check",
-                "verdict": str(row.get("verdict") or "UNKNOWN").upper(),
+                "verdict": str(
+                    row.get("verdict") or "UNKNOWN"
+                ).upper(),
                 "risk_score": round(risk),
-                "trust_score": round(100 - risk)
+                "trust_score": round(100 - risk),
+
+                # Frontend ke liye original data bhi available rahe
+                "id": row.get("id"),
+                "message": row.get("message"),
+                "phone": row.get("phone"),
+                "link": row.get("link"),
+                "screenshot": row.get("screenshot")
             })
 
+        # ==============================
+        # REPORT ACTIVITIES
+        # ==============================
         for row in reports:
+
             activities.append({
                 "date": row.get("created_at"),
                 "type": "Spam Report",
                 "verdict": "REPORTED",
                 "risk_score": None,
-                "trust_score": None
+                "trust_score": None,
+
+                "id": row.get("id"),
+                "phone": row.get("phone"),
+                "link": row.get("link"),
+                "reason": row.get("reason")
             })
 
-        activities.sort(key=lambda x: x.get("date") or "")
-        trend = [{"date": a["date"], "score": a["trust_score"]} for a in activities if a["type"] == "Scam Check"]
+        # Oldest -> newest
+        activities.sort(
+            key=lambda x: x.get("date") or ""
+        )
 
+        # ==============================
+        # TRUST TREND
+        # ==============================
+        trend = [
+            {
+                "date": a["date"],
+                "score": a["trust_score"]
+            }
+            for a in activities
+            if a["type"] == "Scam Check"
+        ]
+
+        # ==============================
+        # RESPONSE
+        # ==============================
         return jsonify({
+
             "success": True,
+
             "trust_score": trust_score,
             "trust_label": label,
+
             "scam_checks_count": len(scam_checks),
             "reports_count": len(reports),
+
+            # IMPORTANT:
+            # Frontend ko complete scam checks milenge
+            "scam_checks": scam_checks,
+
+            "reports": reports,
+
             "activities": activities,
             "trend": trend
         })
 
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
 
-
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
+        
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
