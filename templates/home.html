@@ -280,27 +280,7 @@
                     </div>
 
                     <!-- Right: Real Activity from scam_checks table -->
-                    <div class="rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6 shadow-xl flex flex-col">
-                        <div class="mb-4">
-                            <h4 class="font-bold text-white text-sm sm:text-base">Recent Activity</h4>
-                            <p class="text-xs text-slate-400">Latest threat scans</p>
-                        </div>
-                        <div id="trustActivity" class="space-y-3 overflow-y-auto max-h-60 sm:max-h-64 pr-1">
-                            {% if stats and stats.activities %}
-                                {% for act in stats.activities %}
-                                <div class="p-3 rounded-xl bg-dark-cardLight border border-dark-border text-xs flex items-center justify-between">
-                                    <div class="truncate mr-2">
-                                        <strong class="text-white block truncate">{{ act.title }}</strong>
-                                        <span class="text-[10px] text-slate-400">{{ act.time }}</span>
-                                    </div>
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ act.badgeClass }}">{{ act.status }}</span>
-                                </div>
-                                {% endfor %}
-                            {% else %}
-                                <p class="text-xs text-slate-400">No activity logs recorded yet.</p>
-                            {% endif %}
-                        </div>
-                    </div>
+                    
                 </div>
             </section>
 
