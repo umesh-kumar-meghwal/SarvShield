@@ -1982,20 +1982,45 @@ def get_user_real_trust_metrics(user_email):
         # RETURN
         # ---------------------------------------------------------
         return {
-            "success": True,
+    "success": True,
 
-            "trust_score": trust_score,
+    # Trust
+    "trust_score": trust_score,
+    "trust_label": trust_label,
 
-            "trust_label": trust_label,
+    # Counts - frontend names
+    "scam_checks": len(scam_checks),
+    "reports": len(reports),
 
-            "scam_checks_count": len(scam_checks),
+    # Backward compatibility
+    "scam_checks_count": len(scam_checks),
+    "reports_count": len(reports),
 
-            "reports_count": len(reports),
+    # Activity
+    "activities": activities,
 
-            "activities": activities,
+    # Chart
+    "labels": [
+        item["date"]
+        for item in trend
+    ],
+    "scores": [
+        item["score"]
+        for item in trend
+    ],
 
-            "trend": trend
-        }
+    # Original trend also keep
+    "trend": trend,
+
+    # Badge
+    "badge_class": (
+        "bg-success"
+        if trust_score >= 80
+        else "bg-warning"
+        if trust_score >= 50
+        else "bg-danger"
+    )
+}
 
     except Exception as e:
 
