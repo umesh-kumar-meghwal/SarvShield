@@ -1718,151 +1718,209 @@ def chat():
 
 
 
-
 def get_user_real_trust_metrics(user_email):
-    """
-    Supabase Schema se real data calculate karta hai:
-    - scam_checks: Total scans aur recent threat scores
-    - scam_reports: User ne kitni reports file ki
-    - Trust score: User ke recent scans ke risk scores ka inverse (Low risk = High Trust)
-    """
     try:
-        # 1. Total Scam Checks Count
-        checks_count_res = (
-            supabase.table("scam_checks")
-            .select("id", count="exact")
+        user_email = str(user_email or "").strip().lower()
+
+        if not user_email:
+            return {
+                "success": False,
+                "trust_score": 100,
+                "trust_label": "TRUSTED",
+                "scam_checks_count": 0,
+                "reports_count": 0,
+                "activities": [],
+                "trend": []
+            }
+
+        # ---------------------------------------------------------
+        # GET USER'S SCAM CHECKS
+        # ---------------------------------------------------------
+        scam_result = (
+            supabase
+            .table("scam_checks")
+            .select("id, final_score, verdict, created_at")
             .eq("user_email", user_email)
+            .order("created_at", desc=False)
             .execute()
         )
-        total_checks = checks_count_res.count if checks_count_res.count is not None else 0
 
-        # 2. Total Reports Submitted Count
-        reports_count_res = (
-            supabase.table("scam_reports")
-            .select("id", count="exact")
+        scam_checks = scam_result.data or []
+
+        # ---------------------------------------------------------
+        # GET USER'S REPORTS
+        # ---------------------------------------------------------
+        report_result = (
+            supabase
+            .table("scam_reports")
+            .select("id, phone, link, reason, created_at")
             .eq("user_email", user_email)
+            .order("created_at", desc=False)
             .execute()
         )
-        total_reports = reports_count_res.count if reports_count_res.count is not None else 0
 
-        # 3. Recent Scam Checks (Latest 10 for Activity Log & Chart)
-        recent_checks_res = (
-            supabase.table("scam_checks")
-            .select("id, message, phone, link, screenshot, final_score, verdict, created_at")
-            .eq("user_email", user_email)
-            .order("created_at", desc=True)
-            .limit(10)
-            .execute()
-        )
-        recent_checks = recent_checks_res.data or []
+        reports = report_result.data or []
 
-        # 4. Real Trust Score Calculation
-        if recent_checks:
-            # Average risk nikal kar 100 me se minus karte hain (Suraksha score)
-            avg_risk = sum(int(c.get("final_score") or 0) for c in recent_checks) / len(recent_checks)
-            trust_score = max(10, min(100, int(100 - avg_risk)))
+        # ---------------------------------------------------------
+        # NO SCANS = DEFAULT TRUST
+        # ---------------------------------------------------------
+        if not scam_checks:
+            trust_score = 100
         else:
-            # Agar user ne abhi tak koi scan nahi kiya to clean standing 95
-            trust_score = 95
+            trust_values = []
 
-        # Trust Label
+            for row in scam_checks:
+
+                try:
+                    risk = float(row.get("final_score") or 0)
+                except (TypeError, ValueError):
+                    risk = 0
+
+                # Keep score between 0 and 100
+                risk = max(0, min(100, risk))
+
+                # Convert Risk → Trust
+                trust = 100 - risk
+
+                trust_values.append(trust)
+
+            if trust_values:
+                trust_score = round(
+                    sum(trust_values) / len(trust_values)
+                )
+            else:
+                trust_score = 100
+
+        # ---------------------------------------------------------
+        # KEEP TRUST BETWEEN 0 AND 100
+        # ---------------------------------------------------------
+        trust_score = max(0, min(100, trust_score))
+
+        # ---------------------------------------------------------
+        # TRUST LABEL
+        # ---------------------------------------------------------
         if trust_score >= 80:
-            trust_label = "Excellent Standing"
-            badge_class = "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+            trust_label = "TRUSTED"
+
         elif trust_score >= 50:
-            trust_label = "Moderate Caution"
-            badge_class = "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+            trust_label = "CAUTION"
+
         else:
-            trust_label = "High Threat Exposure"
-            badge_class = "bg-rose-500/15 text-rose-400 border border-rose-500/30"
+            trust_label = "HIGH RISK"
 
-        # 5. Historical Trend Chart Points (Oldest to Newest)
-        chronological_checks = list(reversed(recent_checks))
-        labels = []
-        scores = []
-
-        if chronological_checks:
-            for i, item in enumerate(chronological_checks):
-                raw_time = str(item.get("created_at") or "")
-                # Format date: DD/MM
-                if len(raw_time) >= 10:
-                    parts = raw_time[:10].split("-")
-                    labels.append(f"{parts[2]}/{parts[1]}" if len(parts) == 3 else f"Scan {i+1}")
-                else:
-                    labels.append(f"Scan {i+1}")
-
-                # Item safety score
-                risk = int(item.get("final_score") or 0)
-                scores.append(max(5, 100 - risk))
-        else:
-            labels = ["Baseline", "Today"]
-            scores = [trust_score, trust_score]
-
-        # 6. Recent Activity List
+        # ---------------------------------------------------------
+        # ACTIVITY DATA
+        # ---------------------------------------------------------
         activities = []
-        for c in recent_checks[:5]:
-            if c.get("phone"):
-                title = f"Phone: {c['phone']}"
-            elif c.get("link"):
-                domain_val = c['link'].replace("https://", "").replace("http://", "").split("/")[0]
-                title = f"URL: {domain_val[:25]}"
-            elif c.get("screenshot"):
-                title = "Screenshot Evidence Scan"
-            elif c.get("message"):
-                msg_snippet = c['message'][:24] + "..." if len(c['message']) > 24 else c['message']
-                title = f"Message: {msg_snippet}"
-            else:
-                title = "Security Scan"
 
-            verdict = str(c.get("verdict") or "LOW RISK").upper()
-            score_val = int(c.get("final_score") or 0)
+        for row in scam_checks:
 
-            if "SCAM" in verdict or "HIGH" in verdict or score_val >= 60:
-                badge_style = "bg-rose-500/20 text-rose-400 border border-rose-500/30"
-                status_text = "High Risk"
-            elif "SUSPICIOUS" in verdict or score_val >= 30:
-                badge_style = "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                status_text = "Suspicious"
-            else:
-                badge_style = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                status_text = "Safe"
+            try:
+                risk = float(row.get("final_score") or 0)
+            except (TypeError, ValueError):
+                risk = 0
 
-            # Parse time e.g. 14:30
-            raw_t = str(c.get("created_at") or "")
-            time_display = raw_t[11:16] if len(raw_t) >= 16 else "Recently"
+            risk = max(0, min(100, risk))
+
+            activity_trust = round(100 - risk)
 
             activities.append({
-                "title": title,
-                "status": status_text,
-                "badgeClass": badge_style,
-                "time": time_display
+                "date": row.get("created_at"),
+                "type": "Scan Check",
+                "verdict": str(
+                    row.get("verdict") or "UNKNOWN"
+                ).upper(),
+                "risk_score": round(risk),
+                "trust_score": activity_trust
             })
 
+        # ---------------------------------------------------------
+        # REPORT ACTIVITIES
+        # ---------------------------------------------------------
+        for row in reports:
+
+            activities.append({
+                "date": row.get("created_at"),
+                "type": "Spam Report",
+                "verdict": "REPORTED",
+                "risk_score": None,
+                "trust_score": None
+            })
+
+        # ---------------------------------------------------------
+        # SORT ACTIVITIES BY DATE
+        # ---------------------------------------------------------
+        activities.sort(
+            key=lambda x: x.get("date") or ""
+        )
+
+        # ---------------------------------------------------------
+        # TRUST TREND
+        # ---------------------------------------------------------
+        trend = [
+            {
+                "date": activity["date"],
+                "score": activity["trust_score"]
+            }
+            for activity in activities
+            if activity["type"] == "Scan Check"
+        ]
+
+        # ---------------------------------------------------------
+        # RETURN
+        # ---------------------------------------------------------
         return {
             "success": True,
+
             "trust_score": trust_score,
+
             "trust_label": trust_label,
-            "badge_class": badge_class,
-            "scam_checks": total_checks,
-            "reports": total_reports,
-            "labels": labels,
-            "scores": scores,
-            "activities": activities
-        }
-    except Exception as e:
-        print("[TRUST METRICS ERROR]:", repr(e))
-        return {
-            "success": False,
-            "trust_score": 90,
-            "trust_label": "Active Protection",
-            "badge_class": "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30",
-            "scam_checks": 0,
-            "reports": 0,
-            "labels": ["Initial", "Today"],
-            "scores": [90, 90],
-            "activities": []
+
+            "scam_checks_count": len(scam_checks),
+
+            "reports_count": len(reports),
+
+            "activities": activities,
+
+            "trend": trend
         }
 
+    except Exception as e:
+
+        print("get_user_real_trust_metrics ERROR:", str(e))
+
+        return {
+            "success": False,
+            "message": "Unable to calculate trust score",
+            "trust_score": 100,
+            "trust_label": "TRUSTED",
+            "scam_checks_count": 0,
+            "reports_count": 0,
+            "activities": [],
+            "trend": []
+        }
+
+
+# ============================================================
+# USER TRUST API
+# ============================================================
+
+@app.route('/api/user-trust-stats')
+def api_user_trust_stats():
+
+    if "email" not in session:
+        return jsonify({
+            "success": False,
+            "message": "Unauthorized"
+        }), 401
+
+    user_email = str(
+        session.get("email") or ""
+    ).strip().lower()
+
+    stats = get_user_real_trust_metrics(user_email)
+
+    return jsonify(stats)
 
 # =========================================================
 # HOME PAGE ROUTE (WITH REAL SUPABASE DATA)
