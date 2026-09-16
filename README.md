@@ -383,7 +383,7 @@ SUPABASE_KEY=your_supabase_key
 
 FLASK_SECRET_KEY=your_secret_key
 
-GOOGLE_API_KEY=your_google_api_key
+OPENROUTER_API_KEY=your_google_api_key
 
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
