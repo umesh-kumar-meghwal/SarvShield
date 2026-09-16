@@ -507,9 +507,7 @@ Contributions, suggestions, and improvements are welcome.
 
 ---
 
-## 📄 License
 
-License information can be added according to the project's distribution requirements.
 
 ---
 
