@@ -1671,21 +1671,30 @@ def user_trust():
             risk = max(0, min(100, risk))
 
             activities.append({
-                "date": row.get("created_at"),
-                "type": "Scam Check",
-                "verdict": str(
-                    row.get("verdict") or "UNKNOWN"
-                ).upper(),
-                "risk_score": round(risk),
-                "trust_score": round(100 - risk),
+    "date": row.get("created_at"),
+    "type": "Scan Check",
 
-                # Frontend ke liye original data bhi available rahe
-                "id": row.get("id"),
-                "message": row.get("message"),
-                "phone": row.get("phone"),
-                "link": row.get("link"),
-                "screenshot": row.get("screenshot")
-            })
+    # Frontend fields
+    "title": "Scam Check",
+    "time": row.get("created_at"),
+    "badgeClass": (
+        "bg-success"
+        if str(row.get("verdict") or "").upper() == "SAFE"
+        else "bg-danger"
+        if str(row.get("verdict") or "").upper() in ["SCAM", "SPAM"]
+        else "bg-warning"
+    ),
+    "status": str(
+        row.get("verdict") or "UNKNOWN"
+    ).upper(),
+
+    # Existing data
+    "verdict": str(
+        row.get("verdict") or "UNKNOWN"
+    ).upper(),
+    "risk_score": round(risk),
+    "trust_score": activity_trust
+})
 
         # ==============================
         # REPORT ACTIVITIES
@@ -1693,18 +1702,18 @@ def user_trust():
         for row in reports:
 
             activities.append({
-                "date": row.get("created_at"),
-                "type": "Spam Report",
-                "verdict": "REPORTED",
-                "risk_score": None,
-                "trust_score": None,
+    "date": row.get("created_at"),
+    "type": "Spam Report",
 
-                "id": row.get("id"),
-                "phone": row.get("phone"),
-                "link": row.get("link"),
-                "reason": row.get("reason")
-            })
+    "title": "Spam Report",
+    "time": row.get("created_at"),
+    "badgeClass": "bg-danger",
+    "status": "REPORTED",
 
+    "verdict": "REPORTED",
+    "risk_score": None,
+    "trust_score": None
+})
         # Oldest -> newest
         activities.sort(
             key=lambda x: x.get("date") or ""
