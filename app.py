@@ -1950,14 +1950,7 @@ def home_page():
 
 # =========================================================
 # AJAX REFRESH ROUTE FOR TRUST OVERVIEW
-# =========================================================
-@app.route('/api/user-trust-stats')
-def api_user_trust_stats():
-    if "email" not in session:
-        return jsonify({"success": False, "message": "Unauthorized"}), 401
-    
-    stats = get_user_real_trust_metrics(session.get("email"))
-    return jsonify(stats)
+
 
 @app.route("/admin-dashboard")
 def admin_dashboard():
