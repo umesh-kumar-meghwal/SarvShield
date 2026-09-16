@@ -2,125 +2,133 @@
 
 ### AI-Assisted Digital Scam Detection & Safety Guidance Platform
 
-SarvShield is a digital safety platform designed to help users identify suspicious messages, phone numbers, links, and screenshots.
+SarvShield is a digital safety platform developed for a college internal hackathon. It helps users analyze suspicious messages, phone numbers, links, and screenshots by combining detection modules, risk analysis, AI-assisted insights, and safety recommendations.
 
-It analyzes multiple risk signals and provides a risk score, threat classification, scam fingerprint, attack-chain insights, and safety recommendations.
+The goal of SarvShield is to increase digital awareness and help users make safer decisions when they encounter potentially fraudulent content.
 
 ---
 
-## 🚀 Live Project
+## 🌐 Live Demo
 
-🔗 **GitHub Repository:**  
+🚀 **Try SarvShield Online:**  
+https://sarvshield.vercel.app/
+
+📂 **GitHub Repository:**  
 https://github.com/umesh-kumar-meghwal/SarvShield
 
 ---
 
-## 🎯 Project Objective
+## 🎯 Problem Statement
 
-Online scams are increasing rapidly through:
+Digital scams are commonly distributed through:
 
 - Fraudulent messages
-- Fake phone calls
+- Suspicious phone calls
 - Phishing links
 - Fake websites
 - Fake payment requests
+- Fake rewards and offers
 - Fraudulent screenshots
-- Urgent financial requests
+- OTP and account-verification requests
 
-SarvShield aims to provide users with a centralized platform where they can analyze suspicious digital content and understand the possible risks.
+Many users cannot easily identify these threats. SarvShield provides a single platform for analyzing suspicious digital content and understanding the possible risk.
+
+---
+
+## 💡 Our Solution
+
+SarvShield analyzes different types of user inputs and generates a structured result containing:
+
+- Individual detection scores
+- Overall risk score
+- Risk classification
+- Supporting evidence
+- Scam fingerprint
+- Possible attack chain
+- What-If risk analysis
+- SafeNext safety recommendations
+
+The platform is designed to make technical security information easier to understand for normal users.
 
 ---
 
 ## ✨ Key Features
 
-### 🔍 1. Message Detection
+### 🔍 Message Detection
 
-Analyzes text messages and identifies suspicious patterns such as:
+Analyzes message content for suspicious patterns such as:
 
 - Urgency and pressure
 - Fake rewards and offers
 - OTP requests
-- Banking fraud
+- Banking-related fraud
 - Payment requests
 - Account suspension threats
+- Personal information requests
 
----
+### 📞 Phone Number Detection
 
-### 📞 2. Phone Number Detection
-
-Provides phone number risk analysis using:
+Analyzes phone numbers through:
 
 - Database lookup
 - Spam number records
-- External phone intelligence APIs
+- External phone intelligence APIs where configured
 - Risk scoring
 - Detection source information
 
----
+### 🔗 Link Detection
 
-### 🔗 3. Link Detection
-
-Analyzes URLs and checks for potentially suspicious indicators, including:
+Analyzes submitted URLs for possible risk indicators, including:
 
 - Suspicious domains
 - Phishing patterns
-- Fake websites
-- Untrusted links
-- Domain-related risk signals
+- Untrusted websites
+- Fraud-related keywords
+- URL-based risk signals
 
----
+### 🖼️ Screenshot Detection
 
-### 🖼️ 4. Screenshot Detection
+Allows users to submit screenshots for analysis.
 
-Allows users to upload screenshots for analysis.
-
-The screenshot detection system can analyze:
+The system can identify possible scam indicators such as:
 
 - Suspicious text
-- Fraudulent offers
 - Fake payment requests
+- Fraudulent offers
 - Phishing content
+- Suspicious instructions
 - Scam-related visual information
 
----
+### 📊 Risk Score Engine
 
-### 📊 5. Risk Score Engine
+SarvShield combines multiple signals:
 
-SarvShield combines different detection signals to generate an overall risk score.
-
-The system considers:
-
-- Message risk score
-- Phone number risk score
-- Link risk score
-- Screenshot risk score
+- Message score
+- Phone score
+- Link score
+- Screenshot score
 - Cross-signal relationships
 - Additional risk indicators
 
-The final score is normalized between **0 and 100**.
+The final risk score is normalized between **0 and 100**.
 
----
+### 🧠 What-If Risk Analysis
 
-### 🧠 6. What-If Risk Analysis
-
-The What-If Analysis feature explains how the risk score may change if a particular signal is removed.
+What-If Analysis explains how the risk score may change when one input signal is removed.
 
 For example:
 
-- Risk score with the link
+- Current risk score
 - Risk score without the link
-- Risk score with the message
 - Risk score without the message
+- Risk score without the phone number
+- Risk score without the screenshot
 
-This helps users understand which input contributes most to the overall risk.
+This helps users understand which input contributes to the detected risk.
 
----
+### 🧬 Scam Fingerprint
 
-### 🧬 7. Scam Fingerprint
-
-SarvShield attempts to identify the possible scam pattern or fingerprint.
-
-Examples include:
+The platform attempts to identify the possible type or pattern of a scam, such as:
 
 - Phishing
 - Financial fraud
@@ -128,96 +136,130 @@ Examples include:
 - Account verification scam
 - Suspicious payment request
 
----
+### ⛓️ Attack Chain Analysis
 
-### ⛓️ 8. Attack Chain Analysis
+SarvShield can explain a possible scam progression:
 
-The platform can explain how a suspicious interaction may progress, such as:
+1. A user receives a suspicious message.
+2. The attacker creates urgency or fear.
+3. The user is redirected to a link or contact number.
+4. Personal information, OTP, or payment is requested.
+5. The user may face financial or privacy risks.
 
-1. User receives a suspicious message
-2. Attacker creates urgency
-3. User is redirected to a link
-4. Personal information or payment is requested
-5. User may face financial or privacy risks
+### 🛡️ SafeNext Coach
 
----
+Provides safety recommendations after analysis, such as:
 
-### 🛡️ 9. SafeNext Coach
+- Do not share OTPs or passwords.
+- Avoid opening suspicious links.
+- Do not transfer money without verification.
+- Block suspicious contacts.
+- Report fraudulent content.
+- Verify information using official sources.
 
-SarvShield provides safety guidance after analysis.
+### 🌐 Language Support
 
-Recommendations may include:
+The platform supports language-based output where configured, helping users understand explanations and recommendations in their preferred language.
 
-- Do not share OTPs
-- Avoid suspicious links
-- Do not transfer money
-- Block suspicious contacts
-- Report fraudulent content
-- Verify information through official sources
+### 👤 User Features
 
----
-
-### 🌐 10. Multilingual Output
-
-The platform supports output in the selected language where configured.
-
-Users can select their preferred language for explanations and safety recommendations.
-
----
-
-### 👤 11. User Account Features
-
-- User registration
+- Registration
 - Login and logout
-- OTP-based verification
+- OTP verification
 - User profile
 - Profile picture support
 - ScamCheck history
-- Report scam
+- Scam reporting
 - Feedback system
+- Analysis history
 
 ---
 
 ## 🏗️ System Architecture
 
 ```text
-                  ┌─────────────────────┐
-                  │       User          │
-                  └──────────┬──────────┘
-                             │
-                             ▼
-                  ┌─────────────────────┐
-                  │   Flask Web App     │
-                  └──────────┬──────────┘
-                             │
-          ┌──────────────────┼──────────────────┐
-          │                  │                  │
-          ▼                  ▼                  ▼
-   Message Detector   Phone Detector     Link Detector
-          │                  │                  │
-          └──────────────────┼──────────────────┘
-                             │
-                             ▼
-                  ┌─────────────────────┐
-                  │ Screenshot Detector │
-                  └──────────┬──────────┘
-                             │
-                             ▼
-                  ┌─────────────────────┐
-                  │   Risk Engine       │
-                  └──────────┬──────────┘
-                             │
-          ┌──────────────────┼──────────────────┐
-          │                  │                  │
-          ▼                  ▼                  ▼
-   Scam Fingerprint   Attack Chain      SafeNext Coach
-                             │
-                             ▼
-                  ┌─────────────────────┐
-                  │  Final Result       │
-                  │ Score + Explanation │
-                  └─────────────────────┘
+                         ┌───────────────────┐
+                         │       User        │
+                         └─────────┬─────────┘
+                                   │
+                                   ▼
+                         ┌───────────────────┐
+                         │   Flask Web App   │
+                         └─────────┬─────────┘
+                                   │
+              ┌────────────────────┼────────────────────┐
+              │                    │                    │
+              ▼                    ▼                    ▼
+      Message Detector      Phone Detector       Link Detector
+              │                    │                    │
+              └────────────────────┼────────────────────┘
+                                   │
+                                   ▼
+                         ┌───────────────────┐
+                         │ Screenshot Module │
+                         └─────────┬─────────┘
+                                   │
+                                   ▼
+                         ┌───────────────────┐
+                         │    Risk Engine    │
+                         └─────────┬─────────┘
+                                   │
+              ┌────────────────────┼────────────────────┐
+              │                    │                    │
+              ▼                    ▼                    ▼
+      Scam Fingerprint      Attack Chain       SafeNext Coach
+                                   │
+                                   ▼
+                         ┌───────────────────┐
+                         │   Final Result    │
+                         │ Score + Guidance  │
+                         └───────────────────┘
 ```
+
+---
+
+## 🔄 ScamCheck Processing Flow
+
+```text
+User Input
+    │
+    ▼
+Message / Phone / Link / Screenshot
+    │
+    ▼
+Individual Detection Modules
+    │
+    ▼
+Risk Score Calculation
+    │
+    ▼
+Cross-Signal Analysis
+    │
+    ▼
+Scam Fingerprint Generation
+    │
+    ▼
+Attack Chain Analysis
+    │
+    ▼
+SafeNext Safety Guidance
+    │
+    ▼
+Final Result and History
+```
+
+---
+
+## 📈 Risk Classification
+
+| Risk Score | Classification |
+|------------|----------------|
+| 0–29       | LOW RISK       |
+| 30–59      | SUSPICIOUS     |
+| 60–79      | HIGH RISK      |
+| 80–100     | VERY HIGH RISK |
+
+> Risk scores are indicators generated by the system. A result marked as safe does not guarantee that content is completely safe.
 
 ---
 
@@ -236,15 +278,15 @@ Users can select their preferred language for explanations and safety recommenda
 - PostgreSQL
 - Supabase Storage
 
-### Detection and Analysis
+### AI and Analysis
 
-- Python-based detection modules
 - Google GenAI integration
 - Requests
 - BeautifulSoup
 - Pillow
 - OpenCV
 - NumPy
+- Python-based detection modules
 
 ### Frontend
 
@@ -252,6 +294,11 @@ Users can select their preferred language for explanations and safety recommenda
 - CSS
 - JavaScript
 - Bootstrap/Tailwind where configured
+
+### Deployment
+
+- Vercel for the live project interface
+- Python-compatible hosting support for backend deployment
 
 ---
 
@@ -293,21 +340,14 @@ SarvShield/
 
 ---
 
-## ⚙️ Installation and Setup
+## ⚙️ Local Installation
 
 ### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/umesh-kumar-meghwal/SarvShield.git
-```
-
-Move into the project directory:
-
-```bash
 cd SarvShield
 ```
-
----
 
 ### 2. Create a Virtual Environment
 
@@ -325,15 +365,11 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
----
-
 ### 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
-
----
 
 ### 4. Configure Environment Variables
 
@@ -355,9 +391,7 @@ SMTP_EMAIL=your_email
 SMTP_PASSWORD=your_app_password
 ```
 
-> Never upload your `.env` file or private API keys to GitHub.
-
----
+> Do not upload your `.env` file or private API keys to GitHub.
 
 ### 5. Run the Application
 
@@ -365,137 +399,87 @@ SMTP_PASSWORD=your_app_password
 python app.py
 ```
 
-Open the application in your browser:
+Open the local application:
 
 ```text
 http://127.0.0.1:5000
 ```
 
----
-
-## 📦 Requirements
-
-The project uses the following major dependencies:
-
-```text
-Flask
-Flask-CORS
-supabase
-python-dotenv
-requests
-gunicorn
-google-genai
-Pillow
-beautifulsoup4
-opencv-python-headless
-numpy
-```
-
-Install all dependencies using:
+For production execution with Gunicorn:
 
 ```bash
-pip install -r requirements.txt
+gunicorn app:app
 ```
-
----
-
-## 🔄 ScamCheck Processing Flow
-
-```text
-User Input
-    │
-    ▼
-Message / Phone / Link / Screenshot
-    │
-    ▼
-Individual Detection Modules
-    │
-    ▼
-Risk Score Calculation
-    │
-    ▼
-Cross-Signal Analysis
-    │
-    ▼
-Scam Fingerprint Generation
-    │
-    ▼
-Attack Chain Analysis
-    │
-    ▼
-SafeNext Safety Recommendation
-    │
-    ▼
-Final Result
-```
-
----
-
-## 📈 Risk Classification
-
-SarvShield uses risk-score thresholds to classify results.
-
-| Risk Score | Classification |
-|------------|----------------|
-| 0–29       | LOW RISK       |
-| 30–59      | SUSPICIOUS     |
-| 60–79      | HIGH RISK      |
-| 80–100     | VERY HIGH RISK |
-
-> Risk scores are indicators generated by the detection system. Users should verify important information through trusted official sources.
 
 ---
 
 ## 🔐 Security Considerations
 
 - Never expose API keys publicly.
-- Store secrets inside environment variables.
+- Store secrets in environment variables.
 - Use secure password handling.
 - Validate uploaded files.
-- Restrict file upload size and type.
+- Restrict upload size and file types.
 - Do not trust user-provided URLs.
 - Use HTTPS in production.
-- Avoid storing unnecessary personal information.
+- Store only necessary personal information.
 - Protect authentication and session data.
+- Verify suspicious content through official sources.
 
 ---
 
-## 🚀 Deployment
+## 👥 Team Members
 
-The application can be deployed using a compatible Python hosting platform.
+Our college internal hackathon team consists of six members. Every member contributed to different parts of the project, including backend development, frontend development, database management, AI model research, presentation, and technical research.
 
-For production deployment with Gunicorn:
+| No. | Team Member | Responsibilities |
+|-----|-------------|------------------|
+| 1 | **Siddhika Modi (Team Leader)** | Database Management, Presentation, Research, AI Model |
+| 2 | **Umesh Kumar Meghwal** | Backend Development, Backend Integration, AI Model |
+| 3 | **Suhana Khan** | Frontend Development, Presentation, Research, AI Model |
+| 4 | **Lakshika Nandawana** | Research, Presentation, Database Management, AI Model |
+| 5 | **Amit Potter** | Frontend Development, AI Model |
+| 6 | **Alveera** | Backend Development, AI Model |
 
-```bash
-gunicorn app:app
-```
+### 🧠 AI Model Contribution
 
-Make sure that:
+AI model development was a collaborative effort by the entire team.
 
-- All environment variables are configured.
-- Supabase credentials are valid.
-- Required dependencies are installed.
-- Production secrets are not committed to GitHub.
-- Uploaded files are securely handled.
+- **Siddhika Modi:** AI model development and research.
+- **Suhana Khan:** AI model development and research.
+- **All Team Members:** Contributed ideas, research, testing, feedback, and improvements related to the AI model.
+
+### 🤝 Team Collaboration
+
+The team worked collaboratively on:
+
+- Backend development
+- Frontend development
+- Database management
+- AI model research and integration
+- Presentation preparation
+- Technical research
+- Testing and feedback
+- Project improvement
 
 ---
 
 ## 🔮 Future Improvements
 
-Planned improvements may include:
+Possible future improvements include:
 
 - Real-time threat intelligence
-- More advanced AI-based screenshot analysis
+- Advanced AI-based screenshot analysis
 - Improved phishing URL detection
 - Browser extension
 - Mobile application
 - Automated scam reporting
 - Community-based threat database
-- Better multilingual support
+- Improved multilingual support
 - Real-time alerts
 - Advanced admin analytics
 - Explainable AI reports
-- More external intelligence sources
+- Additional intelligence sources
 
 ---
 
@@ -503,33 +487,17 @@ Planned improvements may include:
 
 SarvShield is designed as a digital safety assistance and awareness platform.
 
-Detection results may not always be accurate. A result marked as safe does not guarantee that content is completely safe.
+Detection results may not always be accurate. A result marked as safe does not guarantee that the content is completely safe.
 
-Always verify suspicious messages, websites, phone numbers, and payment requests through official sources.
+Users should verify suspicious messages, websites, phone numbers, and payment requests through trusted official sources.
 
 SarvShield does not replace official cybersecurity authorities or professional investigation.
-
----
-
-## 👨‍💻 Team
-
-### Founder
-
-**Umesh Kumar Meghwal**
-
-- GitHub: https://github.com/umesh-kumar-meghwal
-
-### Project
-
-**SarvShield – Digital Safety and Scam Detection Platform**
 
 ---
 
 ## 🤝 Contributing
 
 Contributions, suggestions, and improvements are welcome.
-
-To contribute:
 
 1. Fork the repository.
 2. Create a new branch.
@@ -549,4 +517,6 @@ License information can be added according to the project's distribution require
 
 If you find this project useful, consider giving the repository a ⭐ on GitHub.
 
-### Stay Alert. Stay Safe. Stay Protected with SarvShield. 🛡️
+---
+
+### 🛡️ Stay Alert. Stay Safe. Stay Protected with SarvShield.
